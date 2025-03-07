@@ -13,26 +13,63 @@ namespace CMD
             {
                 Commands = new()
                 {
-                    { "print", new(Command.Translator(PrintT,
-                        new[] { typeof(string), typeof(int), typeof(bool) })) { MinArgs = 1, MaxArgs = 3 } },
-                    { "fg", new(SetColor(true)) { MinArgs = 1, MaxArgs = 1 } },
-                    { "bg", new(SetColor(false)) { MinArgs = 1, MaxArgs = 1 } },
-                    { "clear", new(args => Console.Clear()) },
-                    { "cursor", Command.QCommand<bool>(c => Console.CursorVisible = c) },
-                    { "eval", new(Evaluate) { MinArgs = 1, MaxArgs = 3 } },
-                    { "variables", new(ViewVariables) }
+                    { "print", new(Command.Translator(PrintT, new[] { typeof(string), typeof(int), typeof(bool) })) 
+                        { MinArgs = 1, MaxArgs = 3, Description = "Prints the string a given amount of times." } },
+
+                    { "fg", new(SetColor(true)) { MinArgs = 1, MaxArgs = 1,
+                        Description = "Sets the Foreground color of the Console." } },
+
+                    { "bg", new(SetColor(false)) { MinArgs = 1, MaxArgs = 1,
+                        Description = "Sets the Background color of the Console." } },
+
+                    { "clear", new(args => Console.Clear()) { 
+                        Description = "Clears the Console." } },
+
+                    { "cursor", Command.QCommand<bool>(c => Console.CursorVisible = c, 
+                        "Sets the visible state of the Cursor.") },
+
+                    { "eval", new(Evaluate) { MinArgs = 1, MaxArgs = 3, 
+                        Description = "Evaluates the result of the given expression." } },
+
+                    { "setvar", new(Command.Translator(SetVar, new[] { typeof(char), typeof(double) } ))
+                        { MinArgs = 2, MaxArgs = 2, Description = "Assigns a value to the given variable." } },
+
+                    { "variables", new(ViewVariables) { 
+                        Description = "Displays all the assigned variables." } },
                 },
             };
 
+            launcher.Commands.Add("help", Help(launcher.Commands));
+
+
+
             while (true)
             {
-                string input = Console.ReadLine() ?? "";
-
-                string name = ArrayUtils.BuildWhile(input, (c) => c != ' ');
-                var args = ArrayUtils.TrimArgs(input);
-
-                launcher.RunCommand(name, args);
+                launcher.RunCommand(Console.ReadLine() ?? "");
             }
+        }
+
+        private static bool SetVariable(char variable, double value)
+        {
+            if (!char.IsLetter(variable))
+            {
+                StringUtils.PrettyErr("SetVariable", "Variable must be a letter from a-z.");
+                return false;
+            }
+
+            variable = char.ToLower(variable);
+            if (variables.TryGetValue(variable, out var oldVal))
+                Console.WriteLine($"{variable}: {oldVal} -> {value}");
+            else
+                Console.WriteLine($"{variable} = {value}");
+            variables[variable] = value;
+
+            return true;
+        }
+
+        private static void SetVar(object[] oargs)
+        {
+            SetVariable((char)oargs[0], (double)oargs[1]);
         }
 
         private static Action<string[]> SetColor(bool foreground)
@@ -57,15 +94,40 @@ namespace CMD
             };
         }
 
+        private static Command Help(Dictionary<string, Command> commands)
+        {
+            return new(args =>
+            {
+                StringBuilder sb = new("- Commands -\n");
+                foreach (var item in commands)
+                {
+                    var command = item.Value;
+                    sb.AppendLine($"{item.Key}[{command.MinArgs}-{command.MaxArgs}]");
+                    if (command.Description != string.Empty)
+                        sb.AppendLine($"> {command.Description}");
+                    sb.AppendLine();
+                }
+                Console.Write(sb.ToString());
+            })
+            {
+                Description = "Displays every command.",
+            };
+        }
+
         private static void ViewVariables(string[] args)
         {
-            StringBuilder sb = new();
-            for (char v = 'a'; v <= 'z'; ++v)
+            if (variables.Count == 0)
             {
-                if (variables.TryGetValue(v, out var store))
-                    sb.AppendLine($"{v} = {store}");
-                else
-                    sb.AppendLine($"{v} is undefined");
+                Console.WriteLine("No variables defined.");
+                return;
+            }
+            StringBuilder sb = new();
+            foreach (var item in 
+                from pair in variables
+                orderby pair.Key
+                select pair)
+            {
+                sb.AppendLine($"{item.Key} = {item.Value}");
             }
             Console.Write(sb.ToString());
         }
@@ -117,9 +179,7 @@ namespace CMD
                             StringUtils.PrettyErr("Evaluate", $"Invalid variable name \"{args[2]}\".");
                             break;
                         }
-                        name = char.ToLower(name);
-                        variables[name] = result;
-                        Console.WriteLine($"{name} = {result}");
+                        SetVariable(name, result);
                         break;
                     default:
                         StringUtils.PrettyErr("Evaluate", $"Unknown argument \"{args[1]}\".");

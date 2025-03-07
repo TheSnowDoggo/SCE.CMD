@@ -11,11 +11,18 @@
 
         public int MaxArgs { get; init; }
 
+        public string Description { get; init; } = "";
+
         public Action<string[]> Action { get; }
 
-        public static Command QCommand<T>(Action<T> action)
+        public static Command QCommand<T>(Action<T> action, string description = "")
         {
-            return new(Translator(oargs => action((T)oargs[0]), new[] { typeof(T) })) { MinArgs = 1, MaxArgs = 1 };
+            return new(Translator(oargs => action((T)oargs[0]), new[] { typeof(T) }))
+            {
+                MinArgs = 1,
+                MaxArgs = 1,
+                Description = description,
+            };
         }
 
         public static Action<string[]> Translator(Action<object[]> action, Type[] types)
