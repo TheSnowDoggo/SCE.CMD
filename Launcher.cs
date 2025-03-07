@@ -1,9 +1,12 @@
 ﻿using SCE;
+using System.Text;
 
 namespace CMD
 {
     internal static class Launcher
     {
+        private static readonly Dictionary<char, double> variables = new();
+
         internal static void Main()
         {
             CommandLauncher launcher = new()
@@ -16,8 +19,8 @@ namespace CMD
                     { "bg", new(SetColor(false)) { MinArgs = 1, MaxArgs = 1 } },
                     { "clear", new(args => Console.Clear()) },
                     { "cursor", Command.QCommand<bool>(c => Console.CursorVisible = c) },
-                    { "eval", new(Command.Translator(Evaluate, 
-                    new[] { typeof(string), typeof(int) })) { MinArgs = 1, MaxArgs = 1 } },
+                    { "eval", new(Evaluate) { MinArgs = 1, MaxArgs = 3 } },
+                    { "variables", new(ViewVariables) }
                 },
             };
 
@@ -54,16 +57,75 @@ namespace CMD
             };
         }
 
+        private static void ViewVariables(string[] args)
+        {
+            StringBuilder sb = new();
+            for (char v = 'a'; v <= 'z'; ++v)
+            {
+                if (variables.TryGetValue(v, out var store))
+                    sb.AppendLine($"{v} = {store}");
+                else
+                    sb.AppendLine($"{v} is undefined");
+            }
+            Console.Write(sb.ToString());
+        }
+
+        private static string LoadVariables(string str)
+        {
+            StringBuilder sb = new();
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (variables.TryGetValue(char.ToLower(str[i]), out var store))
+                {
+                    if (i > 0 && char.IsLetterOrDigit(str[i - 1]))
+                        sb.Append('*');
+                    sb.Append(store);
+                }
+                else if (char.IsLetter(str[i]))
+                {
+                    StringUtils.PrettyErr("Load Variables", $"Undefined variable {char.ToLower(str[i])}."); 
+                }
+                else
+                {
+                    sb.Append(str[i]);
+                }
+            }
+            return sb.ToString();
+        }
+
         private static void Evaluate(object[] args)
         {
-            if (!RPNConverter.BasicDouble.TryEvaluate((string)args[0], out var result))
+            if (!RPNConverter.BasicDouble.TryEvaluate(LoadVariables((string)args[0]), out var result))
             {
                 StringUtils.PrettyErr("Evaluate", "Unable to evlaute.");
                 return;
             }
-            if (args.Length >= 2)
-                result = Math.Round(result, (int)args[1]);
-            Console.WriteLine(result);
+            if (args.Length == 1)
+                Console.WriteLine(result);
+            else
+            {
+                switch (((string)args[1]).ToLower())
+                {
+                    case "as":
+                        if (args.Length != 3)
+                        {
+                            StringUtils.PrettyErr("Evaluate", $"Expected 3 Arguments, received {args.Length}.");
+                            break;
+                        }
+                        if (!char.TryParse((string)args[2], out var name) && !char.IsLetter(name))
+                        {
+                            StringUtils.PrettyErr("Evaluate", $"Invalid variable name \"{args[2]}\".");
+                            break;
+                        }
+                        name = char.ToLower(name);
+                        variables[name] = result;
+                        Console.WriteLine($"{name} = {result}");
+                        break;
+                    default:
+                        StringUtils.PrettyErr("Evaluate", $"Unknown argument \"{args[1]}\".");
+                        break;
+                }
+            }
         }
 
         private static void PrintT(object[] args)
