@@ -1,4 +1,6 @@
-﻿namespace CMD
+﻿using SCE;
+
+namespace CMD
 {
     internal static class Launcher
     {
@@ -8,12 +10,14 @@
             {
                 Commands = new()
                 {
-                    { "print", new(Print) { MinArgs = 1, MaxArgs = 3 } },
+                    { "print", new(Command.Translator(PrintT,
+                        new[] { typeof(string), typeof(int), typeof(bool) })) { MinArgs = 1, MaxArgs = 3 } },
                     { "fg", new(SetColor(true)) { MinArgs = 1, MaxArgs = 1 } },
                     { "bg", new(SetColor(false)) { MinArgs = 1, MaxArgs = 1 } },
                     { "clear", new(args => Console.Clear()) },
-                    { "scursor", new(args => Console.CursorVisible = true) },
-                    { "hcursor", new(args => Console.CursorVisible = false) },
+                    { "cursor", Command.QCommand<bool>(c => Console.CursorVisible = c) },
+                    { "eval", new(Command.Translator(Evaluate, 
+                    new[] { typeof(string), typeof(int) })) { MinArgs = 1, MaxArgs = 1 } },
                 },
             };
 
@@ -34,7 +38,7 @@
             {
                 if (!Enum.TryParse(args[0], true, out ConsoleColor result))
                 {
-                    Console.WriteLine($"<!> ForegroundColor | Invalid color \'{args[0]}\'. <!>");
+                    StringUtils.PrettyErr("SetColor", $"Invalid color '{args[0]}'.");
                     return;
                 }
                 if (foreground)
@@ -50,30 +54,22 @@
             };
         }
 
-        private static void SetBackgroundColor(string[] args)
+        private static void Evaluate(object[] args)
         {
-            if (!Enum.TryParse(args[0], out ConsoleColor result))
+            if (!RPNConverter.BasicDouble.TryEvaluate((string)args[0], out var result))
             {
-                Console.WriteLine($"<!> BackgroundColor | Invalid color \'{args[0]}\'. <!>");
+                StringUtils.PrettyErr("Evaluate", "Unable to evlaute.");
                 return;
             }
-            Console.ForegroundColor = result;
+            if (args.Length >= 2)
+                result = Math.Round(result, (int)args[1]);
+            Console.WriteLine(result);
         }
 
-        private static void Print(string[] args)
+        private static void PrintT(object[] args)
         {
-            int count = 1;
-            if (args.Length >= 2 && !int.TryParse(args[1], out count))
-            {
-                Console.WriteLine($"<!> Print | Invalid count \'{args[1]}'. <!>");
-                return;
-            }
-            bool newLine = true;
-            if (args.Length >= 3 && !bool.TryParse(args[2], out newLine))
-            {
-                Console.WriteLine($"<!> Print | Invalid newline \'{args[2]}\'. <!>");
-                return;
-            }
+            int count = args.Length >= 2 ? (int)args[1] : 1;
+            bool newLine = args.Length >= 3 ? (bool)args[2] : true;
             for (int i = 0; i < count; ++i)
             {
                 if (newLine || i == count - 1)
