@@ -1,10 +1,17 @@
 ﻿namespace CMD
 {
-    internal class Command
+    public class Command
     {
-        public Command(Action<string[]> action)
+        public record Callback(Package Package, CommandLauncher Launcher);
+
+        public Command(Action<string[], Callback> action)
         {
             Action = action;
+        }
+
+        public Command(Action<string[]> action)
+        {
+            Action = (args, _) => action(args);
         }
 
         public int MinArgs { get; init; }
@@ -13,11 +20,11 @@
 
         public string Description { get; init; } = "";
 
-        public Action<string[]> Action { get; }
+        public Action<string[], Callback> Action { get; }
 
-        public static Command QCommand<T>(Action<T> action, string description = "")
+        public static Command QCommand<T>(Action<T, Callback> action, string description = "")
         {
-            return new(Translator(oargs => action((T)oargs[0]), new[] { typeof(T) }))
+            return new(Translator((args, cb) => action.Invoke((T)args[0], cb), new[] { typeof(T) }))
             {
                 MinArgs = 1,
                 MaxArgs = 1,
@@ -25,9 +32,14 @@
             };
         }
 
-        public static Action<string[]> Translator(Action<object[]> action, Type[] types)
+        public static Command QCommand<T>(Action<T> action, string description = "")
         {
-            return args =>
+            return QCommand<T>((t, _) => action.Invoke(t), description);
+        }
+
+        public static Action<string[], Callback> Translator(Action<object[], Callback> action, Type[] types)
+        {
+            return (args, callback) =>
             {
                 var arr = new object[args.Length];
                 for (int i = 0; i < args.Length; ++i)
@@ -47,8 +59,13 @@
                         }
                     }
                 }
-                action(arr);
+                action.Invoke(arr, callback);
             };
+        }
+
+        public static Action<string[], Callback> Translator(Action<object[]> action, Type[] types)
+        {
+            return Translator((args, _) => action(args), types);
         }
     }
 }

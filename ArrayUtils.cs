@@ -1,51 +1,25 @@
-﻿using System.Text;
-
-namespace CMD
+﻿namespace CMD
 {
     internal static class ArrayUtils
     {
-        public static string BuildWhile(string str, Predicate<char> predicate)
+        public static T[] TrimFirst<T>(T[] arr)
         {
-            StringBuilder sb = new(str.Length);
-            foreach (char c in str)
-            {
-                if (!predicate(c))
-                    return sb.ToString();
-                sb.Append(c);
-            }
-            return sb.ToString();
+            if (arr.Length == 0)
+                return arr;
+            var newArr = new T[arr.Length - 1];
+            for (int i = 0; i < newArr.Length; ++i)
+                newArr[i] = arr[i + 1];
+            return newArr;
         }
 
-        public static string[] TrimArgs(string input)
+        public static T[] Copy<T>(T part, int copies)
         {
-            if (input.Length == 0)
-                return Array.Empty<string>();
-            bool first = true;
-            bool inSpeech = false;
-            List<string> args = new(input.Length);
-            StringBuilder sb = new(input.Length);
-            foreach (var c in input)
-            {
-                if (first)
-                {
-                    if (c == ' ')
-                        first = false;
-                    continue;
-                }
-
-                if (c == '"')
-                    inSpeech = !inSpeech;
-                else if (c != ' ' || inSpeech)
-                    sb.Append(c);
-                else
-                {
-                    args.Add(sb.ToString());
-                    sb.Clear();
-                }
-            }
-            if (sb.Length > 0)
-                args.Add(sb.ToString());
-            return args.ToArray();
+            if (copies <= 0)
+                return Array.Empty<T>();
+            var arr = new T[copies];
+            for (int i = 0; i < copies; ++i)
+                arr[i] = part;
+            return arr;
         }
     }
 }
