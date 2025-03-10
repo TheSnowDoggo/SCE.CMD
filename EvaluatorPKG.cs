@@ -16,21 +16,30 @@ namespace CMD
             {
                 { "eval", new(EvaluateCMD) { MinArgs = 1, MaxArgs = 3,
                     Description = "Evaluates the result of the given expression." } },
-                { "setv", new(Command.Translator(SetVariableCMD, new[] { typeof(char), typeof(double) } ))
+                { "vset", new(Command.Translator(SetVariableCMD, new[] { typeof(char), typeof(double) } ))
                     { MinArgs = 2, MaxArgs = 2, Description = "Assigns a value to the given variable." } },
-                { "remv", new(Command.Translator(RemoveVariableCMD, new[] { typeof(char) }))
+                { "vrem", new(Command.Translator(RemoveVariableCMD, new[] { typeof(char) }))
                     { MinArgs = 1, MaxArgs = 1, Description = "Removes a specified variable." } },
-                { "viewv", Command.QCommand<char>(c => Console.WriteLine(variables.TryGetValue(c, out var val) ? $"{c} = {val}" : $"{c} is UNDEFINED")) },
-                { "viewvars", new(ViewVariablesCMD) {
+                { "vview", Command.QCommand<char>(c => Console.WriteLine(variables.TryGetValue(c, out var val) ? $"{c} = {val}" : $"{c} is UNDEFINED")) },
+                { "varsview", new(ViewVariablesCMD) {
                     Description = "Displays all the assigned variables." } },
+                { "vload", new(VarLoadCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Loads the given variable into memory." } },
                 { "table", new(Command.Translator(TableCMD(8), new[] { typeof(string), typeof(double), typeof(double), typeof(double) })) {
                     MinArgs = 3, MaxArgs = 4, Description = "Performs a series of evaluations. " } },
-                { "insertv", new(InsertCMD) { MinArgs = 1, MaxArgs = -1 } },
-                { "clearvars", new(args => variables.Clear()) { Description = "Clears all the variables." } },
+                { "vinsert", new(InsertCMD) { MinArgs = 1, MaxArgs = -1 } },
+                { "varsclear", new(args => variables.Clear()) { Description = "Clears all the variables." } },
             };
         }
 
         #region CMD
+
+        private void VarLoadCMD(string[] args, Command.Callback cb)
+        {
+            if (!char.TryParse(args[0], out char c) || !variables.TryGetValue(c, out var value))
+                throw new CommandException("Evaluator", $"Undefined variable {c}.");
+            cb.Launcher.MemoryStack.Push(value);
+        }
 
         private string ReplaceVariables(string str)
         {
@@ -101,12 +110,12 @@ namespace CMD
                 StringUtils.PrettyErr("Remove Variable", $"Unknown variable \'{v}\'.");
         }
 
-        public void EvaluateCMD(string[] args, Command.Callback cb)
+        public MemoryItem? EvaluateCMD(string[] args, Command.Callback cb)
         {
             if (!RPNConverter.BasicDouble.TryEvaluate(LoadVariables(args[0], variables), out var result))
                 throw new CommandException("Evaluator", "Unable to evlaute.");
             if (args.Length == 1)
-                Console.WriteLine(result);
+                cb.Launcher.FeedbackLine(result);
             else
             {
                 switch (args[1].ToLower())
@@ -122,6 +131,7 @@ namespace CMD
                         throw new CommandException("Evaluator", $"Unknown argument \"{args[1]}\".");
                 }
             }
+            return new(result);
         }
 
         public Action<object[]> TableCMD(int numLen)

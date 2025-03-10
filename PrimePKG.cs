@@ -16,15 +16,18 @@ namespace CMD
             {
                 { "isprime", new(IsPrimeCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Determines whether the given list of numbers are prime." } },
-                { "primecache", Command.QCommand<int>(PrecacheCMD, "Precaches all numbers up to the given number." ) }
+                { "primecache", new(PrecacheCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Precaches all numbers up to the given number."} },
             };
         }
 
-        private void PrecacheCMD(int n)
+        private void PrecacheCMD(string[] args, Command.Callback cb)
         {
+            if (!int.TryParse(args[0], out var n))
+                throw new CommandException("Prime", $"Cannot convert \'{args[0]}\' to int.");
             if (!primeFinder.Precache(n))
                 throw new CommandException("Prime", $"Already precached up to {primeFinder.CacheMax}.");
-            Console.WriteLine($"Sucessfully precached up to {n}.");
+            cb.Launcher.FeedbackLine($"Sucessfully precached up to {n}.");
         }
 
         private void IsPrimeCMD(string[] args)

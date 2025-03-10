@@ -30,7 +30,7 @@
 
         public string Description { get; init; } = "";
 
-        public Func<string[], Callback, object?> Func { get; }
+        public Func<string[], Callback, MemoryItem?> Func { get; }
 
         public static Command QCommand<T>(Action<T, Callback> action, string description = "")
         {

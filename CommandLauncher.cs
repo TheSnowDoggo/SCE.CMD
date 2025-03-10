@@ -15,12 +15,14 @@ namespace CMD
             Custom = new();
             _native = new(new()
             {
-                { "help", new(HelpCMD) { Description = "Displays every command." } },
+                { "help", new(HelpCMD) { MaxArgs = -1, Description = "Displays every command." } },
                 { "feedback", Command.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c) },
                 { "memclear", new(MemClearCMD) { Description = "Clears all items in laucher memory."} },
+                { "haspkg", Command.QCommand<string>(HasPackageCMD, "Displays whether a package with the specified name exists.") },
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Adds every given item to memory." } },
                 { "memview", new(MemViewCMD) { Description = "Displays all items in memory" } },
+                { "memlock", Command.QCommand<bool>(c => MemoryLock = c, "Sets the lock state of memory.") },
             })
             {
                 Name = "Native",
@@ -35,7 +37,9 @@ namespace CMD
 
         public bool CommandFeedback { get; set; } = true;
 
-        public Stack<object> MemoryStack { get; } = new();
+        public bool MemoryLock { get; set; } = false;
+
+        public Stack<object?> MemoryStack { get; } = new();
 
         public IEnumerable<Package> GetPackageEnumerator()
         {
@@ -43,21 +47,6 @@ namespace CMD
             yield return Custom;
             foreach (var package in Packages)
                 yield return package;
-        }
-
-        public bool TryGetCommand(string name, [NotNullWhen(true)] out Command? command, [NotNullWhen(true)] out Package? package)
-        {
-            foreach (var item in GetPackageEnumerator())
-            {
-                if (item.Commands.TryGetValue(name, out command))
-                {
-                    package = item;
-                    return true;
-                }
-            }
-            command = null;
-            package = null;
-            return false;
         }
 
         public void Exit()
@@ -79,7 +68,64 @@ namespace CMD
             }
         }
 
+        #region Search
+
+        public bool TryGetCommand(string name, [NotNullWhen(true)] out Command? command, [NotNullWhen(true)] out Package? package)
+        {
+            foreach (var item in GetPackageEnumerator())
+            {
+                if (item.Commands.TryGetValue(name, out command))
+                {
+                    package = item;
+                    return true;
+                }
+            }
+            command = null;
+            package = null;
+            return false;
+        }
+
+        public bool TryGetCommand(string name, [NotNullWhen(true)] out Command? command)
+        {
+            return TryGetCommand(name, out command, out _);
+        }
+
+        public bool CommandExists(string name)
+        {
+            return TryGetCommand(name, out _);
+        }
+
+        public bool TryGetPackage(string name, [NotNullWhen(true)] out Package? package)
+        {
+            var nLower = name.ToLower();
+            foreach (var pkg in GetPackageEnumerator())
+            {
+                if (pkg.Name.ToLower() == nLower)
+                {
+                    package = pkg;
+                    return true;
+                }
+            }
+            package = null;
+            return false;
+        }
+
+        public bool ContainsPackage(string name)
+        {
+            return TryGetPackage(name, out _);
+        }
+
+        #endregion
+
         #region Commands
+
+        public void HasPackageCMD(string name)
+        {
+            if (TryGetPackage(name, out var package))
+                FeedbackLine($"Found package \'{package.Name}\' with {package.Commands.Count} command(s).");
+            else
+                FeedbackLine($"No package with name \'{name}\' found.");
+        }
 
         private void MemViewCMD(string[] args)
         {
@@ -115,19 +161,37 @@ namespace CMD
         private void HelpCMD(string[] args)
         {
             StringBuilder sb = new("- Commands -\n");
-            foreach (var package in GetPackageEnumerator())
+            if (args.Length == 0)
             {
-                sb.AppendLine(package.Name == "" ? "Anonymous Package:\n" : $"{package.Name}:\n");
-                foreach (var item in package.Commands)
+                foreach (var pkg in GetPackageEnumerator())
+                    sb.Append(BuildPackageHelp(pkg));               
+            }
+            else
+            {
+                foreach (var name in args)
                 {
-                    var command = item.Value;
-                    sb.AppendLine($"{item.Key}[{command.MinArgs}-{command.MaxArgs}]");
-                    if (command.Description != string.Empty)
-                        sb.AppendLine($"> {command.Description}");
-                    sb.AppendLine();
+                    if (TryGetPackage(name, out var pkg))
+                        sb.Append(BuildPackageHelp(pkg));
+                    else
+                        StringUtils.PrettyErr("Launcher", $"Unknown package \'{name}\'.");
                 }
             }
             Console.Write(sb.ToString());
+        }
+
+        private string BuildPackageHelp(Package pkg)
+        {
+            StringBuilder sb = new();
+            sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
+            foreach (var item in pkg.Commands)
+            {
+                var command = item.Value;
+                sb.AppendLine($"{item.Key}[{command.MinArgs}-{command.MaxArgs}]");
+                if (command.Description != string.Empty)
+                    sb.AppendLine($"> {command.Description}");
+                sb.AppendLine();
+            }
+            return sb.ToString();
         }
 
         #endregion
@@ -178,8 +242,8 @@ namespace CMD
                 try
                 {
                     var result = cmd.Func(args, new(package, this));
-                    if (result != null)
-                        MemoryStack.Push(result);
+                    if (result != null && !MemoryLock)
+                        MemoryStack.Push(result.Value);
                     return true;
                 }
                 catch (CommandException exception)
@@ -202,7 +266,7 @@ namespace CMD
             return ExecuteCommand(name, args, safeEvaluation);
         }
 
-        public void ExecuteEveryCommand(string[] lines, bool safeEvaluation = true)
+        public void ExecuteEveryCommand(IEnumerable<string> lines, bool safeEvaluation = true)
         {
             foreach (var line in lines)
                 ExecuteCommand(line, safeEvaluation);

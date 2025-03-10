@@ -1,4 +1,6 @@
-﻿namespace CMD
+﻿using System.Xml.Linq;
+
+namespace CMD
 {
     internal class ScriptPKG : Package
     {
@@ -9,13 +11,15 @@
             Name = "Script";
             Commands = new()
             {
-                { "runscr", new(RunScriptCMD) { MinArgs = 0, MaxArgs = 3,
+                { "scrrun", new(RunScriptCMD) { MinArgs = 0, MaxArgs = 2,
                     Description = "Runs the script from the specified relative path." } },
-                { "loadscr", new(LoadCMD) { MinArgs = 2, MaxArgs = 2,
+                { "scrload", new(LoadCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Loads the script from the specified relative path." } },
-                { "delscr", Command.QCommand<string>(DeleteCMD, "Deletes the specified script.") },
-                { "renamescr", new(RenameCMD) { MinArgs = 2, MaxArgs = 2,
+                { "scrdel", Command.QCommand<string>(DeleteCMD, "Deletes the specified script.") },
+                { "scrrename", new(RenameCMD) { MinArgs = 2, MaxArgs = 2,
                     Description =  "Renames the specified script." } },
+                { "scrloadall", new(LoadDirCMD) { MinArgs = 1, MaxArgs = 2,
+                    Description = "Loads all the scripts in a given directory into one command" } },
                 { "cd", new(CDAddCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Adds the specified path to the current directory." } },
                 { @"cd\", new(CDSetCMD) { MinArgs = 0, MaxArgs = 1,
@@ -43,16 +47,34 @@
             Commands.Remove(name);
         }
 
+        private void LoadAbsolute(string path, string name, Command.Callback cb)
+        {
+            if (!File.Exists(path))
+                throw new CommandException("Script", $"File not found {path}.");
+            if (Commands.ContainsKey(name))
+                throw new CommandException("Script", $"Script \'{name}\' already exists.");
+            var lines = File.ReadAllLines(path);
+            Commands.Add(name, new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
+            cb.Launcher.FeedbackLine($"Script \'{name}\' added sucessfully!");
+        }
+
         private void LoadCMD(string[] args, Command.Callback cb)
         {
-            string relDir = CombineDir(args[0]);
-            if (!File.Exists(relDir))
-                throw new CommandException("Script", $"File not found {relDir}.");
-            if (Commands.ContainsKey(args[1]))
-                throw new CommandException("Script", $"Script \'{args[1]}\' already exists.");
-            var lines = File.ReadAllLines(relDir);
-            Commands.Add(args[1], new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
-            Console.WriteLine($"Script \'{args[1]}\' added sucessfully!");
+            LoadAbsolute(CombineDir(args[0]), args[1], cb);
+        }
+
+        private void LoadDirCMD(string[] args, Command.Callback cb)
+        {
+            if (Commands.ContainsKey(args[0]))
+                throw new CommandException("Script", $"Script \'{args[0]}\' already exists.");
+            string relDir = args.Length > 1 ? CombineDir(args[1]) : directory;
+            if (!Directory.Exists(relDir))
+                throw new CommandException("Script", $"Unknown directory \'{relDir}\'.");
+            List<string> lines = new();
+            foreach (var path in Directory.EnumerateFiles(relDir))
+                lines.AddRange(File.ReadAllLines(path));
+            Commands.Add(args[0], new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
+            cb.Launcher.FeedbackLine($"Script \'{args[0]}\' added sucessfully!");
         }
 
         private void RunScriptCMD(string[] args, Command.Callback cb)
@@ -65,16 +87,11 @@
 
             if (args.Length > 1)
             {
-                switch (args[1])
-                {
-                    case "as":
-                        if (args.Length != 3 || args[2] == string.Empty)
-                            throw new CommandException("Script", $"Expected 3 Arguments, received {args.Length}.");
-                        if (Commands.ContainsKey(args[2]))
-                            throw new CommandException("Script", $"Script \"{args[2]}\" already exists.");
-                        Commands.Add(args[2], new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
-                        break;
-                }
+                if (args.Length != 2 || args[1] == string.Empty)
+                    throw new CommandException("Script", $"Expected 2 Arguments, received {args.Length}.");
+                if (Commands.ContainsKey(args[1]))
+                    throw new CommandException("Script", $"Script \"{args[1]}\" already exists.");
+                Commands.Add(args[1], new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
             }
         }
 

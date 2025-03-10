@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace CMD
+﻿namespace CMD
 {
     internal static class Launcher
     {
@@ -14,6 +12,7 @@ namespace CMD
                     new PrintPKG(),
                     new EvaluatorPKG(),
                     new ScriptPKG(),
+                    new AliasPKG(),
                     new PrimePKG(),
                     new StoragePKG(),
                 },
