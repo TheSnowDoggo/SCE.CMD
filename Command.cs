@@ -4,14 +4,24 @@
     {
         public record Callback(Package Package, CommandLauncher Launcher);
 
-        public Command(Action<string[], Callback> action)
+        public Command(Func<string[], Callback, MemoryItem?> func)
         {
-            Action = action;
+            Func = func;
+        }
+
+        public Command(Func<string[], MemoryItem?> func)
+            : this((args, _) => func(args))
+        {
+        }
+
+        public Command(Action<string[], Callback> action)
+            : this((args, cb) => { action(args, cb); return null; })
+        {
         }
 
         public Command(Action<string[]> action)
+            : this((args, _) => action(args))
         {
-            Action = (args, _) => action(args);
         }
 
         public int MinArgs { get; init; }
@@ -20,7 +30,7 @@
 
         public string Description { get; init; } = "";
 
-        public Action<string[], Callback> Action { get; }
+        public Func<string[], Callback, object?> Func { get; }
 
         public static Command QCommand<T>(Action<T, Callback> action, string description = "")
         {

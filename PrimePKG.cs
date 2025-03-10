@@ -3,11 +3,11 @@ using System.Text;
 
 namespace CMD
 {
-    internal class Prime : Package
+    internal class PrimePKG : Package
     {
         private readonly PrimeFinder primeFinder;
 
-        public Prime()
+        public PrimePKG()
         {
             primeFinder = new();
 

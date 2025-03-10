@@ -2,11 +2,11 @@
 
 namespace CMD
 {
-    internal class Storage : Package
+    internal class StoragePKG : Package
     {
         private readonly Dictionary<string, string> variables = new();
 
-        public Storage()
+        public StoragePKG()
         {
             Name = "Storage";
             Commands = new()
@@ -66,7 +66,7 @@ namespace CMD
             var newArgs = ArrayUtils.TrimFirst(args);
             for (int i = 0; i < newArgs.Length; ++i)
                 newArgs[i] = Replace(newArgs[i]);
-            cb.Launcher.RunCommand(args[0], newArgs);
+            cb.Launcher.ExecuteCommand(args[0], newArgs);
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿namespace CMD
 {
-    internal class Script : Package
+    internal class ScriptPKG : Package
     {
         private string directory = string.Empty;
 
-        public Script()
+        public ScriptPKG()
         {
             Name = "Script";
             Commands = new()
@@ -51,7 +51,7 @@
             if (Commands.ContainsKey(args[1]))
                 throw new CommandException("Script", $"Script \'{args[1]}\' already exists.");
             var lines = File.ReadAllLines(relDir);
-            Commands.Add(args[1], new(_ => cb.Launcher.RunEveryCommand(lines)));
+            Commands.Add(args[1], new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
             Console.WriteLine($"Script \'{args[1]}\' added sucessfully!");
         }
 
@@ -61,7 +61,7 @@
             if (!File.Exists(relDir))
                 throw new CommandException("Script", $"File not found {relDir}.");
             var lines = File.ReadAllLines(relDir);
-            cb.Launcher.RunEveryCommand(lines);
+            cb.Launcher.ExecuteEveryCommand(lines);
 
             if (args.Length > 1)
             {
@@ -72,7 +72,7 @@
                             throw new CommandException("Script", $"Expected 3 Arguments, received {args.Length}.");
                         if (Commands.ContainsKey(args[2]))
                             throw new CommandException("Script", $"Script \"{args[2]}\" already exists.");
-                        Commands.Add(args[2], new(_ => cb.Launcher.RunEveryCommand(lines)));
+                        Commands.Add(args[2], new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
                         break;
                 }
             }

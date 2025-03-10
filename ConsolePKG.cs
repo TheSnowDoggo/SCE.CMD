@@ -2,9 +2,9 @@
 
 namespace CMD
 {
-    internal class ConsoleCommands : Package
+    internal class ConsolePKG : Package
     {
-        public ConsoleCommands()
+        public ConsolePKG()
         {
             Name = "Console";
             Commands = new()

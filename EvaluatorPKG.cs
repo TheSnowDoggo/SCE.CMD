@@ -3,11 +3,11 @@ using System.Text;
 
 namespace CMD
 {
-    internal class Evaluator : Package
+    internal class EvaluatorPKG : Package
     {
         private readonly Dictionary<char, double> variables;
 
-        public Evaluator(int capacity = 0)
+        public EvaluatorPKG(int capacity = 0)
         {
             variables = new(capacity);
 
@@ -66,7 +66,7 @@ namespace CMD
             for (int i = 1; i < args.Length; ++i)
                 args[i] = ReplaceVariables(args[i]);
             string name = args[0];
-            cb.Launcher.RunCommand(name, ArrayUtils.TrimFirst(args));
+            cb.Launcher.ExecuteCommand(name, ArrayUtils.TrimFirst(args));
         }
 
         public void ViewVariablesCMD(string[] _)
