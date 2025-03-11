@@ -15,16 +15,30 @@ namespace CMD
             Custom = new();
             _native = new(new()
             {
-                { "help", new(HelpCMD) { MaxArgs = -1, Description = "Displays every command." } },
-                { "feedback", Command.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c) },              
-                { "haspkg", Command.QCommand<string>(HasPackageCMD, "Displays whether a package with the specified name exists.") },
+                { "help", new(HelpCMD) { MaxArgs = -1, 
+                    Description = "Displays every command.",
+                    Usage = "<package_name>? ..." } },
+
+                { "quit", new(args => Exit()) { Description = "Exits the command line." } },
+
+                { "feedback", Cmd.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c, 
+                    "Sets whether command feedback should be active.") },         
+                
+                { "haspkg", Cmd.QCommand<string>(HasPackageCMD, 
+                    "Displays whether a package with the specified name exists.") },
+
                 { "memclear", new(MemClearCMD) { Description = "Clears all items in laucher memory."} },
+
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Adds every given item to memory." } },
+
                 { "memrem", new(MemRemCMD) { MinArgs = 0, MaxArgs = 1,
                     Description = "Removes the specified number of items from memory"} },
+
                 { "memview", new(MemViewCMD) { Description = "Displays all items in memory" } },
-                { "memlock", Command.QCommand<bool>(c => MemoryLock = c, "Sets the lock state of memory.") },
+
+                { "memlock", Cmd.QCommand<bool>(c => MemoryLock = c, "Sets the lock state of memory.") },
+
                 { "memrun", new(MemRunCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Adds items to memory before running the command with no arguments." } }
             })
@@ -32,6 +46,8 @@ namespace CMD
                 Name = "Native",
             };
         }
+
+        public string Name { get; init; } = "Launcher";
 
         public Package Custom { get; init; }
 
@@ -60,7 +76,7 @@ namespace CMD
 
         public void Run()
         {
-            Console.WriteLine("- SCE.CMD Launcher v0.0.0 -\nStart typing or type help to see available commands:");
+            Console.WriteLine($"{Name}\nStart typing or type help to see available commands:");
 
             active = true;
             while (active)
@@ -74,7 +90,7 @@ namespace CMD
 
         #region Search
 
-        public bool TryGetCommand(string name, [NotNullWhen(true)] out Command? command, [NotNullWhen(true)] out Package? package)
+        public bool TryGetCommand(string name, [NotNullWhen(true)] out Cmd? command, [NotNullWhen(true)] out Package? package)
         {
             foreach (var item in GetPackageEnumerator())
             {
@@ -89,7 +105,7 @@ namespace CMD
             return false;
         }
 
-        public bool TryGetCommand(string name, [NotNullWhen(true)] out Command? command)
+        public bool TryGetCommand(string name, [NotNullWhen(true)] out Cmd? command)
         {
             return TryGetCommand(name, out command, out _);
         }
@@ -127,11 +143,11 @@ namespace CMD
         {
             int count = 1;
             if (args.Length > 0 && !int.TryParse(args[0], out count))
-                throw new CommandException("Launcher", $"Failed to convert \'{args[0]}\' to int.");
+                throw new CmdException("Launcher", $"Failed to convert \'{args[0]}\' to int.");
             for (int i = 0; i < count; ++i)
             {
                 if (MemoryStack.Count == 0)
-                    throw new CommandException("Launcher", $"Ran out of items to remove. Cleared {i}/{count}.");
+                    throw new CmdException("Launcher", $"Ran out of items to remove. Cleared {i}/{count}.");
                 MemoryStack.Pop();
             }
             FeedbackLine($"Sucessfully cleared {count} items from memory (now {MemoryStack.Count}).");
@@ -196,23 +212,31 @@ namespace CMD
                 foreach (var name in args)
                 {
                     if (!TryGetPackage(name, out var pkg))
-                        throw new CommandException("Launcher", $"Unknown package \'{name}\'.");
+                        throw new CmdException("Launcher", $"Unknown package \'{name}\'.");
                     sb.Append(BuildPackageHelp(pkg));
                 }
             }
             Console.Write(sb.ToString());
         }
 
-        private string BuildPackageHelp(Package pkg)
+        private static string BuildPackageHelp(Package pkg)
         {
             StringBuilder sb = new();
             sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
             foreach (var item in pkg.Commands)
             {
-                var command = item.Value;
-                sb.AppendLine($"{item.Key}[{command.MinArgs}-{command.MaxArgs}]");
-                if (command.Description != string.Empty)
-                    sb.AppendLine($"> {command.Description}");
+                (var name, var c) = item;
+
+                if (c.MinArgs != c.MaxArgs)
+                    sb.AppendLine($"{name}[{c.MinArgs}-{(c.MaxArgs >= 0 ? c.MaxArgs : "n")}]");
+                else
+                    sb.AppendLine($"{name}[{c.MinArgs}]");
+
+                if (c.Description != string.Empty)
+                    sb.AppendLine($"- {c.Description}");
+                if (c.Usage != string.Empty)
+                    sb.AppendLine($"> {name} {c.Usage}");
+
                 sb.AppendLine();
             }
             return sb.ToString();
@@ -270,7 +294,7 @@ namespace CMD
                         MemoryStack.Push(result.Value);
                     return true;
                 }
-                catch (CommandException exception)
+                catch (CmdException exception)
                 {
                     Console.WriteLine(exception);
                 }

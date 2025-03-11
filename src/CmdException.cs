@@ -1,8 +1,8 @@
 ﻿namespace CMD
 {
-    internal class CommandException : Exception
+    internal class CmdException : Exception
     {
-        public CommandException(string source, string message)
+        public CmdException(string source, string message)
             : base(StringUtils.FormatErr(source, message))
         {
             SourceMSG = source;

@@ -1,25 +1,25 @@
 ﻿namespace CMD
 {
-    public class Command
+    public class Cmd
     {
         public record Callback(Package Package, CommandLauncher Launcher);
 
-        public Command(Func<string[], Callback, MemoryItem?> func)
+        public Cmd(Func<string[], Callback, MemoryItem?> func)
         {
             Func = func;
         }
 
-        public Command(Func<string[], MemoryItem?> func)
+        public Cmd(Func<string[], MemoryItem?> func)
             : this((args, _) => func(args))
         {
         }
 
-        public Command(Action<string[], Callback> action)
+        public Cmd(Action<string[], Callback> action)
             : this((args, cb) => { action(args, cb); return null; })
         {
         }
 
-        public Command(Action<string[]> action)
+        public Cmd(Action<string[]> action)
             : this((args, _) => action(args))
         {
         }
@@ -30,9 +30,11 @@
 
         public string Description { get; init; } = "";
 
+        public string Usage { get; init; } = "";
+
         public Func<string[], Callback, MemoryItem?> Func { get; }
 
-        public static Command QCommand<T>(Action<T, Callback> action, string description = "")
+        public static Cmd QCommand<T>(Action<T, Callback> action, string description = "")
         {
             return new(Translator((args, cb) => action.Invoke((T)args[0], cb), new[] { typeof(T) }))
             {
@@ -42,7 +44,7 @@
             };
         }
 
-        public static Command QCommand<T>(Action<T> action, string description = "")
+        public static Cmd QCommand<T>(Action<T> action, string description = "")
         {
             return QCommand<T>((t, _) => action.Invoke(t), description);
         }

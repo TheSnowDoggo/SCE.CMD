@@ -6,6 +6,7 @@
         {
             CommandLauncher launcher = new()
             {
+                Name = "- SCE Launcher -",
                 Packages = new()
                 {
                     new ConsolePKG(),
