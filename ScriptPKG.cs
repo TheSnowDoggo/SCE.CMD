@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace CMD
 {
@@ -15,11 +16,12 @@ namespace CMD
                     Description = "Runs the script from the specified relative path." } },
                 { "scrload", new(LoadCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Loads the script from the specified relative path." } },
-                { "scrdel", Command.QCommand<string>(DeleteCMD, "Deletes the specified script.") },
+                { "scrdel", new(DeleteCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Deletes the specified script." } },
                 { "scrrename", new(RenameCMD) { MinArgs = 2, MaxArgs = 2,
                     Description =  "Renames the specified script." } },
-                { "scrloadall", new(LoadDirCMD) { MinArgs = 1, MaxArgs = 2,
-                    Description = "Loads all the scripts in a given directory into one command" } },
+                { "scrcompileload", new(LoadDirCMD) { MinArgs = 1, MaxArgs = 2,
+                    Description = "Compiles all the scripts in a given directory into one command" } },
                 { "cd", new(CDAddCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Adds the specified path to the current directory." } },
                 { @"cd\", new(CDSetCMD) { MinArgs = 0, MaxArgs = 1,
@@ -40,11 +42,12 @@ namespace CMD
             cb.Launcher.FeedbackLine($"Sucessfully renamed \'{args[0]}\' to \'{args[1]}\'.");
         }
 
-        private void DeleteCMD(string name)
+        private void DeleteCMD(string[] args, Command.Callback cb)
         {
-            if (!Commands.ContainsKey(name))
-                throw new CommandException("Script", $"Script not found \'{name}\'.");
-            Commands.Remove(name);
+            if (!Commands.ContainsKey(args[0]))
+                throw new CommandException("Script", $"Script not found \'{args[0]}\'.");
+            Commands.Remove(args[0]);
+            cb.Launcher.FeedbackLine($"Sucessfully removed script \'{args[0]}\'.");
         }
 
         private void LoadAbsolute(string path, string name, Command.Callback cb)

@@ -16,13 +16,17 @@ namespace CMD
             _native = new(new()
             {
                 { "help", new(HelpCMD) { MaxArgs = -1, Description = "Displays every command." } },
-                { "feedback", Command.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c) },
-                { "memclear", new(MemClearCMD) { Description = "Clears all items in laucher memory."} },
+                { "feedback", Command.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c) },              
                 { "haspkg", Command.QCommand<string>(HasPackageCMD, "Displays whether a package with the specified name exists.") },
+                { "memclear", new(MemClearCMD) { Description = "Clears all items in laucher memory."} },
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Adds every given item to memory." } },
+                { "memrem", new(MemRemCMD) { MinArgs = 0, MaxArgs = 1,
+                    Description = "Removes the specified number of items from memory"} },
                 { "memview", new(MemViewCMD) { Description = "Displays all items in memory" } },
                 { "memlock", Command.QCommand<bool>(c => MemoryLock = c, "Sets the lock state of memory.") },
+                { "memrun", new(MemRunCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Adds items to memory before running the command with no arguments." } }
             })
             {
                 Name = "Native",
@@ -119,7 +123,21 @@ namespace CMD
 
         #region Commands
 
-        public void HasPackageCMD(string name)
+        private void MemRemCMD(string[] args)
+        {
+            int count = 1;
+            if (args.Length > 0 && !int.TryParse(args[0], out count))
+                throw new CommandException("Launcher", $"Failed to convert \'{args[0]}\' to int.");
+            for (int i = 0; i < count; ++i)
+            {
+                if (MemoryStack.Count == 0)
+                    throw new CommandException("Launcher", $"Ran out of items to remove. Cleared {i}/{count}.");
+                MemoryStack.Pop();
+            }
+            FeedbackLine($"Sucessfully cleared {count} items from memory (now {MemoryStack.Count}).");
+        }
+
+        private void HasPackageCMD(string name)
         {
             if (TryGetPackage(name, out var package))
                 FeedbackLine($"Found package \'{package.Name}\' with {package.Commands.Count} command(s).");
@@ -138,6 +156,13 @@ namespace CMD
                     sb.AppendLine($"> \"{item}\"");
                 Console.Write(sb.ToString());
             }
+        }
+
+        private void MemRunCMD(string[] args)
+        {
+            for (int i = 1; i < args.Length; ++i)
+                MemoryStack.Push(args[i]);
+            ExecuteCommand(args[0]);
         }
 
         private void MemAddCMD(string[] args)
@@ -170,10 +195,9 @@ namespace CMD
             {
                 foreach (var name in args)
                 {
-                    if (TryGetPackage(name, out var pkg))
-                        sb.Append(BuildPackageHelp(pkg));
-                    else
-                        StringUtils.PrettyErr("Launcher", $"Unknown package \'{name}\'.");
+                    if (!TryGetPackage(name, out var pkg))
+                        throw new CommandException("Launcher", $"Unknown package \'{name}\'.");
+                    sb.Append(BuildPackageHelp(pkg));
                 }
             }
             Console.Write(sb.ToString());
@@ -269,7 +293,10 @@ namespace CMD
         public void ExecuteEveryCommand(IEnumerable<string> lines, bool safeEvaluation = true)
         {
             foreach (var line in lines)
-                ExecuteCommand(line, safeEvaluation);
+            {
+                if (line != string.Empty)
+                    ExecuteCommand(line, safeEvaluation);
+            }
         }
 
         #endregion

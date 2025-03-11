@@ -12,10 +12,15 @@ namespace CMD
             Name = "Storage";
             Commands = new()
             {
-                { "storemem", new(StoreMemCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Stores the latest memory stored in the launcher." } },
-                { "store", new(StoreCMD) { MinArgs = 2, MaxArgs = 2,
+                { "takefmem", new(StoreMemCMD(true)) { MinArgs = 1, MaxArgs = -1, 
+                    Description = "Stores the latest memory and removes it."} },
+                { "peekfmem", new(StoreMemCMD(false)) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Takes the latest memory without removing it." } },
+                { "ststore", new(StoreCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Stores the data into a variable." } },
+                { "stclear", new(ClearCMD) { Description = "Clears every variable" } },
+                { "stdel", new(RemoveVariableCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Deletes the specified variable." } },
                 { "insert", new(InsertCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Inserts variables into the given command" } },
             };
@@ -30,18 +35,43 @@ namespace CMD
             variables[name] = data;
         }
 
-        private void StoreMemCMD(string[] args, Command.Callback cb)
+        private Action<string[], Command.Callback> StoreMemCMD(bool remove)
         {
-            bool remove = false;
-            if (args.Length > 1 && !bool.TryParse(args[1], out remove))
-                throw new CommandException("Storage", $"Invalid boolean \'{args[1]}\'.");
-            if (cb.Launcher.MemoryStack.Count == 0)
-                throw new CommandException("Storage", "Memory is empty.");
-            var store = remove ? cb.Launcher.MemoryStack.Pop() : cb.Launcher.MemoryStack.Peek();
-            if (store.ToString() is string str)
-                StoreVariable(args[0], str, cb);
+            return (args, cb) =>
+            {
+                for (int i = 0; i < args.Length; ++i)
+                {
+                    if (cb.Launcher.MemoryStack.Count == 0)
+                        throw new CommandException("Storage", "Memory is empty.");
+                    var store = remove ? cb.Launcher.MemoryStack.Pop() : cb.Launcher.MemoryStack.Peek();
+                    if (store.ToString() is string str)
+                        StoreVariable(args[i], str, cb);
+                    else
+                        throw new CommandException("Storage", "Stored value is null.");
+                }
+            };
+        }
+
+        private void RemoveVariableCMD(string[] args, Command.Callback cb)
+        {
+            foreach (var name in args)
+            {
+                if (!variables.ContainsKey(name))
+                    throw new CommandException("Storage", $"Unknown variable \'{name}\'.");
+                variables.Remove(name);
+                cb.Launcher.FeedbackLine($"Sucessfully removed  variable \'{name}\'.");
+            }
+        }
+
+        private void ClearCMD(string[] args, Command.Callback cb)
+        {
+            if (variables.Count == 0)
+                cb.Launcher.FeedbackLine("No variables to clear.");
             else
-                throw new CommandException("Storage", "Stored value is null.");
+            {
+                cb.Launcher.FeedbackLine($"Sucessfully cleared {variables.Count} variables.");
+                variables.Clear();
+            }
         }
 
         private void StoreCMD(string[] args, Command.Callback cb)
