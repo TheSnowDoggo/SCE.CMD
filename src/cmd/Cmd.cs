@@ -1,15 +1,17 @@
-﻿namespace CMD
+﻿namespace SCE
 {
     public class Cmd
     {
-        public record Callback(Package Package, CommandLauncher Launcher);
+        public record Callback(Package Package, CmdLauncher Launcher);
 
-        public Cmd(Func<string[], Callback, MemoryItem?> func)
+        public record MemItem(object? Value);
+
+        public Cmd(Func<string[], Callback, MemItem?> func)
         {
             Func = func;
         }
 
-        public Cmd(Func<string[], MemoryItem?> func)
+        public Cmd(Func<string[], MemItem?> func)
             : this((args, _) => func(args))
         {
         }
@@ -32,7 +34,7 @@
 
         public string Usage { get; init; } = "";
 
-        public Func<string[], Callback, MemoryItem?> Func { get; }
+        public Func<string[], Callback, MemItem?> Func { get; }
 
         public static Cmd QCommand<T>(Action<T, Callback> action, string description = "")
         {
@@ -66,7 +68,7 @@
                         }
                         catch
                         {
-                            StringUtils.PrettyErr("Translator", $"Failed to convert '{args[i]}' to type {types[i]}.");
+                            StrUtils.PrettyErr("Translator", $"Failed to convert '{args[i]}' to type {types[i]}.");
                             return;
                         }
                     }

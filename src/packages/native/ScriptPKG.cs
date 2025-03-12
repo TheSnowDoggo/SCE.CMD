@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace CMD
+namespace SCE
 {
     internal class ScriptPKG : Package
     {
@@ -14,18 +14,25 @@ namespace CMD
             {
                 { "scrrun", new(RunScriptCMD) { MinArgs = 0, MaxArgs = 2,
                     Description = "Runs the script from the specified relative path." } },
+
                 { "scrload", new(LoadCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Loads the script from the specified relative path." } },
+
                 { "scrdel", new(DeleteCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Deletes the specified script." } },
+
                 { "scrrename", new(RenameCMD) { MinArgs = 2, MaxArgs = 2,
                     Description =  "Renames the specified script." } },
+
                 { "scrcompileload", new(LoadDirCMD) { MinArgs = 1, MaxArgs = 2,
                     Description = "Compiles all the scripts in a given directory into one command" } },
+
                 { "cd", new(CDAddCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Adds the specified path to the current directory." } },
+
                 { @"cd\", new(CDSetCMD) { MinArgs = 0, MaxArgs = 1,
                     Description = "Sets the specified path to the current directory." } },
+
                 { "cd<", new(Cmd.Translator(CDRemoveCMD, new[] { typeof(int) })) { MinArgs = 0, MaxArgs = 1,
                     Description = "Exits one layer from the current directory." } },
             };
@@ -105,7 +112,7 @@ namespace CMD
             return directory + relDir;
         }
 
-        private void SetDir(string dir, CommandLauncher launcher)
+        private void SetDir(string dir, CmdLauncher launcher)
         {
             if (!Directory.Exists(dir))
                 throw new CmdException("Script", $"Unknown directory \"{dir}\".");
@@ -135,7 +142,7 @@ namespace CMD
         private void CDRemoveCMD(object[] args, Cmd.Callback cb)
         {
             int n = args.Length > 0 ? (int)args[0] : 1;
-            int index = StringUtils.LastNIndexOf(directory, '\\', n);
+            int index = StrUtils.LastNIndexOf(directory, '\\', n);
             if (index == -1)
                 throw new CmdException("Script", "No layers to exit from.");
             SetDir(directory[..index], cb.Launcher);

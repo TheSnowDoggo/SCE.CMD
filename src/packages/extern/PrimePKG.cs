@@ -1,7 +1,7 @@
 ﻿using QPrime;
 using System.Text;
 
-namespace CMD
+namespace SCE
 {
     internal class PrimePKG : Package
     {
@@ -16,6 +16,7 @@ namespace CMD
             {
                 { "isprime", new(IsPrimeCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Determines whether the given list of numbers are prime." } },
+
                 { "primecache", new(PrecacheCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Precaches all numbers up to the given number."} },
             };

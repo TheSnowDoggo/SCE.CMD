@@ -1,15 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace CMD
+namespace SCE
 {
-    public class CommandLauncher
+    public class CmdLauncher
     {
         private bool active;
 
         private readonly Package _native;
 
-        public CommandLauncher(int capacity = 0)
+        public CmdLauncher(int capacity = 0)
         {
             Packages = new(capacity);
             Custom = new();
@@ -21,9 +21,24 @@ namespace CMD
 
                 { "quit", new(args => Exit()) { Description = "Exits the command line." } },
 
-                { "feedback", Cmd.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c, 
-                    "Sets whether command feedback should be active.") },         
-                
+                { "feedback", Cmd.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c,
+                    "Sets whether command feedback should be displayed.") },
+
+                { "errors", new(ErrorsCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Sets whether error feedback should be displayed." } },
+
+                { "loop", new(LoopCMD) { MinArgs = 2, MaxArgs = -1,
+                    Description = "Runs the command a given amount of times." } },
+
+                { "catch", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Catches command execution errors. Useful in command chains."} },
+
+                { "runif", new(IfCMD) { MinArgs = 2, MaxArgs = -1,
+                    Description = "Runs the command if the condition is true."} },
+
+                { "abort", new(args => throw new Exception("Aborted.")) { 
+                    Description = "Ends execution of a command chain." } },
+
                 { "haspkg", Cmd.QCommand<string>(HasPackageCMD, 
                     "Displays whether a package with the specified name exists.") },
 
@@ -57,6 +72,8 @@ namespace CMD
 
         public bool CommandFeedback { get; set; } = true;
 
+        public bool ErrorFeedback { get; set; } = true;
+
         public bool MemoryLock { get; set; } = false;
 
         public Stack<object?> MemoryStack { get; } = new();
@@ -84,7 +101,7 @@ namespace CMD
                 if (InputRender != null)
                     Console.Write(InputRender.Invoke());
                 var input = Console.ReadLine() ?? "";
-                ExecuteCommand(input);
+                SExecuteCommand(input);
             }
         }
 
@@ -139,6 +156,45 @@ namespace CMD
 
         #region Commands
 
+        private void ErrorsCMD(string[] args)
+        {
+            if (!bool.TryParse(args[0], out var result))
+                throw new CmdException("Launcher", $"Invalid boolean \'{args[0]}\'.");
+            ErrorFeedback = result;
+            FeedbackLine($"Error feedback set to {result}.");
+        }
+
+        private void IfCMD(string[] args)
+        {
+            if (!bool.TryParse(args[0], out var result))
+                throw new CmdException("Launcher", $"Invalid boolean \'{args[0]}\'.");
+            if (result)
+                SExecuteCommand(args[1], ArrUtils.TrimFromStart(args, 2));
+        }
+
+        private void CatchCMD(string[] args)
+        {
+            try
+            {
+                ExecuteCommand(args[0], ArrUtils.TrimFirst(args));  
+            }
+            catch
+            {
+            }
+        }
+
+        private void LoopCMD(string[] args)
+        {
+            if (!int.TryParse(args[0], out var loops))
+                throw new CmdException("Launcher", $"Invalid loops \'{args[0]}\'.");
+            var cmdArgs = ArrUtils.TrimFromStart(args, 2);
+            for (int i = 0; i < loops; ++i)
+            {
+                if (!SExecuteCommand(args[1], cmdArgs))
+                    throw new CmdException("Launcher", "Loop ended as command failed to execute.");
+            }
+        }
+
         private void MemRemCMD(string[] args)
         {
             int count = 1;
@@ -178,7 +234,7 @@ namespace CMD
         {
             for (int i = 1; i < args.Length; ++i)
                 MemoryStack.Push(args[i]);
-            ExecuteCommand(args[0]);
+            SExecuteCommand(args[0]);
         }
 
         private void MemAddCMD(string[] args)
@@ -246,7 +302,7 @@ namespace CMD
 
         #region Feedback
 
-        public bool FeedbackLine(object? obj)
+        public bool FeedbackLine(object? obj = null)
         {
             if (!CommandFeedback)
                 return false;
@@ -266,60 +322,56 @@ namespace CMD
 
         #region Execute
 
-        public bool ExecuteCommand(string name, string[] args, bool safeEvaluation = true)
+        public bool SExecuteCommand(string name, string[] args)
+        {
+            try
+            {
+                ExecuteCommand(name, args);
+                return true;
+            }
+            catch (CmdException e)
+            {
+                if (ErrorFeedback)
+                    Console.WriteLine(e);
+            }
+            catch (Exception e)
+            {
+                if (ErrorFeedback)
+                    StrUtils.PrettyErr("Launcher", e.Message);
+            }
+            return false;
+        }
+
+        public bool SExecuteCommand(string line)
+        {
+            string name = StrUtils.BuildWhile(line, (c) => c != ' ');
+            var args = ArrUtils.TrimFirst(StrUtils.TrimArgs(line));
+            return SExecuteCommand(name, args);
+        }
+
+        public void ExecuteCommand(string name, string[] args)
         {
             if (!TryGetCommand(name, out var cmd, out var package))
-            {
-                StringUtils.PrettyErr("Launcher", $"Unrecognised command \'{name}\'.");
-                return false;
-            }
+                throw new CmdException("Launcher", $"Unrecognised command \'{name}\'.");
             if (args.Length < cmd.MinArgs)
-            {
-                StringUtils.PrettyErr("Launcher", $"Too few arguments provided for command \'{name}\' (minimum of {cmd.MinArgs}, received {args.Length}).");
-                return false;
-            }
+                throw new CmdException("Launcher", $"Too few arguments provided for command \'{name}\' (minimum of {cmd.MinArgs}, received {args.Length}).");
             if (cmd.MaxArgs >= 0 && args.Length > cmd.MaxArgs)
-            {
-                StringUtils.PrettyErr("Launcher", $"Too many arguments provided for command \'{name}\' (maximum of {cmd.MaxArgs}, recieved {args.Length}).");
-                return false;
-            }
-            if (!safeEvaluation)
-                cmd.Func(args, new(package, this));
-            else
-            {
-                try
-                {
-                    var result = cmd.Func(args, new(package, this));
-                    if (result != null && !MemoryLock)
-                        MemoryStack.Push(result.Value);
-                    return true;
-                }
-                catch (CmdException exception)
-                {
-                    Console.WriteLine(exception);
-                }
-                catch
-                {
-                    StringUtils.PrettyErr("Launcher", $"Command \'{name}\' failed to execute.");
-                }
-                return false;
-            }
-            return true;
+                throw new CmdException("Launcher", $"Too many arguments provided for command \'{name}\' (maximum of {cmd.MaxArgs}, recieved {args.Length}).");
+
+            var result = cmd.Func(args, new(package, this));
+            if (result != null && !MemoryLock)
+                MemoryStack.Push(result.Value);
         }
 
-        public bool ExecuteCommand(string line, bool safeEvaluation = true)
-        {
-            string name = StringUtils.BuildWhile(line, (c) => c != ' ');
-            var args = ArrayUtils.TrimFirst(StringUtils.TrimArgs(line));
-            return ExecuteCommand(name, args, safeEvaluation);
-        }
-
-        public void ExecuteEveryCommand(IEnumerable<string> lines, bool safeEvaluation = true)
+        public void ExecuteEveryCommand(IEnumerable<string> lines)
         {
             foreach (var line in lines)
             {
-                if (line != string.Empty)
-                    ExecuteCommand(line, safeEvaluation);
+                if (line != string.Empty && !SExecuteCommand(line))
+                {
+                    StrUtils.PrettyErr("Launcher", "Ending command chain.");
+                    return;
+                }
             }
         }
 

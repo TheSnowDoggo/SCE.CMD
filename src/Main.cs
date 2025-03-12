@@ -1,10 +1,10 @@
-﻿namespace CMD
+﻿namespace SCE
 {
-    internal static class Launcher
+    internal static class Launch
     {
         internal static void Main()
         {
-            CommandLauncher launcher = new()
+            CmdLauncher launcher = new()
             {
                 Name = "- SCE Launcher -",
                 Packages = new()
@@ -15,7 +15,8 @@
                     new ScriptPKG(),
                     new AliasPKG(),
                     new PrimePKG(),
-                    new StoragePKG(),
+                    new VariablePKG(),
+                    new ToolsPKG(),
                 },
             };
 

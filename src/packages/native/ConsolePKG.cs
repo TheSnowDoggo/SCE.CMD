@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace CMD
+namespace SCE
 {
     internal class ConsolePKG : Package
     {
@@ -9,16 +9,24 @@ namespace CMD
             Name = "Console";
             Commands = new()
             {
-                { "proc", new(args => Process.Start(args[0], ArrayUtils.TrimFirst(args))) {
-                    MinArgs = 1, MaxArgs = -1, Description = "Starts the specified process." } },                
+                { "proc", new(args => Process.Start(args[0], ArrUtils.TrimFirst(args))) {
+                    MinArgs = 1, MaxArgs = -1, Description = "Starts the specified process." } },
+                
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets the Foreground color of the Console." } },
+
                 { "bg", new(SetColorCMD(false)) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets the Background color of the Console." } },
+
+                { "resetcolor", new(args => Console.ResetColor()) { 
+                    Description = "Resets the foreground and background colors." } },
+
                 { "clear", new(args => Console.Clear()) {
                     Description = "Clears the Console." } },
+
                 { "cursor", Cmd.QCommand<bool>(c => Console.CursorVisible = c,
                     "Sets the visible state of the Cursor.") },
+
                 { "title", Cmd.QCommand<string>(name => Console.Title = name,
                     "Sets the title of the Console.") },
             };

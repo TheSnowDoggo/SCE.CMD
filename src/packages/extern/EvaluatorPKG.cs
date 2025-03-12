@@ -1,42 +1,65 @@
 ﻿using SCE;
 using System.Text;
 
-namespace CMD
+namespace SCE
 {
     internal class EvaluatorPKG : Package
     {
-        private readonly Dictionary<char, double> variables;
+        private readonly Dictionary<char, double> _variables;
 
         public EvaluatorPKG(int capacity = 0)
         {
-            variables = new(capacity);
+            _variables = new(capacity);
 
             Name = "Evaluator";
             Commands = new()
             {
                 { "eval", new(EvaluateCMD) { MinArgs = 1, MaxArgs = 3,
                     Description = "Evaluates the result of the given expression." } },
+
+                { "round", new(RoundCMD) { MinArgs = 1, MaxArgs = 2,
+                    Description = "Rounds the number." } },
+
                 { "vset", new(Cmd.Translator(SetVariableCMD, new[] { typeof(char), typeof(double) } ))
                     { MinArgs = 2, MaxArgs = 2, Description = "Assigns a value to the given variable." } },
+
                 { "vrem", new(Cmd.Translator(RemoveVariableCMD, new[] { typeof(char) }))
                     { MinArgs = 1, MaxArgs = 1, Description = "Removes a specified variable." } },
-                { "vview", Cmd.QCommand<char>(c => Console.WriteLine(variables.TryGetValue(c, out var val) ? $"{c} = {val}" : $"{c} is UNDEFINED")) },
+
+                { "vview", Cmd.QCommand<char>(c => Console.WriteLine(_variables.TryGetValue(c, out var val) ? $"{c} = {val}" : $"{c} is UNDEFINED")) },
+
                 { "varsview", new(ViewVariablesCMD) {
                     Description = "Displays all the assigned variables." } },
+
                 { "vload", new(VarLoadCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Loads the given variable into memory." } },
+
                 { "table", new(Cmd.Translator(TableCMD(8), new[] { typeof(string), typeof(double), typeof(double), typeof(double) })) {
                     MinArgs = 3, MaxArgs = 4, Description = "Performs a series of evaluations. " } },
+
                 { "vinsert", new(InsertCMD) { MinArgs = 1, MaxArgs = -1 } },
-                { "varsclear", new(args => variables.Clear()) { Description = "Clears all the variables." } },
+
+                { "varsclear", new(args => _variables.Clear()) { Description = "Clears all the variables." } },
             };
         }
 
         #region CMD
 
+        private Cmd.MemItem RoundCMD(string[] args, Cmd.Callback cb)
+        {
+            if (!double.TryParse(args[0], out var value))
+                throw new CmdException("Evaluator", $"Unable to convert \'{args[0]}\' to double.");
+            int digits = 0;
+            if (args.Length > 1 && !int.TryParse(args[1], out digits))
+                throw new CmdException("Evaluator", $"Invalid digits \'{args[1]}\'.");
+            var result = Math.Round(value, digits);
+            cb.Launcher.FeedbackLine(result);
+            return new(result);
+        }
+
         private void VarLoadCMD(string[] args, Cmd.Callback cb)
         {
-            if (!char.TryParse(args[0], out char c) || !variables.TryGetValue(c, out var value))
+            if (!char.TryParse(args[0], out char c) || !_variables.TryGetValue(c, out var value))
                 throw new CmdException("Evaluator", $"Undefined variable {c}.");
             cb.Launcher.MemoryStack.Push(value);
         }
@@ -56,7 +79,7 @@ namespace CMD
 
                 if (special && c != '$')
                 {
-                    if (variables.TryGetValue(c, out var value))
+                    if (_variables.TryGetValue(c, out var value))
                     {
                         sb.Append(value);
                         special = false;
@@ -75,19 +98,19 @@ namespace CMD
             for (int i = 1; i < args.Length; ++i)
                 args[i] = ReplaceVariables(args[i]);
             string name = args[0];
-            cb.Launcher.ExecuteCommand(name, ArrayUtils.TrimFirst(args));
+            cb.Launcher.ExecuteCommand(name, ArrUtils.TrimFirst(args));
         }
 
         public void ViewVariablesCMD(string[] _)
         {
-            if (variables.Count == 0)
+            if (_variables.Count == 0)
             {
                 Console.WriteLine("No variables defined.");
                 return;
             }
             StringBuilder sb = new();
             foreach (var item in
-                from pair in variables
+                from pair in _variables
                 orderby pair.Key
                 select pair)
             {
@@ -104,15 +127,15 @@ namespace CMD
         public void RemoveVariableCMD(object[] args, Cmd.Callback cb)
         {
             char v = char.ToLower((char)args[0]);
-            if (variables.Remove(v))
+            if (_variables.Remove(v))
                 cb.Launcher.FeedbackLine($"Successfully removed variable \'{v}\'.");
             else
-                StringUtils.PrettyErr("Remove Variable", $"Unknown variable \'{v}\'.");
+                StrUtils.PrettyErr("Remove Variable", $"Unknown variable \'{v}\'.");
         }
 
         public Cmd.MemItem? EvaluateCMD(string[] args, Cmd.Callback cb)
         {
-            if (!RPNConverter.BasicDouble.TryEvaluate(LoadVariables(args[0], variables), out var result))
+            if (!RPNConverter.BasicDouble.TryEvaluate(LoadVariables(args[0], _variables), out var result))
                 throw new CmdException("Evaluator", "Unable to evlaute.");
             if (args.Length == 1)
                 cb.Launcher.FeedbackLine(result);
@@ -144,13 +167,13 @@ namespace CMD
 
                 Dictionary<char, double> dict = new();
                 StringBuilder sb = new();
-                sb.AppendFormat("{0} : {1}\n", StringUtils.PostFitToLength("x", numLen), args[0]);
+                sb.AppendFormat("{0} : {1}\n", StrUtils.PostFitToLength("x", numLen), args[0]);
                 for (double x = start; x < end; x += step)
                 {
                     dict['x'] = x;
                     string xStr = x.ToString();
-                    sb.AppendFormat("{0} : ", xStr.Length <= numLen ? StringUtils.PostFitToLength(xStr, numLen)
-                        : StringUtils.PostFitToLength(xStr, numLen - 2) + "..");
+                    sb.AppendFormat("{0} : ", xStr.Length <= numLen ? StrUtils.PostFitToLength(xStr, numLen)
+                        : StrUtils.PostFitToLength(xStr, numLen - 2) + "..");
                     if (RPNConverter.BasicDouble.TryEvaluate(LoadVariables((string)args[0], dict), out var result))
                         sb.Append(result);
                     else
@@ -169,11 +192,11 @@ namespace CMD
                 throw new CmdException("Evaluator", "Variable must be a letter from a-z.");
 
             variable = char.ToLower(variable);
-            if (variables.TryGetValue(variable, out var oldVal))
+            if (_variables.TryGetValue(variable, out var oldVal))
                 cb.Launcher.FeedbackLine($"{variable}: {oldVal} -> {value}");
             else
                 cb.Launcher.FeedbackLine($"{variable} = {value}");
-            variables[variable] = value;
+            _variables[variable] = value;
 
             return true;
         }

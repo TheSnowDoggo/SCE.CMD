@@ -1,9 +1,9 @@
-﻿namespace CMD
+﻿namespace SCE
 {
     internal class CmdException : Exception
     {
         public CmdException(string source, string message)
-            : base(StringUtils.FormatErr(source, message))
+            : base(StrUtils.FormatErr(source, message))
         {
             SourceMSG = source;
             MessageMSG = message;
@@ -15,7 +15,7 @@
 
         public override string ToString()
         {
-            return StringUtils.FormatErr(SourceMSG, MessageMSG);
+            return StrUtils.FormatErr(SourceMSG, MessageMSG);
         }
     }
 }

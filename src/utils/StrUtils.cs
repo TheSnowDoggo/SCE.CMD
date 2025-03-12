@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace CMD
+namespace SCE
 {
-    internal static class StringUtils
+    internal static class StrUtils
     {
         public static int LastNIndexOf(string str, char chr, int n)
         {
@@ -100,7 +100,7 @@ namespace CMD
 
         public static string Copy(char chr, int copies)
         {
-            return new(ArrayUtils.Copy(chr, copies));
+            return new(ArrUtils.Copy(chr, copies));
         }
 
         public static string Copy(string str, int copies)
