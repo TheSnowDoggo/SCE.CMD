@@ -4,7 +4,20 @@
     {
         internal static void Main()
         {
-            CmdLauncher launcher = new()
+            var launcher = NewLauncher();
+
+            string aScripts = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
+            if (Directory.Exists(aScripts))
+                launcher.SExecuteCommand("scrloaddir", new[] { aScripts });
+            else
+                Directory.CreateDirectory(aScripts);
+           
+            launcher.Run();
+        }
+
+        internal static CmdLauncher NewLauncher()
+        {
+            return new()
             {
                 Name = "- SCE Launcher -",
                 Packages = new()
@@ -19,8 +32,6 @@
                     new ToolsPKG(),
                 },
             };
-
-            launcher.Run();
         }
     }
 }

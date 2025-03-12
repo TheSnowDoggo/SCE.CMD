@@ -368,10 +368,7 @@ namespace SCE
             foreach (var line in lines)
             {
                 if (line != string.Empty && !SExecuteCommand(line))
-                {
-                    StrUtils.PrettyErr("Launcher", "Ending command chain.");
-                    return;
-                }
+                    throw new CmdException("Launcher", "Ending command chain.");
             }
         }
 

@@ -12,11 +12,14 @@ namespace SCE
             Name = "Script";
             Commands = new()
             {
-                { "scrrun", new(RunScriptCMD) { MinArgs = 0, MaxArgs = 2,
+                { "scrrun", new(RunScriptCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Runs the script from the specified relative path." } },
 
                 { "scrload", new(LoadCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Loads the script from the specified relative path." } },
+
+                { "scrloaddir", new(LoadDirCMD) { MinArgs = 0, MaxArgs = 1,
+                    Description = "Loads all the scripts in the given directory." } },
 
                 { "scrdel", new(DeleteCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Deletes the specified script." } },
@@ -24,7 +27,7 @@ namespace SCE
                 { "scrrename", new(RenameCMD) { MinArgs = 2, MaxArgs = 2,
                     Description =  "Renames the specified script." } },
 
-                { "scrcompileload", new(LoadDirCMD) { MinArgs = 1, MaxArgs = 2,
+                { "scrcompileload", new(CompileDirCMD) { MinArgs = 1, MaxArgs = 2,
                     Description = "Compiles all the scripts in a given directory into one command" } },
 
                 { "cd", new(CDAddCMD) { MinArgs = 1, MaxArgs = 1,
@@ -44,6 +47,7 @@ namespace SCE
                 throw new CmdException("Script", $"Script \'{args[1]}\' already exists.");
             if (!Commands.TryGetValue(args[0], out var command))
                 throw new CmdException("Script", $"Script not found \'{args[0]}\'.");
+
             Commands.Remove(args[0]);
             Commands[args[1]] = command;
             cb.Launcher.FeedbackLine($"Sucessfully renamed \'{args[0]}\' to \'{args[1]}\'.");
@@ -53,16 +57,18 @@ namespace SCE
         {
             if (!Commands.ContainsKey(args[0]))
                 throw new CmdException("Script", $"Script not found \'{args[0]}\'.");
+
             Commands.Remove(args[0]);
             cb.Launcher.FeedbackLine($"Sucessfully removed script \'{args[0]}\'.");
         }
 
-        private void LoadAbsolute(string path, string name, Cmd.Callback cb)
+        private void LoadAbsolute(string name, string path, Cmd.Callback cb)
         {
-            if (!File.Exists(path))
-                throw new CmdException("Script", $"File not found {path}.");
             if (Commands.ContainsKey(name))
                 throw new CmdException("Script", $"Script \'{name}\' already exists.");
+            if (!File.Exists(path))
+                throw new CmdException("Script", $"File not found {path}.");
+
             var lines = File.ReadAllLines(path);
             Commands.Add(name, new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
             cb.Launcher.FeedbackLine($"Script \'{name}\' added sucessfully!");
@@ -70,16 +76,28 @@ namespace SCE
 
         private void LoadCMD(string[] args, Cmd.Callback cb)
         {
-            LoadAbsolute(CombineDir(args[0]), args[1], cb);
+            LoadAbsolute(args[0], CombineDir(args[1]), cb);
         }
 
         private void LoadDirCMD(string[] args, Cmd.Callback cb)
         {
+            string relDir = CombineDir(args[0]);
+            if (!Directory.Exists(relDir))
+                throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
+
+            foreach (var filePath in Directory.EnumerateFiles(relDir))
+                LoadAbsolute(Path.GetFileName(filePath), filePath, cb);
+        }
+
+        private void CompileDirCMD(string[] args, Cmd.Callback cb)
+        {
             if (Commands.ContainsKey(args[0]))
                 throw new CmdException("Script", $"Script \'{args[0]}\' already exists.");
+
             string relDir = args.Length > 1 ? CombineDir(args[1]) : directory;
             if (!Directory.Exists(relDir))
                 throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
+
             List<string> lines = new();
             foreach (var path in Directory.EnumerateFiles(relDir))
                 lines.AddRange(File.ReadAllLines(path));
@@ -92,17 +110,9 @@ namespace SCE
             string relDir = CombineDir(args[0]);
             if (!File.Exists(relDir))
                 throw new CmdException("Script", $"File not found {relDir}.");
+
             var lines = File.ReadAllLines(relDir);
             cb.Launcher.ExecuteEveryCommand(lines);
-
-            if (args.Length > 1)
-            {
-                if (args.Length != 2 || args[1] == string.Empty)
-                    throw new CmdException("Script", $"Expected 2 Arguments, received {args.Length}.");
-                if (Commands.ContainsKey(args[1]))
-                    throw new CmdException("Script", $"Script \"{args[1]}\" already exists.");
-                Commands.Add(args[1], new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
-            }
         }
 
         private string CombineDir(string relDir)
