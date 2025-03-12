@@ -8,7 +8,7 @@
 
             string aScripts = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
             if (Directory.Exists(aScripts))
-                launcher.SExecuteCommand("scrloaddir", new[] { aScripts });
+                launcher.SExecuteCommand("scrrundir", new[] { aScripts });
             else
                 Directory.CreateDirectory(aScripts);
            

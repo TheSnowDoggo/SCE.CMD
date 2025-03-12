@@ -21,11 +21,19 @@ namespace SCE
 
                 { "quit", new(args => Exit()) { Description = "Exits the command line." } },
 
-                { "feedback", Cmd.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c,
+                { "showfeed", Cmd.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c,
                     "Sets whether command feedback should be displayed.") },
 
-                { "errors", new(ErrorsCMD) { MinArgs = 1, MaxArgs = 1,
+                { "isfeed", new(GetFeedCMD) { Description = "Adds the feed state to memory." } },
+
+                { "showerror", new(ErrorsCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets whether error feedback should be displayed." } },
+
+                { "feedback", new(FeedbackCMD(false)) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Feedbacks the given arguments." } },
+
+                { "feedbackl", new(FeedbackCMD(true)) { MinArgs = 0, MaxArgs = -1,
+                    Description = "Feedbacks the given arguments on new lines." } },
 
                 { "loop", new(LoopCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Runs the command a given amount of times." } },
@@ -42,6 +50,8 @@ namespace SCE
                 { "haspkg", Cmd.QCommand<string>(HasPackageCMD, 
                     "Displays whether a package with the specified name exists.") },
 
+                { "packages", new(PackagesCMD) { Description = "Displays all loaded packages." } },
+
                 { "memclear", new(MemClearCMD) { Description = "Clears all items in laucher memory."} },
 
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
@@ -55,7 +65,10 @@ namespace SCE
                 { "memlock", Cmd.QCommand<bool>(c => MemoryLock = c, "Sets the lock state of memory.") },
 
                 { "memrun", new(MemRunCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Adds items to memory before running the command with no arguments." } }
+                    Description = "Adds items to memory before running the command with no arguments." } },
+
+                { "memins", new(MemoryInsertCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Inserts and removes items from memory into the given command" } },
             })
             {
                 Name = "Native",
@@ -155,6 +168,62 @@ namespace SCE
         #endregion
 
         #region Commands
+
+        private Cmd.MemItem GetFeedCMD(string[] args)
+        {
+            return new(CommandFeedback);
+        }
+
+        private Action<string[]> FeedbackCMD(bool newLine)
+        {
+            return args =>
+            {
+                if (!CommandFeedback)
+                    return;
+                StringBuilder sb = new();
+                foreach (var arg in args)
+                    sb.Append(newLine ? $"{arg}\n" : arg);
+                Console.Write(sb.ToString());
+            };
+        }
+
+        private void MemoryInsertCMD(string[] args)
+        {
+            for (int i = 0; i < args.Length; ++i)
+            {
+                string str = args[i];
+                StringBuilder sb = new();
+                for (int j = 0; j < str.Length; ++j)
+                {
+                    if (str[j] != '&')
+                        sb.Append(str[j]);
+                    else
+                    {
+                        if (!MemoryStack.TryPeek(out var res))
+                            throw new CmdException("Launcher", $"Memory is empty.");
+                        if (j != str.Length - 1 && str[j + 1] == '^')
+                        {
+                            MemoryStack.Pop();
+                            ++j;
+                        }
+                        sb.Append(res);
+                    }
+                }
+                args[i] = sb.ToString();
+            }
+            ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+        }
+
+        private void PackagesCMD(string[] args)
+        {
+            StringBuilder sb = new();
+            foreach (var package in GetPackageEnumerator())
+            {
+                string name = package.Name == "" ? "Anonymous" : package.Name;
+                sb.AppendLine($"{name}:\n  > Commands: {package.Commands.Count}");
+            }
+            Console.Write(sb.ToString());
+        }
 
         private void ErrorsCMD(string[] args)
         {

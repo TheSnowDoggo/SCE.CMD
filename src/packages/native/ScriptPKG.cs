@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Xml.Linq;
-
-namespace SCE
+﻿namespace SCE
 {
     internal class ScriptPKG : Package
     {
@@ -17,6 +14,9 @@ namespace SCE
 
                 { "scrload", new(LoadCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Loads the script from the specified relative path." } },
+
+                { "scrrundir", new(RunDirCMD) { MinArgs = 0, MaxArgs = 1,
+                    Description = "Runs all the scripts in the given directory." } },
 
                 { "scrloaddir", new(LoadDirCMD) { MinArgs = 0, MaxArgs = 1,
                     Description = "Loads all the scripts in the given directory." } },
@@ -79,6 +79,16 @@ namespace SCE
             LoadAbsolute(args[0], CombineDir(args[1]), cb);
         }
 
+        private void RunDirCMD(string[] args, Cmd.Callback cb)
+        {
+            string relDir = CombineDir(args[0]);
+            if (!Directory.Exists(relDir))
+                throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
+
+            foreach (var filePath in Directory.EnumerateFiles(relDir))
+                cb.Launcher.ExecuteEveryCommand(File.ReadAllLines(filePath));
+        }
+
         private void LoadDirCMD(string[] args, Cmd.Callback cb)
         {
             string relDir = CombineDir(args[0]);
@@ -86,7 +96,7 @@ namespace SCE
                 throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
 
             foreach (var filePath in Directory.EnumerateFiles(relDir))
-                LoadAbsolute(Path.GetFileName(filePath), filePath, cb);
+                LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cb);
         }
 
         private void CompileDirCMD(string[] args, Cmd.Callback cb)

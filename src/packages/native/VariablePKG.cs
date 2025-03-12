@@ -8,14 +8,11 @@ namespace SCE
 
         public VariablePKG()
         {
-            Name = "Storage";
+            Name = "Variable";
             Commands = new()
             {
-                { "takefmem", new(StoreMemCMD(true)) { MinArgs = 1, MaxArgs = -1, 
+                { "takefmem", new(StoreMemCMD) { MinArgs = 1, MaxArgs = -1, 
                     Description = "Stores the latest memory and removes it."} },
-
-                { "peekfmem", new(StoreMemCMD(false)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Takes the latest memory without removing it." } },
 
                 { "ststore", new(StoreCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Stores the data into a variable." } },
@@ -47,21 +44,18 @@ namespace SCE
             _variables[name] = data;
         }
 
-        private Action<string[], Cmd.Callback> StoreMemCMD(bool remove)
+        private void StoreMemCMD(string[] args, Cmd.Callback cb)
         {
-            return (args, cb) =>
+            for (int i = 0; i < args.Length; ++i)
             {
-                for (int i = 0; i < args.Length; ++i)
-                {
-                    if (cb.Launcher.MemoryStack.Count == 0)
-                        throw new CmdException("Storage", "Memory is empty.");
-                    var store = remove ? cb.Launcher.MemoryStack.Pop() : cb.Launcher.MemoryStack.Peek();
-                    if (store.ToString() is string str)
-                        StoreVariable(args[i], str, cb);
-                    else
-                        throw new CmdException("Storage", "Stored value is null.");
-                }
-            };
+                if (cb.Launcher.MemoryStack.Count == 0)
+                    throw new CmdException("Variable", "Memory is empty.");
+                var store = cb.Launcher.MemoryStack.Pop();
+                if (store?.ToString() is string str)
+                    StoreVariable(args[i], str, cb);
+                else
+                    throw new CmdException("Variable", "Stored value is null.");
+            }
         }
 
         private void RemoveVariableCMD(string[] args, Cmd.Callback cb)
@@ -69,7 +63,8 @@ namespace SCE
             foreach (var name in args)
             {
                 if (!_variables.ContainsKey(name))
-                    throw new CmdException("Storage", $"Unknown variable \'{name}\'.");
+                    throw new CmdException("Variable", $"Unknown variable \'{name}\'.");
+
                 _variables.Remove(name);
                 cb.Launcher.FeedbackLine($"Sucessfully removed  variable \'{name}\'.");
             }
@@ -96,24 +91,16 @@ namespace SCE
             StringBuilder sb = new();
             for (int i = 0; i < str.Length; ++i)
             {
-                if (str[i] == '$')
-                {
-                    string name = "";
-                    for (int j = 0; i + j + 1 < str.Length; ++j)
-                    {
-                        name += str[i + j + 1];
-                        if (_variables.TryGetValue(name, out var stored))
-                        {
-                            sb.Append(stored);
-                            if (name.Length > 0)
-                                i += name.Length;
-                            break;
-                        }
-                    }
-                }
+                int next = str.IndexOf('$', i + 1);
+                if (str[i] != '$' || next == -1 || next == i + 1)
+                    sb.Append(str[i]);
                 else
                 {
-                    sb.Append(str[i]);
+                    var name = str[(i + 1)..next];
+                    if (!_variables.TryGetValue(name, out var val))
+                        throw new CmdException("Variable", $"Unknown variable \'{name}\'.");
+                    sb.Append(val);
+                    i = next;
                 }
             }
             return sb.ToString();
@@ -121,9 +108,9 @@ namespace SCE
 
         private void InsertCMD(string[] args, Cmd.Callback cb)
         {
-            var newArgs = ArrUtils.TrimFirst(args);
-            for (int i = 0; i < newArgs.Length; ++i)
-                newArgs[i] = Replace(newArgs[i]);
+            for (int i = 0; i < args.Length; ++i)
+                args[i] = Replace(args[i]);
+            var newArgs = ArrUtils.TrimFirst(args);       
             cb.Launcher.ExecuteCommand(args[0], newArgs);
         }
     }
