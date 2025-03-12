@@ -26,6 +26,9 @@ namespace SCE
 
                 { "isfeed", new(GetFeedCMD) { Description = "Adds the feed state to memory." } },
 
+                { "cmdexists", new(CommandExistsCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Determines whether the given command exists." } },
+
                 { "showerror", new(ErrorsCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets whether error feedback should be displayed." } },
 
@@ -168,6 +171,13 @@ namespace SCE
         #endregion
 
         #region Commands
+
+        private Cmd.MemItem CommandExistsCMD(string[] args)
+        {
+            var exists = CommandExists(args[0]);
+            FeedbackLine(exists);
+            return new(exists);
+        }
 
         private Cmd.MemItem GetFeedCMD(string[] args)
         {

@@ -55,18 +55,24 @@ namespace SCE
             if (input.Length == 0)
                 return Array.Empty<string>();
             bool inSpeech = false;
+            bool inQuote = false;
             List<string> args = new(input.Length);
             StringBuilder sb = new(input.Length);
             foreach (var c in input)
             {
                 if (c == '"')
                     inSpeech = !inSpeech;
-                else if (c != ' ' || inSpeech)
-                    sb.Append(c);
-                else
+                if (c == '\'')
+                    inQuote = !inQuote;
+
+                if (c == ' ' && !inSpeech && !inQuote)
                 {
                     args.Add(sb.ToString());
                     sb.Clear();
+                }
+                else if (c != '"' && (c != '\'' || inSpeech))
+                {
+                    sb.Append(c);
                 }
             }
             if (sb.Length > 0)

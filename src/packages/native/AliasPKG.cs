@@ -20,7 +20,7 @@
                 { "aliasclear", new(ClearAliasCMD) { 
                     Description = "Clears all command aliases." } },
 
-                { "aliasview", new(ViewAliasCMD) { 
+                { "aliasview", new(ViewAliasCMD) { MaxArgs = 1,
                     Description = "Displays the specified command aliases." } },
             };
         }
@@ -32,13 +32,13 @@
                 var split = alias.Split("->");
                 if (split.Length != 2)
                     throw new CmdException("Alias", $"Invalid alias \'{alias}\'.");
-                if (!cb.Launcher.TryGetCommand(split[0], out var command))
-                    throw new CmdException("Alias", $"Unknown command \'{split[0]}\'.");
-                if (cb.Launcher.CommandExists(split[1]))
-                    throw new CmdException("Alias", $"Command with name \'{split[1]}\' already exists.");
-                Commands.Add(split[1], command);
-                _aliases[split[1]] = split[0];
-                cb.Launcher.FeedbackLine($"\'{split[1]}\' -> \'{split[0]}\'");
+                if (!cb.Launcher.TryGetCommand(split[1], out var command))
+                    throw new CmdException("Alias", $"Unknown command \'{split[1]}\'.");
+                if (cb.Launcher.CommandExists(split[0]))
+                    throw new CmdException("Alias", $"Command with name \'{split[0]}\' already exists.");
+                Commands.Add(split[0], command);
+                _aliases[split[0]] = split[1];
+                cb.Launcher.FeedbackLine($"\'{split[0]}\' -> \'{split[1]}\'");
             }
         }
 

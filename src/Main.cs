@@ -30,6 +30,7 @@
                     new PrimePKG(),
                     new VariablePKG(),
                     new ToolsPKG(),
+                    new CombinePKG(),
                 },
             };
         }

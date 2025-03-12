@@ -9,7 +9,7 @@ namespace SCE
             if (dict.Count == 0)
                 throw new CmdException(source, "Nothing to view.");
             StringBuilder sb = new();
-            if (args[0] == "*")
+            if (args.Length > 0 && args[0] == "*")
             {
                 foreach (var item in dict)
                     sb.AppendLine($"{item.Key} > {item.Value}");
