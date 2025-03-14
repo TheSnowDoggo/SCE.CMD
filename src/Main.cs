@@ -1,11 +1,10 @@
-﻿namespace SCE
+﻿using System.Reflection;
+namespace SCE
 {
     internal static class Launch
     {
         internal static void Main()
         {
-            Console.ReadLine();
-
             var launcher = NewLauncher();
 
             string aScripts = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
@@ -13,7 +12,7 @@
                 launcher.SExecuteCommand("scrrundir", new[] { aScripts });
             else
                 Directory.CreateDirectory(aScripts);
-           
+
             launcher.Run();
         }
 
@@ -27,7 +26,7 @@
                     new ConsolePKG(),
                     new PrintPKG(),
                     new EvaluatorPKG(),
-                    new ScriptPKG(),
+                    new ExternalPKG(),
                     new AliasPKG(),
                     new PrimePKG(),
                     new VariablePKG(),
