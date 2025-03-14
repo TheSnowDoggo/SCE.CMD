@@ -1,5 +1,4 @@
 ﻿using System.Text;
-
 namespace SCE
 {
     internal static class PatternUtils

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace SCE
+﻿namespace SCE
 {
     internal class ConsolePKG : Package
     {
@@ -9,9 +7,12 @@ namespace SCE
             Name = "Console";
             Commands = new()
             {
-                { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], Arguments = StrUtils.Build(ArrUtils.TrimFirst(args)), UseShellExecute = true })) {
-                    MinArgs = 1, MaxArgs = -1, Description = "Starts the specified process." } },
-                
+                { "printl", new(Cmd.Translator(PrintLCMD, new[] { typeof(string), typeof(int), typeof(bool) }))
+                    { MinArgs = 0, MaxArgs = 3, Description = "Prints the string a given amount of times with a new line." } },
+
+                { "print", new(Cmd.Translator(PrintCMD, new[] { typeof(string), typeof(int) }) )
+                    { MinArgs = 1, MaxArgs = 2, Description = "Prints the string a given amount of times." } },
+
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets the Foreground color of the Console." } },
 
@@ -29,7 +30,47 @@ namespace SCE
 
                 { "title", Cmd.QCommand<string>(name => Console.Title = name,
                     "Sets the title of the Console.") },
+
+                { "beep", new(BeepCMD) { MinArgs = 0, MaxArgs = 2,
+                    Description = "Makes a beep sound." } },
             };
+        }
+
+        private static void PrintLCMD(object[] args)
+        {
+            if (args.Length == 0)
+            {
+                Console.WriteLine();
+                return;
+            }
+            int count = args.Length >= 2 ? (int)args[1] : 1;
+            bool newLine = args.Length < 3 || (bool)args[2];
+            for (int i = 0; i < count; ++i)
+            {
+                if (newLine || i == count - 1)
+                    Console.WriteLine(args[0]);
+                else
+                    Console.Write(args[0]);
+            }
+        }
+
+        private static void PrintCMD(object[] args)
+        {
+            int count = args.Length >= 2 ? (int)args[1] : 1;
+            string write = StrUtils.Copy((string)args[0], count);
+            if (write != string.Empty)
+                Console.Write(write);
+        }
+
+        private void BeepCMD(string[] args)
+        {
+            int frequency = 2000;
+            if (args.Length > 0 && !int.TryParse(args[0], out frequency))
+                throw new CmdException("Console", $"Frequency invalid \'{args[0]}\'.");
+            int duration = 1000;
+            if (args.Length > 1 && !int.TryParse(args[1], out duration))
+                throw new CmdException("Console", $"Duration invalid \'{args[1]}\'.");
+            Console.Beep(frequency, duration);
         }
 
         private static Action<string[]> SetColorCMD(bool foreground)

@@ -9,8 +9,8 @@
                 Name = "- SCE Launcher v0.0.1 -",
                 Packages = new()
                 {
+                    new NativePKG(),
                     new ConsolePKG(),
-                    new PrintPKG(),
                     new ExternalPKG(),
                     new AliasPKG(),
                     new VariablePKG(),

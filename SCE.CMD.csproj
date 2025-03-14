@@ -10,4 +10,10 @@
     <AssemblyOriginatorKeyFile>sgKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="SCE.ConsoleUtils">
+      <HintPath>lib\SCE.ConsoleUtils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

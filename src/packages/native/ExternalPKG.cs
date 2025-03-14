@@ -14,6 +14,9 @@
 
                 { "pkgloaddir", new(PackageLoadDirCMD) { MinArgs = 0, MaxArgs = 1,
                     Description = "Loads the packaes from all the assemblies in the specified relative paths." } },
+
+                { "pkgdel", new(PackageRemoveCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Removes the specified packages." } },
                  
                 { "scrrun", new(RunScriptCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Runs the script from the specified relative path." } },
@@ -50,12 +53,27 @@
         private void SetDir(string dir, CmdLauncher launcher)
         {
             if (!Directory.Exists(dir))
-                throw new CmdException("Script", $"Unknown directory \"{dir}\".");
+                throw new CmdException("External", $"Unknown directory \"{dir}\".");
             directory = dir;
             launcher.InputRender = () => $"{directory}>";
         }
 
         #region Commands
+
+        private void PackageRemoveCMD(string[] args, Cmd.Callback cb)
+        {
+            int removed = 0;
+            foreach (var arg in args)
+            {
+                string search = arg.ToLower();
+                int res = cb.Launcher.Packages.RemoveWhere(p => p.Name.ToLower() == search);
+                if (res == 0)
+                    StrUtils.PrettyErr("External", $"No packages with name \'{search}\' found.");
+                removed += res;
+            }
+            if (removed > 0)
+                cb.Launcher.FeedbackLine($"Sucessfully removed {removed} package(s).");
+        }
 
         private void PackageLoadDirCMD(string[] args, Cmd.Callback cb)
         {
@@ -84,9 +102,9 @@
         private void RenameCMD(string[] args, Cmd.Callback cb)
         {
             if (Commands.ContainsKey(args[1]))
-                throw new CmdException("Script", $"Script \'{args[1]}\' already exists.");
+                throw new CmdException("External", $"Script \'{args[1]}\' already exists.");
             if (!Commands.TryGetValue(args[0], out var command))
-                throw new CmdException("Script", $"Script not found \'{args[0]}\'.");
+                throw new CmdException("External", $"Script not found \'{args[0]}\'.");
 
             Commands.Remove(args[0]);
             Commands[args[1]] = command;
@@ -96,7 +114,7 @@
         private void DeleteCMD(string[] args, Cmd.Callback cb)
         {
             if (!Commands.ContainsKey(args[0]))
-                throw new CmdException("Script", $"Script not found \'{args[0]}\'.");
+                throw new CmdException("External", $"Script not found \'{args[0]}\'.");
 
             Commands.Remove(args[0]);
             cb.Launcher.FeedbackLine($"Sucessfully removed script \'{args[0]}\'.");
@@ -105,9 +123,9 @@
         private void LoadAbsolute(string name, string path, Cmd.Callback cb)
         {
             if (Commands.ContainsKey(name))
-                throw new CmdException("Script", $"Script \'{name}\' already exists.");
+                throw new CmdException("External", $"Script \'{name}\' already exists.");
             if (!File.Exists(path))
-                throw new CmdException("Script", $"File not found {path}.");
+                throw new CmdException("External", $"File not found {path}.");
 
             var lines = File.ReadAllLines(path);
             Commands.Add(name, new(_ => cb.Launcher.ExecuteEveryCommand(lines)));
@@ -123,7 +141,7 @@
         {
             string relDir = Path.Combine(directory, args[0]);
             if (!Directory.Exists(relDir))
-                throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
+                throw new CmdException("External", $"Unknown directory \'{relDir}\'.");
 
             foreach (var filePath in Directory.EnumerateFiles(relDir))
                 cb.Launcher.ExecuteEveryCommand(File.ReadAllLines(filePath));
@@ -133,7 +151,7 @@
         {
             string relDir = Path.Combine(directory, args[0]);
             if (!Directory.Exists(relDir))
-                throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
+                throw new CmdException("External", $"Unknown directory \'{relDir}\'.");
 
             foreach (var filePath in Directory.EnumerateFiles(relDir))
                 LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cb);
@@ -142,11 +160,11 @@
         private void CompileDirCMD(string[] args, Cmd.Callback cb)
         {
             if (Commands.ContainsKey(args[0]))
-                throw new CmdException("Script", $"Script \'{args[0]}\' already exists.");
+                throw new CmdException("External", $"Script \'{args[0]}\' already exists.");
 
             string relDir = args.Length > 1 ? Path.Combine(directory, args[1]) : directory;
             if (!Directory.Exists(relDir))
-                throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
+                throw new CmdException("External", $"Unknown directory \'{relDir}\'.");
 
             List<string> lines = new();
             foreach (var path in Directory.EnumerateFiles(relDir))
@@ -159,7 +177,7 @@
         {
             string relDir = Path.Combine(directory, args[0]);
             if (!File.Exists(relDir))
-                throw new CmdException("Script", $"File not found {relDir}.");
+                throw new CmdException("External", $"File not found {relDir}.");
 
             var lines = File.ReadAllLines(relDir);
             cb.Launcher.ExecuteEveryCommand(lines);
@@ -189,7 +207,7 @@
             int n = args.Length > 0 ? (int)args[0] : 1;
             int index = StrUtils.LastNIndexOf(directory, '\\', n);
             if (index == -1)
-                throw new CmdException("Script", "No layers to exit from.");
+                throw new CmdException("External", "No layers to exit from.");
             SetDir(directory[..index], cb.Launcher);
         }
 
