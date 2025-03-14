@@ -4,6 +4,8 @@
     {
         internal static void Main()
         {
+            Console.ReadLine();
+
             var launcher = NewLauncher();
 
             string aScripts = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");

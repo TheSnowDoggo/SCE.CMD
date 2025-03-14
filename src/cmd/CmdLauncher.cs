@@ -15,7 +15,7 @@ namespace SCE
             Custom = new();
             _native = new(new()
             {
-                { "help", new(HelpCMD) { MaxArgs = -1, 
+                { "help", new(HelpCMD) { MaxArgs = -1,
                     Description = "Displays every command.",
                     Usage = "<package_name>? ..." } },
 
@@ -47,11 +47,14 @@ namespace SCE
                 { "runif", new(IfCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Runs the command if the condition is true."} },
 
-                { "abort", new(args => throw new Exception("Aborted.")) { 
+                { "abort", new(args => throw new Exception("Aborted.")) {
                     Description = "Ends execution of a command chain." } },
 
-                { "haspkg", Cmd.QCommand<string>(HasPackageCMD, 
+                { "haspkg", Cmd.QCommand<string>(HasPackageCMD,
                     "Displays whether a package with the specified name exists.") },
+
+                { "runall", new(args => ExecuteEveryCommand(args)) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Runs every given command" } },
 
                 { "packages", new(PackagesCMD) { Description = "Displays all loaded packages." } },
 
@@ -440,6 +443,13 @@ namespace SCE
             var result = cmd.Func(args, new(package, this));
             if (result != null && !MemoryLock)
                 MemoryStack.Push(result.Value);
+        }
+
+        public void ExecuteCommand(string line)
+        {
+            string name = StrUtils.BuildWhile(line, (c) => c != ' ');
+            var args = ArrUtils.TrimFirst(StrUtils.TrimArgs(line));
+            ExecuteCommand(name, args);
         }
 
         public void ExecuteEveryCommand(IEnumerable<string> lines)
