@@ -7,6 +7,8 @@ namespace SCE
     {
         public static IEnumerable<Package> DiscoverAllPackages(string dirPath)
         {
+            if (!Directory.Exists(dirPath))
+                throw new CmdException("PkgLoadUtils", $"Unknown directory \'{dirPath}\'.");
             foreach (var file in Directory.GetFiles(dirPath))
             {
                 try

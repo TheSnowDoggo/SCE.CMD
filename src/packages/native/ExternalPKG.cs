@@ -59,7 +59,7 @@
 
         private void PackageLoadDirCMD(string[] args, Cmd.Callback cb)
         {
-            string path = args.Length > 0 ? CombineDir(args[0]) : directory;
+            string path = args.Length > 0 ? Path.Combine(directory, args[0]) : directory;
             int i = 0;
             foreach (var pkg in PkgLoadUtils.DiscoverAllPackages(path))
             {
@@ -71,7 +71,7 @@
 
         private void PackageLoadCMD(string[] args, Cmd.Callback cb)
         {
-            string path = CombineDir(args[0]);
+            string path = Path.Combine(directory, args[0]);
             int i = 0;
             foreach (var pkg in PkgLoadUtils.DiscoverPackages(path))
             {
@@ -116,12 +116,12 @@
 
         private void LoadCMD(string[] args, Cmd.Callback cb)
         {
-            LoadAbsolute(args[0], CombineDir(args[1]), cb);
+            LoadAbsolute(args[0], Path.Combine(directory, args[1]), cb);
         }
 
         private void RunDirCMD(string[] args, Cmd.Callback cb)
         {
-            string relDir = CombineDir(args[0]);
+            string relDir = Path.Combine(directory, args[0]);
             if (!Directory.Exists(relDir))
                 throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
 
@@ -131,7 +131,7 @@
 
         private void LoadDirCMD(string[] args, Cmd.Callback cb)
         {
-            string relDir = CombineDir(args[0]);
+            string relDir = Path.Combine(directory, args[0]);
             if (!Directory.Exists(relDir))
                 throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
 
@@ -144,7 +144,7 @@
             if (Commands.ContainsKey(args[0]))
                 throw new CmdException("Script", $"Script \'{args[0]}\' already exists.");
 
-            string relDir = args.Length > 1 ? CombineDir(args[1]) : directory;
+            string relDir = args.Length > 1 ? Path.Combine(directory, args[1]) : directory;
             if (!Directory.Exists(relDir))
                 throw new CmdException("Script", $"Unknown directory \'{relDir}\'.");
 
@@ -157,19 +157,12 @@
 
         private void RunScriptCMD(string[] args, Cmd.Callback cb)
         {
-            string relDir = CombineDir(args[0]);
+            string relDir = Path.Combine(directory, args[0]);
             if (!File.Exists(relDir))
                 throw new CmdException("Script", $"File not found {relDir}.");
 
             var lines = File.ReadAllLines(relDir);
             cb.Launcher.ExecuteEveryCommand(lines);
-        }
-
-        private string CombineDir(string relDir)
-        {
-            if (directory.Length > 0 && relDir.Length > 0 && relDir[0] != '\\' && directory[^1] != '\\')
-                return string.Join("", directory, '\\', relDir);
-            return directory + relDir;
         }
 
         private void CDAddCMD(string[] args, Cmd.Callback cb)
