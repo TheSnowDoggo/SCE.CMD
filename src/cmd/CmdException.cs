@@ -1,6 +1,6 @@
 ﻿namespace SCE
 {
-    internal class CmdException : Exception
+    public class CmdException : Exception
     {
         public CmdException(string source, string message)
             : base(StrUtils.FormatErr(source, message))

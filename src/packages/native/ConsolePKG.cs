@@ -9,7 +9,7 @@ namespace SCE
             Name = "Console";
             Commands = new()
             {
-                { "proc", new(args => Process.Start(args[0], ArrUtils.TrimFirst(args))) {
+                { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], Arguments = StrUtils.Build(ArrUtils.TrimFirst(args)), UseShellExecute = true })) {
                     MinArgs = 1, MaxArgs = -1, Description = "Starts the specified process." } },
                 
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,

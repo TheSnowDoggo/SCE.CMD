@@ -2,7 +2,7 @@
 
 namespace SCE
 {
-    internal static class StrUtils
+    public static class StrUtils
     {
         public static int LastNIndexOf(string str, char chr, int n)
         {
@@ -28,6 +28,14 @@ namespace SCE
         public static void PrettyErr(string source, string message)
         {
             Console.WriteLine(FormatErr(source, message));
+        }
+
+        public static string Build(string[] arr)
+        {
+            StringBuilder sb = new();
+            foreach (var str in arr)
+                sb.Append(str);
+            return sb.ToString();
         }
 
         public static string Combine(IEnumerable<string> collection)

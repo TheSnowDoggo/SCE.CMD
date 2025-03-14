@@ -7,7 +7,6 @@
         public AliasPKG()
         {
             _aliases = new();
-
             Name = "Alias";
             Commands = new()
             {

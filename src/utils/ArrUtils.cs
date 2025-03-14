@@ -1,6 +1,6 @@
 ﻿namespace SCE
 {
-    internal static class ArrUtils
+    public static class ArrUtils
     {
         public static T[] TrimFirst<T>(T[] arr)
         {
