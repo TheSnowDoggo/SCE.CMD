@@ -13,6 +13,8 @@
                 { "print", new(Cmd.Translator(PrintCMD, new[] { typeof(string), typeof(int) }) )
                     { MinArgs = 1, MaxArgs = 2, Description = "Prints the string a given amount of times." } },
 
+                { "read", new(Read) { MinArgs = 0, MaxArgs = 0, Description = "Reads from the console." } },
+
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets the Foreground color of the Console." } },
 
@@ -34,6 +36,13 @@
                 { "beep", new(BeepCMD) { MinArgs = 0, MaxArgs = 2,
                     Description = "Makes a beep sound." } },
             };
+        }
+
+        #region Commands
+
+        private static Cmd.MemItem Read(string[] args)
+        {
+            return new(Console.ReadLine());
         }
 
         private static void PrintLCMD(object[] args)
@@ -91,5 +100,7 @@
                 }
             };
         }
+
+        #endregion
     }
 }
