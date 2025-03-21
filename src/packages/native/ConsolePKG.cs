@@ -13,6 +13,9 @@
                 { "print", new(Cmd.Translator(PrintCMD, new[] { typeof(string), typeof(int) }) )
                     { MinArgs = 1, MaxArgs = 2, Description = "Prints the string a given amount of times." } },
 
+                { "escins", new(EscapeInsertCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Inserts control characters into the given command." } },
+
                 { "read", new(a => new Cmd.MemItem(Console.ReadLine())) { MinArgs = 0, MaxArgs = 0, Description = "Reads from the console." } },
 
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
@@ -39,6 +42,13 @@
         }
 
         #region Commands
+
+        private static void EscapeInsertCMD(string[] args, Cmd.Callback cb)
+        {
+            for (int i = 1; i < args.Length; ++i)
+                args[i] = StrUtils.InsertEscapeCharacters(args[i]);
+            cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+        }
 
         private static void PrintLCMD(object[] args)
         {
@@ -77,21 +87,21 @@
             Console.Beep(frequency, duration);
         }
 
-        private static Action<string[]> SetColorCMD(bool foreground)
+        private static Action<string[], Cmd.Callback> SetColorCMD(bool foreground)
         {
-            return args =>
+            return (args, cb) =>
             {
                 if (!Enum.TryParse(args[0], true, out ConsoleColor result))
                     throw new CmdException("SetColor", $"Invalid color '{args[0]}'.");
                 if (foreground)
                 {
                     Console.ForegroundColor = result;
-                    Console.WriteLine($"Foreground set to {result}.");
+                    cb.Launcher.FeedbackLine($"Foreground set to {result}.");
                 }
                 else
                 {
                     Console.BackgroundColor = result;
-                    Console.WriteLine($"Background set to {result}.");
+                    cb.Launcher.FeedbackLine($"Background set to {result}.");
                 }
             };
         }

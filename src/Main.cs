@@ -6,7 +6,7 @@
         {
             CmdLauncher launcher = new()
             {
-                Name = "- SCE Launcher v0.0.1 -",
+                Name = "- SCE Launcher v0.1.1 -",
                 Packages = new()
                 {
                     new NativePKG(),

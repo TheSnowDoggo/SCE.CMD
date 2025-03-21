@@ -58,37 +58,73 @@ namespace SCE
             return sb.ToString();
         }
 
-        public static string[] TrimArgs(string input)
+        public static string[] TrimArgs(string str)
         {
-            if (input.Length == 0)
+            if (str.Length == 0)
                 return Array.Empty<string>();
-            bool inSpeech = false;
-            bool inQuote = false;
-            List<string> args = new(input.Length);
-            StringBuilder sb = new(input.Length);
-            foreach (var c in input)
+            Stack<char> layerStack = new();
+            List<string> args = new(str.Length);
+            StringBuilder sb = new(str.Length);
+            foreach (var c in str)
             {
-                if (c == '"')
-                    inSpeech = !inSpeech;
-                if (c == '\'')
-                    inQuote = !inQuote;
+                if (c == '\"' || c == '\'')
+                {
+                    if (layerStack.Count == 0 || layerStack.Peek() != c)
+                    {
+                        layerStack.Push(c);
+                        if (layerStack.Count == 1)
+                            continue;
+                    }
+                    else
+                    {
+                        layerStack.Pop();
+                        if (layerStack.Count == 0)
+                            continue;
+                    }
+                }
 
-                if (c == ' ' && !inSpeech && !inQuote)
+                if (c == ' ' && layerStack.Count == 0)
                 {
                     args.Add(sb.ToString());
                     sb.Clear();
                 }
-                else if (c != '"' && (c != '\'' || inSpeech))
-                {
+                else
                     sb.Append(c);
-                }
             }
             if (sb.Length > 0)
                 args.Add(sb.ToString());
             return args.ToArray();
         }
 
-        private static string FitToLength(bool postFit, string str, int length, char fill = ' ')
+        public static string InsertEscapeCharacters(string str)
+        {
+            StringBuilder sb = new(str.Length);
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (str[i] != '\\' || i == str.Length - 1)
+                    sb.Append(str[i]);
+                else
+                { 
+                    switch (str[i + 1])
+                    {
+                        case 'n': sb.Append('\n'); 
+                            break;
+                        case 'r': sb.Append('\r'); 
+                            break;
+                        case 't': sb.Append('\t');
+                            break;
+                        default: sb.Append('\\');
+                            continue;
+                    }  
+                    ++i;
+                }
+            }
+            return sb.ToString();
+        }
+
+        #region FitToLength
+
+        private static string FTL(bool postFit, string str, int length, char fill = ' ')
         {
             if (length < 0)
                 throw new ArgumentException("Length cannot be less than 0.");
@@ -102,15 +138,19 @@ namespace SCE
             }
         }
 
-        public static string PostFitToLength(string str, int length, char fill = ' ')
+        public static string PostFTL(string str, int length, char fill = ' ')
         {
-            return FitToLength(true, str, length, fill);
+            return FTL(true, str, length, fill);
         }
 
-        public static string PreFitToLength(string str, int length, char fill = ' ')
+        public static string PreFTL(string str, int length, char fill = ' ')
         {
-            return FitToLength(false, str, length, fill);
+            return FTL(false, str, length, fill);
         }
+
+        #endregion
+
+        #region Copy
 
         public static string Copy(char chr, int copies)
         {
@@ -126,5 +166,7 @@ namespace SCE
                 sb.Append(str);
             return sb.ToString();
         }
+
+        #endregion
     }
 }
