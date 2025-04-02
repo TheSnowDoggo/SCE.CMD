@@ -39,10 +39,16 @@
                 { "scrcompileload", new(CompileDirCMD) { MinArgs = 1, MaxArgs = 2,
                     Description = "Compiles all the scripts in a given directory into one command" } },
 
+                { "viewfile", new(ViewFileCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Views the given file" } },
+
+                { "curd", new(CurDirCMD) { MinArgs = 1, MaxArgs = -1, 
+                    Description = "Prepends the current running directory to the given command to %." } },
+
                 { "cd", new(CDAddCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Adds the specified path to the current directory." } },
 
-                { @"cd\", new(CDSetCMD) { MinArgs = 0, MaxArgs = 1,
+                { @"cd/", new(CDSetCMD) { MinArgs = 0, MaxArgs = 1,
                     Description = "Sets the specified path to the current directory." } },
 
                 { "cd<", new(Cmd.Translator(CDRemoveCMD, new[] { typeof(int) })) { MinArgs = 0, MaxArgs = 1,
@@ -59,6 +65,21 @@
         }
 
         #region Commands
+
+        private void CurDirCMD(string[] args, Cmd.Callback cb)
+        {
+            for (int i = 1; i < args.Length; ++i)
+                args[i] = args[i].Replace("%", AppDomain.CurrentDomain.BaseDirectory);
+            cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+        }
+
+        private void ViewFileCMD(string[] args)
+        {
+            var path = Path.Combine(directory, args[0]);
+            if (!File.Exists(path))
+                throw new CmdException("External", $"File does not exist \'{path}\'.");
+            Console.WriteLine(File.ReadAllText(path));
+        }
 
         private void PackageRemoveCMD(string[] args, Cmd.Callback cb)
         {

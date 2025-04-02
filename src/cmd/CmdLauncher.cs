@@ -23,6 +23,8 @@ namespace SCE
 
         public bool MemoryLock { get; set; } = false;
 
+        public bool PrettyErrors { get; set; } = true;
+
         public Stack<object?> MemoryStack { get; } = new();
 
         public void Exit()
@@ -130,7 +132,10 @@ namespace SCE
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);   
+                if (PrettyErrors)
+                    StrUtils.PrettyErr(e.Source ?? "Unknown", e.Message);
+                else
+                    Console.WriteLine(e);
             }
             return false;
         }
