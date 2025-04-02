@@ -20,7 +20,7 @@
                 },
             };
 
-            launcher.ExecuteCommand("cfgreload true");
+            //launcher.ExecuteCommand("cfgreload true");
 
             string aScripts = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
             if (Directory.Exists(aScripts))
