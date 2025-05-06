@@ -119,7 +119,7 @@ namespace SCE
             StringBuilder sb = new();
             for (int i = 1; i < args.Length; ++i)
             {
-                if (i == 1)
+                if (i != 1)
                     sb.Append(' ');
                 sb.Append(args[i]);
             }
