@@ -201,6 +201,7 @@ namespace SCE
             if (!File.Exists(relPath))
                 throw new CmdException("External", $"Unknown file \'{relPath}\'.");
             File.Delete(relPath);
+            cb.Launcher.FeedbackLine("Successfully deleted file.");
         }
 
         private Cmd.MemItem FileCountCMD(string[] args, Cmd.Callback cb)
