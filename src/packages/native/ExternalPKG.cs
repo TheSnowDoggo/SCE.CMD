@@ -37,10 +37,40 @@
                     Description =  "Renames the specified script." } },
 
                 { "scrcompileload", new(CompileDirCMD) { MinArgs = 1, MaxArgs = 2,
-                    Description = "Compiles all the scripts in a given directory into one command" } },
+                    Description = "Compiles all the scripts in a given directory into one command." } },
 
                 { "viewfile", new(ViewFileCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Views the given file" } },
+                    Description = "Views the given file." } },
+
+                { "filecount", new(FileCountCMD) { MaxArgs = 1,
+                    Description = "Gets the number of files in a given directory." } },
+
+                { "dirdelete", new(DeleteDirCMD) { MaxArgs = 1,
+                    Description = "Deletes the given directory." } },
+
+                { "filedelete", new(DeleteFileCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Deletes the given file." } },
+
+                { "dircreate", new(CreateDirCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Creates a new directory." } },
+
+                { "filecreate", new(CreateFileCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Creates a new file." } },
+
+                { "dirmove", new(MoveDirCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Moves the given directory to a new location." } },
+
+                { "filemove", new(MoveFileCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Moves the given file to a new location." } },
+
+                { "direxists", new(DirExistsCMD) { MaxArgs = 1,
+                    Description = "Outputs whether a given directory exists." } },
+
+                { "fileexists", new(FileExistsCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Outputs whether a given file exists." } },
+
+                { "filecopy", new(CopyFileCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Copies a file to a given destination." } },
 
                 { "curd", new(CurDirCMD) { MinArgs = 1, MaxArgs = -1, 
                     Description = "Prepends the current running directory to the given command to %." } },
@@ -65,6 +95,100 @@
         }
 
         #region Commands
+
+        private string GetDir(string[] args)
+        {
+            var relPath = args.Length > 0 ? Path.Combine(directory, args[0]) : directory;
+            if (!Directory.Exists(relPath))
+                throw new CmdException("External", $"Unknown directory \'{relPath}\'.");
+            return relPath;
+        }
+
+        private void CreateFileCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = Path.Combine(directory, args[0]);
+            File.Create(relPath);
+            cb.Launcher.FeedbackLine("Successfully created file.");
+        }
+
+        private void CreateDirCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = Path.Combine(directory, args[0]);
+            Directory.CreateDirectory(relPath);
+            cb.Launcher.FeedbackLine("Successfully created directory.");
+        }
+
+        private void CopyFileCMD(string[] args, Cmd.Callback cb)
+        {
+            var path = Path.Combine(directory, args[0]);
+            if (!File.Exists(path))
+                throw new CmdException("External", $"Unknown file \'{path}\'.");
+            var dest = Path.Combine(directory, args[1]);
+            File.Copy(path, dest);
+            cb.Launcher.FeedbackLine($"Successfully copied file to:\n{dest}");
+        }
+
+        private Cmd.MemItem DirExistsCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = GetDir(args);
+            bool exists = Directory.Exists(relPath);
+            cb.Launcher.FeedbackLine($"Directory does {(exists ? "" : "not")} exist.");
+            return new(exists);
+        }
+
+        private Cmd.MemItem FileExistsCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = Path.Combine(directory, args[0]);
+            bool exists = File.Exists(relPath);
+            cb.Launcher.FeedbackLine($"File does {(exists ? "" : "not")} exist.");
+            return new(exists);
+        }
+
+        private void MoveDirCMD(string[] args, Cmd.Callback cb)
+        {
+            var path = Path.Combine(directory, args[0]);
+            if (!Directory.Exists(path))
+                throw new CmdException("External", $"Unknown directory \'{path}\'.");
+            var dest = Path.Combine(directory, args[1]);
+            Directory.Move(path, dest);
+            cb.Launcher.FeedbackLine($"Successfully moved directory to:\n{dest}");
+        }
+
+        private void MoveFileCMD(string[] args, Cmd.Callback cb)
+        {
+            var path = Path.Combine(directory, args[0]);
+            if (!File.Exists(path))
+                throw new CmdException("External", $"Unknown file \'{path}\'.");
+            var dest = Path.Combine(directory, args[1]);
+            File.Move(path, dest);
+            cb.Launcher.FeedbackLine($"Successfully moved file to:\n{dest}");
+        }
+
+        private void DeleteDirCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = GetDir(args);
+            Directory.Delete(relPath);
+            cb.Launcher.FeedbackLine("Successfully deleted directory.");
+        }
+
+        private void DeleteFileCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = Path.Combine(directory, args[0]);
+            if (!File.Exists(relPath))
+                throw new CmdException("External", $"Unknown file \'{relPath}\'.");
+            File.Delete(relPath);
+        }
+
+        private Cmd.MemItem FileCountCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = GetDir(args);
+            int count = Directory.GetFiles(relPath).Length;
+            if (count == 0)
+                cb.Launcher.FeedbackLine("Directory is empty.");
+            else
+                cb.Launcher.FeedbackLine($"Directory contains {count} file(s).");
+            return new(count);
+        }
 
         private void CurDirCMD(string[] args, Cmd.Callback cb)
         {

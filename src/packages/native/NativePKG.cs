@@ -56,6 +56,9 @@ namespace SCE
 
                 { "packages", new(PackagesCMD) { Description = "Displays all loaded packages." } },
 
+                { "time", new(TimeCMD) { MinArgs = 0, MaxArgs = 1,
+                    Description = "Gets the current time or a constant specified by the given argument." } },
+
                 { "memclear", new(MemClearCMD) { Description = "Clears all items in laucher memory."} },
 
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
@@ -66,13 +69,13 @@ namespace SCE
 
                 { "memview", new(MemViewCMD) { Description = "Displays all items in memory" } },
 
-                { "memlock", new(MemLockCMD) { Description = "Sets the lock state of memory." } },
+                { "memlock", new(MemLockCMD) { MaxArgs = 1, Description = "Sets the lock state of memory." } },
 
                 { "memrun", new(MemRunCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Adds items to memory before running the command with no arguments." } },
 
                 { "memins", new(MemInsCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Inserts and removes items from memory into the given command" } },
+                    Description = "Inserts and removes items from memory into the given command." } },
             };
         }
 
@@ -196,6 +199,21 @@ namespace SCE
             Console.Write(sb.ToString());
         }
 
+        private static Cmd.MemItem TimeCMD(string[] args, Cmd.Callback cb)
+        {
+            var timeOpt = args.Length > 0 ? args[0].ToLower() : "local";
+            DateTime time = timeOpt switch
+            {
+                "local" => DateTime.Now,
+                "utc" => DateTime.UtcNow,
+                "today" => DateTime.Today,
+                "unixepoch" => DateTime.UnixEpoch,
+                _ => throw new CmdException("Native", "Unknown time argument, try:\n> local\n> utc\n> today\n> unixepoch")
+            };
+            cb.Launcher.FeedbackLine(time);
+            return new(time);
+        }
+
         #region Memory
 
         private void HasPackageCMD(string name, Cmd.Callback cb)
@@ -253,9 +271,11 @@ namespace SCE
 
         private void MemLockCMD(string[] args, Cmd.Callback cb)
         {
-            if (!bool.TryParse(args[0], out var res))
+            bool res = !cb.Launcher.MemoryLock;
+            if (args.Length > 0 && !bool.TryParse(args[0], out res))
                 throw new CmdException("Native", $"Unable to convert \'{args[0]}\'.");
             cb.Launcher.MemoryLock = res;
+            cb.Launcher.FeedbackLine($"Memory lock set to {res}.");
         }
 
         private void MemRunCMD(string[] args, Cmd.Callback cb)
