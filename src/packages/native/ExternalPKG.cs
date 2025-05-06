@@ -116,8 +116,6 @@ namespace SCE
         private void WriteFileCMD(string[] args, Cmd.Callback cb)
         {
             var relPath = Path.Combine(directory, args[0]);
-            if (!File.Exists(relPath))
-                throw new CmdException("External", $"Unknown file \'{relPath}\'.");
             StringBuilder sb = new();
             for (int i = 1; i < args.Length; ++i)
             {
