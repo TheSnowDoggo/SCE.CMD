@@ -1,4 +1,7 @@
-﻿namespace SCE
+﻿using System.IO;
+using System.Text;
+
+namespace SCE
 {
     internal class ExternalPKG : Package
     {
@@ -39,9 +42,6 @@
                 { "scrcompileload", new(CompileDirCMD) { MinArgs = 1, MaxArgs = 2,
                     Description = "Compiles all the scripts in a given directory into one command." } },
 
-                { "viewfile", new(ViewFileCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Views the given file." } },
-
                 { "filecount", new(FileCountCMD) { MaxArgs = 1,
                     Description = "Gets the number of files in a given directory." } },
 
@@ -71,6 +71,15 @@
 
                 { "filecopy", new(CopyFileCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Copies a file to a given destination." } },
+
+                { "filewrite", new(WriteFileCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Writes to the given file." } },
+
+                { "fileread", new(ReadFileCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Reads the given file." } },
+
+                { "fileview", new(ViewFileCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Outputs the contents of a given file to the console." } },
 
                 { "curd", new(CurDirCMD) { MinArgs = 1, MaxArgs = -1, 
                     Description = "Prepends the current running directory to the given command to %." } },
@@ -104,10 +113,27 @@
             return relPath;
         }
 
+        private void WriteFileCMD(string[] args, Cmd.Callback cb)
+        {
+            var relPath = Path.Combine(directory, args[0]);
+            if (!File.Exists(relPath))
+                throw new CmdException("External", $"Unknown file \'{relPath}\'.");
+            StringBuilder sb = new();
+            for (int i = 1; i < args.Length; ++i)
+            {
+                if (i == 1)
+                    sb.Append(' ');
+                sb.Append(args[i]);
+            }
+            var str = sb.ToString();
+            File.WriteAllText(relPath, str);
+            cb.Launcher.FeedbackLine($"Successfully wrote {str.Length} characters to:\n{relPath}");
+        }
+
         private void CreateFileCMD(string[] args, Cmd.Callback cb)
         {
             var relPath = Path.Combine(directory, args[0]);
-            File.Create(relPath);
+            File.Create(relPath).Close();
             cb.Launcher.FeedbackLine("Successfully created file.");
         }
 
@@ -197,12 +223,28 @@
             cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
         }
 
+        private Cmd.MemItem ReadFileCMD(string[] args, Cmd.Callback cb)
+        {
+            var path = Path.Combine(directory, args[0]);
+            if (!File.Exists(path))
+                throw new CmdException("External", $"File does not exist \'{path}\'.");
+            var lines = File.ReadAllLines(path);
+            if (cb.Launcher.CommandFeedback)
+            {
+                StringBuilder sb = new();
+                foreach (var line in lines)
+                    sb.AppendLine(line);
+                Console.Write(sb.ToString());
+            }
+            return new(lines);
+        }
+
         private void ViewFileCMD(string[] args)
         {
             var path = Path.Combine(directory, args[0]);
             if (!File.Exists(path))
                 throw new CmdException("External", $"File does not exist \'{path}\'.");
-            Console.WriteLine(File.ReadAllText(path));
+            Console.Write(File.ReadAllText(path));
         }
 
         private void PackageRemoveCMD(string[] args, Cmd.Callback cb)
