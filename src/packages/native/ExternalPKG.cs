@@ -82,7 +82,10 @@ namespace SCE
                     Description = "Outputs the contents of a given file to the console." } },
 
                 { "curd", new(CurDirCMD) { MinArgs = 1, MaxArgs = -1, 
-                    Description = "Prepends the current running directory to the given command to %." } },
+                    Description = "Replaces % to the current running directory of the arguments of the given command." } },
+
+                { "chod", new(ChoDirCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Replaces % to the chosen directory (cd) of the arguments of the given command." } },
 
                 { "cd", new(CDAddCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Adds the specified path to the current directory." } },
@@ -219,6 +222,13 @@ namespace SCE
         {
             for (int i = 1; i < args.Length; ++i)
                 args[i] = args[i].Replace("%", AppDomain.CurrentDomain.BaseDirectory);
+            cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+        }
+
+        private void ChoDirCMD(string[] args, Cmd.Callback cb)
+        {
+            for (int i = 1; i < args.Length; ++i)
+                args[i] = args[i].Replace("%", directory);
             cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
         }
 
