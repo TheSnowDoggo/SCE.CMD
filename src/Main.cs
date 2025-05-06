@@ -3,24 +3,21 @@
     internal static class Launch
     {
         internal static void Main()
-        {
-            //new ConfigPKG(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt")),          
+        {        
             CmdLauncher launcher = new()
             {
                 Name = "- SCE Launcher v0.1.1 -",
                 Packages = new()
                 {
-                     new NativePKG(),
+                    new NativePKG(),
                     new ConsolePKG(),
                     new ExternalPKG(),
-                    new AliasPKG(),
+                    new AliasPKG(), 
                     new VariablePKG(),
                     new ToolsPKG(),
                     new CombinePKG(),
                 },
             };
-
-            //launcher.ExecuteCommand("cfgreload true");
 
             string aScripts = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
             if (Directory.Exists(aScripts))
