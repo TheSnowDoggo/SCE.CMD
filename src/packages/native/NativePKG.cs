@@ -67,6 +67,10 @@ namespace SCE
                     Description = "Runs every given command",
                     Usage = "<Command1>..." } },
 
+                { "helpcmd", new(HelpCMDCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Displays help info for the given commands.",
+                    Usage = "<CommandName>..." } },
+
                 { "packages", new(PackagesCMD) { 
                     Description = "Displays all loaded packages." } },
 
@@ -105,26 +109,29 @@ namespace SCE
             };
         }
 
+        private static string BuildCMD(string name, Cmd c)
+        {
+            StringBuilder sb = new();
+
+            if (c.MinArgs != c.MaxArgs)
+                sb.AppendLine($"{name}[{c.MinArgs}-{(c.MaxArgs >= 0 ? c.MaxArgs : "n")}]");
+            else
+                sb.AppendLine($"{name}[{c.MinArgs}]");
+
+            if (c.Description != string.Empty)
+                sb.AppendLine($"- {c.Description}");
+            if (c.Usage != string.Empty)
+                sb.AppendLine($"> {name} {c.Usage}");
+
+            return sb.ToString();
+        }
+
         private static string BuildPackageHelp(Package pkg)
         {
             StringBuilder sb = new();
             sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
             foreach (var item in pkg.Commands)
-            {
-                (var name, var c) = item;
-
-                if (c.MinArgs != c.MaxArgs)
-                    sb.AppendLine($"{name}[{c.MinArgs}-{(c.MaxArgs >= 0 ? c.MaxArgs : "n")}]");
-                else
-                    sb.AppendLine($"{name}[{c.MinArgs}]");
-
-                if (c.Description != string.Empty)
-                    sb.AppendLine($"- {c.Description}");
-                if (c.Usage != string.Empty)
-                    sb.AppendLine($"> {name} {c.Usage}");
-
-                sb.AppendLine();
-            }
+                sb.AppendLine(BuildCMD(item.Key, item.Value));
             return sb.ToString();
         }
 
@@ -162,6 +169,22 @@ namespace SCE
             {
                 string name = package.Name == "" ? "Anonymous" : package.Name;
                 sb.AppendLine($"{name}:\n  > Commands: {package.Commands.Count}");
+            }
+            Console.Write(sb.ToString());
+        }
+
+        private void HelpCMDCMD(string[] args, Cmd.Callback cb)
+        {
+            StringBuilder sb = new();
+            foreach (var name in args)
+            {
+                if (!cb.Launcher.TryGetCommand(name, out var cmd, out var pkg))
+                    Console.Write($"Unknown Command \'{name}\'.");
+                else
+                {
+                    sb.Append($"{pkg.Name} | ");
+                    sb.AppendLine(BuildCMD(name, cmd));
+                }
             }
             Console.Write(sb.ToString());
         }
