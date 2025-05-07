@@ -242,7 +242,7 @@ namespace SCE
             Thread thread = new(() =>
             {
                 var newArgs = ArrUtils.TrimFirst(args);
-                cb.Launcher.ExecuteCommand(args[0], newArgs);
+                cb.Launcher.SExecuteCommand(args[0], newArgs);
             });
             thread.Start();
         }
