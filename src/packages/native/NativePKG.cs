@@ -23,7 +23,7 @@ namespace SCE
                 { "packages", new(PackagesCMD) {
                     Description = "Displays all loaded packages." } },
 
-                { "quit", new((args, cb) => cb.Launcher.Exit()) { 
+                { "quit", new((args, cb) => Environment.Exit(0)) { 
                     Description = "Exits the command line." } },
 
                 { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], 
