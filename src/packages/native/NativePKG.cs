@@ -201,11 +201,14 @@ namespace SCE
         private void PackagesCMD(string[] args, Cmd.Callback cb)
         {
             StringBuilder sb = new();
-            foreach (var package in cb.Launcher.Packages)
+            int total = 0;
+            foreach (var p in cb.Launcher.Packages)
             {
-                string name = package.Name == "" ? "Anonymous" : package.Name;
-                sb.AppendLine($"{name}:\n  > Commands: {package.Commands.Count}");
+                int count = p.Commands.Count;
+                sb.AppendLine($"{(p.Name == "" ? "Unnamed*" : p.Name)} | Commands: {count}");
+                total += count;
             }
+            sb.AppendLine($"Total commands: {total}");
             Console.Write(sb.ToString());
         }
 
