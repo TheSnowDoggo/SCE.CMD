@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using CSUtils;
+using System.IO;
 using System.Text;
 
 namespace SCE
@@ -250,14 +251,14 @@ namespace SCE
         {
             for (int i = 1; i < args.Length; ++i)
                 args[i] = args[i].Replace("%", AppDomain.CurrentDomain.BaseDirectory);
-            cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private void ChoDirCMD(string[] args, Cmd.Callback cb)
         {
             for (int i = 1; i < args.Length; ++i)
                 args[i] = args[i].Replace("%", directory);
-            cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private Cmd.MemItem ReadFileCMD(string[] args, Cmd.Callback cb)

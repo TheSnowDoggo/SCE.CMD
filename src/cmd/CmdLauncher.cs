@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using CSUtils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SCE
 {
@@ -143,7 +144,7 @@ namespace SCE
         public bool SExecuteCommand(string line)
         {
             string name = StrUtils.BuildWhile(line, (c) => c != ' ');
-            var args = ArrUtils.TrimFirst(StrUtils.TrimArgs(line));
+            var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
             return SExecuteCommand(name, args);
         }
 
@@ -164,7 +165,7 @@ namespace SCE
         public void ExecuteCommand(string line)
         {
             string name = StrUtils.BuildWhile(line, (c) => c != ' ');
-            var args = ArrUtils.TrimFirst(StrUtils.TrimArgs(line));
+            var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
             ExecuteCommand(name, args);
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using CSUtils;
+using System.Text;
 
 namespace SCE
 {
@@ -132,7 +133,7 @@ namespace SCE
                 }
                 args[i] = sb.ToString();
             }
-            cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
     }
 }

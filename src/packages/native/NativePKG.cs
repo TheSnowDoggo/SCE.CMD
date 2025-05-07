@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using CSUtils;
+using System.Diagnostics;
 using System.Text;
 namespace SCE
 {
@@ -30,7 +31,7 @@ namespace SCE
                     Description = "Exits the launcher." } },
 
                 { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], 
-                    Arguments = StrUtils.Build(ArrUtils.TrimFirst(args)), UseShellExecute = true })) {
+                    Arguments = Utils.Build(Utils.TrimFirst(args)), UseShellExecute = true })) {
                     MinArgs = 1, MaxArgs = -1, 
                     Description = "Starts the specified process.",
                     Usage = "<FileName> ?<Arg1>..."} },
@@ -234,7 +235,7 @@ namespace SCE
         {
             bool prev = cb.Launcher.CommandFeedback;
             cb.Launcher.CommandFeedback = false;
-            var newArgs = ArrUtils.TrimFirst(args);
+            var newArgs = Utils.TrimFirst(args);
             cb.Launcher.ExecuteCommand(args[0], newArgs);
             cb.Launcher.CommandFeedback = prev;
         }
@@ -267,7 +268,7 @@ namespace SCE
         {
             if (!int.TryParse(args[0], out var loops))
                 throw new CmdException("Launcher", $"Invalid loops \'{args[0]}\'.");
-            var cmdArgs = ArrUtils.TrimFromStart(args, 2);
+            var cmdArgs = Utils.TrimFromStart(args, 2);
             for (int i = 0; i < loops; ++i)
             {
                 if (!cb.Launcher.SExecuteCommand(args[1], cmdArgs))
@@ -279,7 +280,7 @@ namespace SCE
         {
             try
             {
-                cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
             }
             catch
             {
@@ -291,14 +292,14 @@ namespace SCE
             if (!bool.TryParse(args[0], out var result))
                 throw new CmdException("Launcher", $"Invalid boolean \'{args[0]}\'.");
             if (result)
-                cb.Launcher.SExecuteCommand(args[1], ArrUtils.TrimFromStart(args, 2));
+                cb.Launcher.SExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
 
         private static void AsyncCMD(string[] args, Cmd.Callback cb)
         {
             Thread thread = new(() =>
             {
-                var newArgs = ArrUtils.TrimFirst(args);
+                var newArgs = Utils.TrimFirst(args);
                 cb.Launcher.SExecuteCommand(args[0], newArgs);
             });
             thread.Start();

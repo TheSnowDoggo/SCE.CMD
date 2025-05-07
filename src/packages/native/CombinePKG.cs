@@ -1,4 +1,5 @@
-﻿namespace SCE
+﻿using CSUtils;
+namespace SCE
 {
     internal class CombinePKG : Package
     {
@@ -50,7 +51,7 @@
         {
             if (cb.Launcher.CommandExists(args[0]))
                 throw new CmdException("Combine", $"Command \'{args[0]}\' already exists.");
-            var trim = ArrUtils.TrimFirst(args);
+            var trim = Utils.TrimFirst(args);
             Commands.Add(args[0], new(_ => cb.Launcher.ExecuteEveryCommand(trim)) { 
                 Description = $"Combined command of {trim.Length} line(s)." });
             _combines.Add(args[0]);

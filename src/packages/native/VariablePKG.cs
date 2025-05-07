@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using CSUtils;
+using System.Text;
 
 namespace SCE
 {
@@ -116,7 +117,7 @@ namespace SCE
         {
             for (int i = 0; i < args.Length; ++i)
                 args[i] = Replace(args[i]);
-            var newArgs = ArrUtils.TrimFirst(args);       
+            var newArgs = Utils.TrimFirst(args);       
             cb.Launcher.ExecuteCommand(args[0], newArgs);
         }
     }

@@ -1,5 +1,5 @@
 ﻿using System.Text;
-
+using CSUtils;
 namespace SCE
 {
     internal class ConsolePKG : Package
@@ -108,8 +108,8 @@ namespace SCE
         private static void EscapeInsertCMD(string[] args, Cmd.Callback cb)
         {
             for (int i = 1; i < args.Length; ++i)
-                args[i] = StrUtils.InsertEscapeCharacters(args[i]);
-            cb.Launcher.ExecuteCommand(args[0], ArrUtils.TrimFirst(args));
+                args[i] = Utils.InsertEscapeCharacters(args[i]);
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private static void PrintLCMD(object[] args)
@@ -133,7 +133,7 @@ namespace SCE
         private static void PrintCMD(object[] args)
         {
             int count = args.Length >= 2 ? (int)args[1] : 1;
-            string write = StrUtils.Copy((string)args[0], count);
+            string write = Utils.Copy((string)args[0], count);
             if (write != string.Empty)
                 Console.Write(write);
         }

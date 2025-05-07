@@ -30,22 +30,6 @@ namespace SCE
             Console.WriteLine(FormatErr(source, message));
         }
 
-        public static string Build(string[] arr)
-        {
-            StringBuilder sb = new();
-            foreach (var str in arr)
-                sb.Append(str);
-            return sb.ToString();
-        }
-
-        public static string Combine(IEnumerable<string> collection)
-        {
-            StringBuilder sb = new();
-            foreach (var item in collection)
-                sb.Append(item);
-            return sb.ToString();
-        }
-
         public static string BuildWhile(string str, Predicate<char> predicate)
         {
             StringBuilder sb = new(str.Length);
@@ -95,78 +79,5 @@ namespace SCE
                 args.Add(sb.ToString());
             return args.ToArray();
         }
-
-        public static string InsertEscapeCharacters(string str)
-        {
-            StringBuilder sb = new(str.Length);
-            for (int i = 0; i < str.Length; ++i)
-            {
-                if (str[i] != '\\' || i == str.Length - 1)
-                    sb.Append(str[i]);
-                else
-                { 
-                    switch (str[i + 1])
-                    {
-                        case 'n': sb.Append('\n'); 
-                            break;
-                        case 'r': sb.Append('\r'); 
-                            break;
-                        case 't': sb.Append('\t');
-                            break;
-                        default: sb.Append('\\');
-                            continue;
-                    }  
-                    ++i;
-                }
-            }
-            return sb.ToString();
-        }
-
-        #region FitToLength
-
-        private static string FTL(bool postFit, string str, int length, char fill = ' ')
-        {
-            if (length < 0)
-                throw new ArgumentException("Length cannot be less than 0.");
-
-            int difference = length - str.Length;
-            switch (difference)
-            {
-                case 0: return str;
-                case > 0: return postFit ? str + Copy(fill, difference) : Copy(fill, difference) + str;
-                case < 0: return str[..length];
-            }
-        }
-
-        public static string PostFTL(string str, int length, char fill = ' ')
-        {
-            return FTL(true, str, length, fill);
-        }
-
-        public static string PreFTL(string str, int length, char fill = ' ')
-        {
-            return FTL(false, str, length, fill);
-        }
-
-        #endregion
-
-        #region Copy
-
-        public static string Copy(char chr, int copies)
-        {
-            return new(ArrUtils.Copy(chr, copies));
-        }
-
-        public static string Copy(string str, int copies)
-        {
-            if (copies <= 0)
-                return string.Empty;
-            StringBuilder sb = new(str.Length * copies);
-            for (int i = 0; i < copies; ++i)
-                sb.Append(str);
-            return sb.ToString();
-        }
-
-        #endregion
     }
 }
