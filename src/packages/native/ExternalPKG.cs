@@ -13,88 +13,116 @@ namespace SCE
             Commands = new()
             {
                 { "pkgload", new(PackageLoadCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Loads the packages from the specified relative paths." } },
+                    Description = "Loads the packages from the specified relative paths.",
+                    Usage = "<FilePath>" } },
 
-                { "pkgloaddir", new(PackageLoadDirCMD) { MinArgs = 0, MaxArgs = 1,
-                    Description = "Loads the packaes from all the assemblies in the specified relative paths." } },
+                { "pkgloaddir", new(PackageLoadDirCMD) { MaxArgs = 1,
+                    Description = "Loads the packaes from all the assemblies in the specified relative paths.",
+                    Usage = "?<DirPath->cd>" } },
 
                 { "pkgdel", new(PackageRemoveCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Removes the specified packages." } },
+                    Description = "Removes the specified packages.",
+                    Usage = "<Package1>..." } },
                  
                 { "scrrun", new(RunScriptCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Runs the script from the specified relative path." } },
+                    Description = "Runs the script from the specified relative path.",
+                    Usage = "<FilePath>" } },
 
                 { "scrload", new(LoadCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Loads the script from the specified relative path." } },
+                    Description = "Loads the script from the specified relative path.",
+                    Usage = "<ScriptName> <FilePath>" } },
 
-                { "scrrundir", new(RunDirCMD) { MinArgs = 0, MaxArgs = 1,
-                    Description = "Runs all the scripts in the given directory." } },
+                { "scrrundir", new(RunDirCMD) { MaxArgs = 1,
+                    Description = "Runs all the scripts in the given directory.",
+                    Usage = "?<DirPath>" } },
 
-                { "scrloaddir", new(LoadDirCMD) { MinArgs = 0, MaxArgs = 1,
-                    Description = "Loads all the scripts in the given directory." } },
+                { "scrloaddir", new(LoadDirCMD) { MaxArgs = 1,
+                    Description = "Loads all the scripts in the given directory.",
+                    Usage = "?<DirPath>" } },
 
                 { "scrdel", new(DeleteCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Deletes the specified script." } },
+                    Description = "Deletes the specified script.",
+                    Usage = "<ScriptName>" } },
 
                 { "scrrename", new(RenameCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description =  "Renames the specified script." } },
+                    Description =  "Renames the specified script.",
+                    Usage = "<OldName> <NewName>" } },
 
                 { "scrcompileload", new(CompileDirCMD) { MinArgs = 1, MaxArgs = 2,
-                    Description = "Compiles all the scripts in a given directory into one command." } },
+                    Description = "Compiles all the scripts in a given directory into one command.",
+                    Usage = "<ScriptName> ?<DirPath>" } },
 
                 { "filecount", new(FileCountCMD) { MaxArgs = 1,
-                    Description = "Gets the number of files in a given directory." } },
+                    Description = "Gets the number of files in a given directory.",
+                    Usage = "?<DirPath>" } },
 
                 { "dirdelete", new(DeleteDirCMD) { MaxArgs = 1,
-                    Description = "Deletes the given directory." } },
+                    Description = "Deletes the given directory.",
+                    Usage = "?<DirPath>" } },
 
                 { "filedelete", new(DeleteFileCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Deletes the given file." } },
+                    Description = "Deletes the given file.",
+                    Usage = "<FilePath>" } },
 
                 { "dircreate", new(CreateDirCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Creates a new directory." } },
+                    Description = "Creates a new directory.",
+                    Usage = "<DirPath>" } },
 
                 { "filecreate", new(CreateFileCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Creates a new file." } },
+                    Description = "Creates a new file.",
+                    Usage = "<FilePath>" } },
 
                 { "dirmove", new(MoveDirCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Moves the given directory to a new location." } },
+                    Description = "Moves the given directory to a new location.",
+                    Usage = "<OldDirPath> <NewDirPath>" } },
 
                 { "filemove", new(MoveFileCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Moves the given file to a new location." } },
+                    Description = "Moves the given file to a new location.",
+                    Usage = "<OldFilePath> <NewFilePath>" } },
 
                 { "direxists", new(DirExistsCMD) { MaxArgs = 1,
-                    Description = "Outputs whether a given directory exists." } },
+                    Description = "Outputs whether a given directory exists.",
+                    Usage = "?<DirPath>" } },
 
                 { "fileexists", new(FileExistsCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Outputs whether a given file exists." } },
+                    Description = "Outputs whether a given file exists.",
+                    Usage = "<FilePath>" } },
 
                 { "filecopy", new(CopyFileCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Copies a file to a given destination." } },
+                    Description = "Copies a file to a given destination.",
+                    Usage = "<FilePath> <NewFilePath>" } },
 
                 { "filewrite", new(WriteFileCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Writes to the given file." } },
+                    Description = "Writes to the given file.",
+                    Usage = "<FilePath> ?<Write1>..." } },
 
                 { "fileread", new(ReadFileCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Reads the given file." } },
+                    Description = "Reads the given file.",
+                    Usage = "<FilePath>" } },
 
                 { "fileview", new(ViewFileCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Outputs the contents of a given file to the console." } },
+                    Description = "Outputs the contents of a given file to the console.",
+                    Usage = "<FilePath>" } },
 
                 { "curd", new(CurDirCMD) { MinArgs = 1, MaxArgs = -1, 
-                    Description = "Replaces % to the current running directory of the arguments of the given command." } },
+                    Description = "Replaces % to the current running directory of the arguments of the given command.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
 
                 { "chod", new(ChoDirCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Replaces % to the chosen directory (cd) of the arguments of the given command." } },
+                    Description = "Replaces % to the chosen directory (cd) of the arguments of the given command.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
 
                 { "cd", new(CDAddCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Adds the specified path to the current directory." } },
+                    Description = "Adds the specified path to the current directory.",
+                    Usage = "<DirPath>" } },
 
-                { @"cd/", new(CDSetCMD) { MinArgs = 0, MaxArgs = 1,
-                    Description = "Sets the specified path to the current directory." } },
+                { @"cd/", new(CDSetCMD) { MaxArgs = 1,
+                    Description = "Sets the specified path to the current directory.",
+                    Usage = "?<DirPath>" } },
 
-                { "cd<", new(Cmd.Translator(CDRemoveCMD, new[] { typeof(int) })) { MinArgs = 0, MaxArgs = 1,
-                    Description = "Exits one layer from the current directory." } },
+                { "cd<", new(Cmd.Translator(CDRemoveCMD, new[] { typeof(int) })) { MaxArgs = 1,
+                    Description = "Exits one layer from the current directory.",
+                    Usage = "?<LayerCount>" } },
             };
         }
 

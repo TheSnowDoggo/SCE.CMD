@@ -12,10 +12,12 @@ namespace SCE
             Commands = new()
             {
                 { "roll", new(DiceCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Rolls a dice given the number of sides." } },
+                    Description = "Rolls a dice given the number of sides.",
+                    Usage = "<Sides>" } },
 
                 { "fib", new(FibCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Calculates fibonaci numbers." } },
+                    Description = "Calculates fibonaci numbers.",
+                    Usage = "<UpTo>" } },
             };
         }
 

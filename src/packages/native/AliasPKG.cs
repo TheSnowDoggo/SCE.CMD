@@ -11,16 +11,19 @@
             Commands = new()
             {
                 { "alias", new(AddAliasCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Adds a list of command aliases." } },
+                    Description = "Adds a list of command aliases.",
+                    Usage = "<AliasName->CommandName>..." } },
 
                 { "aliasdel", new(RemoveAliasCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Removes the given command alias." } },
+                    Description = "Removes the given command alias.",
+                    Usage = "<AliasName>" } },
 
                 { "aliasclear", new(ClearAliasCMD) { 
                     Description = "Clears all command aliases." } },
 
-                { "aliasview", new(ViewAliasCMD) { MaxArgs = 1,
-                    Description = "Displays the specified command aliases." } },
+                { "aliasview", new(ViewAliasCMD) { MaxArgs = -1,
+                    Description = "Displays the specified command aliases.",
+                    Usage = "?<*>:<AliasName1>..." } },
             };
         }
 

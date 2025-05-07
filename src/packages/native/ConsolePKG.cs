@@ -8,21 +8,27 @@
             Commands = new()
             {
                 { "printl", new(Cmd.Translator(PrintLCMD, new[] { typeof(string), typeof(int), typeof(bool) }))
-                    { MinArgs = 0, MaxArgs = 3, Description = "Prints the string a given amount of times with a new line." } },
+                    { MaxArgs = 3, Description = "Prints the string a given amount of times with a newline.",
+                    Usage = "?<Message> ?<Count->1> ?<True/False->True>" } },
 
                 { "print", new(Cmd.Translator(PrintCMD, new[] { typeof(string), typeof(int) }) )
-                    { MinArgs = 1, MaxArgs = 2, Description = "Prints the string a given amount of times." } },
+                    { MinArgs = 1, MaxArgs = 2, Description = "Prints the string a given amount of times.",
+                    Usage = "<Message> ?<Count->1>" } },
 
                 { "escins", new(EscapeInsertCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Inserts control characters into the given command." } },
+                    Description = "Inserts control characters into the given command.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
 
-                { "read", new(a => new Cmd.MemItem(Console.ReadLine())) { MinArgs = 0, MaxArgs = 0, Description = "Reads from the console." } },
+                { "read", new(a => new Cmd.MemItem(Console.ReadLine())) {
+                    Description = "Reads from the console." } },
 
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Sets the Foreground color of the Console." } },
+                    Description = "Sets the Foreground color of the Console.",
+                    Usage = "<ConsoleColor>" } },
 
                 { "bg", new(SetColorCMD(false)) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Sets the Background color of the Console." } },
+                    Description = "Sets the Background color of the Console.",
+                    Usage = "<ConsoleColor>" } },
 
                 { "resetcolor", new(args => Console.ResetColor()) { 
                     Description = "Resets the foreground and background colors." } },
@@ -37,7 +43,8 @@
                     "Sets the title of the Console.") },
 
                 { "beep", new(BeepCMD) { MinArgs = 0, MaxArgs = 2,
-                    Description = "Makes a beep sound." } },
+                    Description = "Makes a beep sound.",
+                    Usage = "?<Frequency(Hz)->2000Hz> ?<Duration(ms)->1000ms>" } },
             };
         }
 

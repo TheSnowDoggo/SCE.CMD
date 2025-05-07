@@ -12,21 +12,27 @@ namespace SCE
             Commands = new()
             {
                 { "takefmem", new(StoreMemCMD) { MinArgs = 1, MaxArgs = -1, 
-                    Description = "Stores the latest memory and removes it."} },
+                    Description = "Stores the latest memory and removes it.",
+                    Usage = "<VariableName1>..." } },
 
                 { "ststore", new(StoreCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Stores the data into a variable." } },
+                    Description = "Stores the data into a variable.",
+                    Usage = "<VariableName> <Data>" } },
 
-                { "stclear", new(ClearCMD) { Description = "Clears every variable" } },
+                { "stclear", new(ClearCMD) { 
+                    Description = "Clears every variable" } },
 
                 { "stdel", new(RemoveVariableCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Deletes the specified variable." } },
+                    Description = "Deletes the specified variable.",
+                    Usage = "<VariableName1>..." } },
 
                 { "stview", new(ViewVariableCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Displays all the specified variables." } },
+                    Description = "Displays all the specified variables.",
+                    Usage = "<*>:<VariableName1>..." } },
 
                 { "insert", new(InsertCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Inserts variables into the given command" } },
+                    Description = "Inserts variables into the given command: $var_name$",
+                    Usage = "<CommandName> <Arg1>..." } },
             };
         }
 

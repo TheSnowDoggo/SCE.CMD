@@ -10,10 +10,12 @@
             Commands = new()
             {
                 { "combine", new(CombineCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Combines multiple commands into one." } },
+                    Description = "Combines multiple commands into one.",
+                    Usage = "<NewCommandName> <Command1>..." } },
 
                 { "combdel", new(DeleteCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Deletes the given combine commands." } },
+                    Description = "Deletes the given combine commands.",
+                    Usage = "<*>:<Command1>..." } },
             };
         }
 

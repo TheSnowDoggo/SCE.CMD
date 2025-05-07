@@ -12,38 +12,50 @@ namespace SCE
             {
                 { "help", new(HelpCMD) { MaxArgs = -1,
                     Description = "Displays every command.",
-                    Usage = "<package_name>? ..." } },
+                    Usage = "?<PackageName>..." } },
 
-                { "quit", new((args, cb) => cb.Launcher.Exit()) { Description = "Exits the command line." } },
+                { "quit", new((args, cb) => cb.Launcher.Exit()) { 
+                    Description = "Exits the command line." } },
 
-                { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], Arguments = StrUtils.Build(ArrUtils.TrimFirst(args)), UseShellExecute = true })) {
-                    MinArgs = 1, MaxArgs = -1, Description = "Starts the specified process." } },
+                { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], 
+                    Arguments = StrUtils.Build(ArrUtils.TrimFirst(args)), UseShellExecute = true })) {
+                    MinArgs = 1, MaxArgs = -1, 
+                    Description = "Starts the specified process.",
+                    Usage = "<FileName> ?<Arg1>..."} },
 
                 { "showfeed", Cmd.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c,
                     "Sets whether command feedback should be displayed.") },
 
                 { "cmdexists", new(CommandExistsCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Determines whether the given command exists." } },
+                    Description = "Determines whether the given command exists.",
+                    Usage = "<CommandName>" } },
 
                 { "showerror", new(ErrorsCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Sets whether error feedback should be displayed." } },
+                    Description = "Sets whether error feedback should be displayed.",
+                    Usage = "<True/False>" } },
 
-                { "isfeed", new(GetFeedCMD) { Description = "Adds the feed state to memory." } },
+                { "isfeed", new(GetFeedCMD) { 
+                    Description = "Adds the feed state to memory." } },
 
                 { "feedback", new(FeedbackCMD(false)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Feedbacks the given arguments." } },
+                    Description = "Feedbacks the given arguments.",
+                    Usage = "<Output1>..." } },
 
                 { "feedbackl", new(FeedbackCMD(true)) { MinArgs = 0, MaxArgs = -1,
-                    Description = "Feedbacks the given arguments on new lines." } },
+                    Description = "Feedbacks the given arguments on new lines.",
+                    Usage = "<Output1>..." } },
 
                 { "loop", new(LoopCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Runs the command a given amount of times." } },
+                    Description = "Runs the command a given amount of times.",
+                    Usage = "<Count> <Command> ?<Arg1>..." } },
 
                 { "catch", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Catches command execution errors. Useful in command chains."} },
+                    Description = "Catches command execution errors. Useful in command chains.",
+                    Usage = "<Command> ?<Arg1>..." } },
 
                 { "runif", new(IfCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Runs the command if the condition is true."} },
+                    Description = "Runs the command if the condition is true.",
+                    Usage = "<True/False> <Command> ?<Arg1>..."} },
 
                 { "abort", new(args => throw new Exception("Aborted.")) {
                     Description = "Ends execution of a command chain." } },
@@ -52,30 +64,44 @@ namespace SCE
                     "Displays whether a package with the specified name exists.") },
 
                 { "runall", new((args, cb) => cb.Launcher.ExecuteEveryCommand(args)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Runs every given command" } },
+                    Description = "Runs every given command",
+                    Usage = "<Command1>..." } },
 
-                { "packages", new(PackagesCMD) { Description = "Displays all loaded packages." } },
+                { "packages", new(PackagesCMD) { 
+                    Description = "Displays all loaded packages." } },
 
-                { "time", new(TimeCMD) { MinArgs = 0, MaxArgs = 1,
-                    Description = "Gets the current time or a constant specified by the given argument." } },
+                { "time", new(TimeCMD) { MaxArgs = 1,
+                    Description = "Gets the current time or a constant specified by the given argument.",
+                    Usage = "<local>:<utc>:<today>:<unixepoch>" } },
 
-                { "memclear", new(MemClearCMD) { Description = "Clears all items in laucher memory."} },
+                { "memclear", new(MemClearCMD) { 
+                    Description = "Clears all items in laucher memory." } },
 
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Adds every given item to memory." } },
+                    Description = "Adds every given item to memory.",
+                    Usage = "<Item1>..." } },
 
-                { "memrem", new(MemRemCMD) { MinArgs = 0, MaxArgs = 1,
-                    Description = "Removes the specified number of items from memory"} },
+                { "memrem", new(MemRemCMD) { MaxArgs = 1,
+                    Description = "Removes the specified number of items from memory",
+                    Usage = "?<ItemCount->All>" } },
 
-                { "memview", new(MemViewCMD) { Description = "Displays all items in memory" } },
+                { "memview", new(MemViewCMD) { 
+                    Description = "Displays all items in memory" } },
 
-                { "memlock", new(MemLockCMD) { MaxArgs = 1, Description = "Sets the lock state of memory." } },
+                { "memlock", new(MemLockCMD) { MaxArgs = 1, 
+                    Description = "Sets the lock state of memory.",
+                    Usage = "?<True/False->Toggle>" } },
+
+                { "memcount", new(MemSizeCMD) { 
+                    Description = "Outputs the number of items in the memory stack." } },
 
                 { "memrun", new(MemRunCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Adds items to memory before running the command with no arguments." } },
+                    Description = "Adds items to memory before running the command with no arguments.",
+                    Usage = "<CommandName> ?<Item1>..." } },
 
                 { "memins", new(MemInsCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Inserts and removes items from memory into the given command." } },
+                    Description = "Inserts items from memory into the command ('&'=peek '&^'=pop).",
+                    Usage = "<Command> ?<Arg1>..." } },
             };
         }
 
@@ -276,6 +302,13 @@ namespace SCE
                 throw new CmdException("Native", $"Unable to convert \'{args[0]}\'.");
             cb.Launcher.MemoryLock = res;
             cb.Launcher.FeedbackLine($"Memory lock set to {res}.");
+        }
+
+        private Cmd.MemItem MemSizeCMD(string[] args, Cmd.Callback cb)
+        {
+            int size = cb.Launcher.MemoryStack.Count;
+            cb.Launcher.FeedbackLine(size);
+            return new(size);
         }
 
         private void MemRunCMD(string[] args, Cmd.Callback cb)
