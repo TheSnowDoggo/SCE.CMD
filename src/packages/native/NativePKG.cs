@@ -46,7 +46,7 @@ namespace SCE
                     Description = "Feedbacks the given arguments on new lines.",
                     Usage = "<Output1>..." } },
 
-                { "showfeed", new(ShowFeedCMD) {
+                { "showfeed", new(ShowFeedCMD) { MinArgs = 0, MaxArgs = 1,
                     Description = "Sets whether command feedback should be displayed.",
                     Usage = "?<True/False->Toggle>" } },
 
