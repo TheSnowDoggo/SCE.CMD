@@ -23,8 +23,11 @@ namespace SCE
                 { "packages", new(PackagesCMD) {
                     Description = "Displays all loaded packages." } },
 
-                { "quit", new((args, cb) => Environment.Exit(0)) { 
-                    Description = "Exits the command line." } },
+                { "quit", new(QuitCMD) { 
+                    Description = "Stops all processes." } },
+
+                { "quitlauncher", new((args, cb) => cb.Launcher.Exit()) { 
+                    Description = "Exits the launcher." } },
 
                 { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], 
                     Arguments = StrUtils.Build(ArrUtils.TrimFirst(args)), UseShellExecute = true })) {
@@ -81,6 +84,12 @@ namespace SCE
                     Description = "Gets the current time or a constant specified by the given argument.",
                     Usage = "<local>:<utc>:<today>:<unixepoch>" } },              
             };
+        }
+
+        private static void QuitCMD(string[] args)
+        {
+            int code = args.Length > 0 ? int.Parse(args[0]) : 0;
+            Environment.Exit(code);
         }
 
         private static string BuildCMD(string name, Cmd c)
