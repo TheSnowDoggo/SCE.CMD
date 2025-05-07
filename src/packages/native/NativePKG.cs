@@ -46,12 +46,17 @@ namespace SCE
                     Description = "Feedbacks the given arguments on new lines.",
                     Usage = "<Output1>..." } },
 
-                { "showfeed", Cmd.QCommand<bool>((c, cb) => cb.Launcher.CommandFeedback = c,
-                    "Sets whether command feedback should be displayed.") },
+                { "showfeed", new(ShowFeedCMD) {
+                    Description = "Sets whether command feedback should be displayed.",
+                    Usage = "?<True/False->Toggle>" } },
 
                 { "showerror", new(ErrorsCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets whether error feedback should be displayed.",
-                    Usage = "<True/False>" } },
+                    Usage = "?<True/False->Toggle>" } },
+
+                { "nofeed", new(NoFeedCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Runs the following command without command feedback.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
 
                 { "cmdexists", new(CommandExistsCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Determines whether the given command exists.",
@@ -82,8 +87,39 @@ namespace SCE
 
                 { "time", new(TimeCMD) { MaxArgs = 1,
                     Description = "Gets the current time or a constant specified by the given argument.",
-                    Usage = "<local>:<utc>:<today>:<unixepoch>" } },              
+                    Usage = "<local>:<utc>:<today>:<unixepoch>" } },
+
+                { "sleep", new(SleepCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Sleeps the current thread for the given amount of time in milliseconds.",
+                    Usage = "<(int)Time(ms)>" } },
+
+                { "waitms", new(WaitMSCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Precisely waits for a given amount of time in milliseconds.",
+                    Usage = "<(double)Time(ms)>" } },
+
+                { "waits", new(WaitSCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Precisely waits for a given amount of time in seconds.",
+                    Usage = "<(double)Time(s)>" } },
             };
+        }
+
+        private static void WaitSCMD(string[] args)
+        {
+            var dur_s = double.Parse(args[0]);
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed.TotalSeconds < dur_s) ;
+        }
+
+        private static void WaitMSCMD(string[] args)
+        {
+            var dur_ms = double.Parse(args[0]);
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed.TotalMilliseconds < dur_ms) ;
+        }
+
+        private static void SleepCMD(string[] args)
+        {
+            Thread.Sleep(int.Parse(args[0]));
         }
 
         private static void QuitCMD(string[] args)
@@ -92,7 +128,7 @@ namespace SCE
             Environment.Exit(code);
         }
 
-        private static string BuildCMD(string name, Cmd c)
+        private static string BuildCommand(string name, Cmd c)
         {
             StringBuilder sb = new();
 
@@ -114,7 +150,7 @@ namespace SCE
             StringBuilder sb = new();
             sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
             foreach (var item in pkg.Commands)
-                sb.AppendLine(BuildCMD(item.Key, item.Value));
+                sb.AppendLine(BuildCommand(item.Key, item.Value));
             return sb.ToString();
         }
 
@@ -148,7 +184,7 @@ namespace SCE
                 else
                 {
                     sb.Append($"{pkg.Name} | ");
-                    sb.AppendLine(BuildCMD(name, cmd));
+                    sb.AppendLine(BuildCommand(name, cmd));
                 }
             }
             Console.Write(sb.ToString());
@@ -191,12 +227,30 @@ namespace SCE
             };
         }
 
+        private static void NoFeedCMD(string[] args, Cmd.Callback cb)
+        {
+            bool prev = cb.Launcher.CommandFeedback;
+            cb.Launcher.CommandFeedback = false;
+            var newArgs = ArrUtils.TrimFirst(args);
+            cb.Launcher.ExecuteCommand(args[0], newArgs);
+            cb.Launcher.CommandFeedback = prev;
+        }
+
+        private static void ShowFeedCMD(string[] args, Cmd.Callback cb)
+        {
+            bool set = !cb.Launcher.CommandFeedback;
+            if (args.Length > 0 && !bool.TryParse(args[0], out set))
+                throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
+            cb.Launcher.CommandFeedback = set;
+        }
+
         private void ErrorsCMD(string[] args, Cmd.Callback cb)
         {
-            if (!bool.TryParse(args[0], out var result))
-                throw new CmdException("Native", $"Invalid boolean \'{args[0]}\'.");
-            cb.Launcher.ErrorFeedback = result;
-            cb.Launcher.FeedbackLine($"Error feedback set to {result}.");
+            bool set = !cb.Launcher.ErrorFeedback;
+            if (args.Length > 0 && !bool.TryParse(args[0], out set))
+                throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
+            cb.Launcher.ErrorFeedback = set;
+            cb.Launcher.FeedbackLine($"Error feedback set to {set}.");
         }
 
         private Cmd.MemItem CommandExistsCMD(string[] args, Cmd.Callback cb)
