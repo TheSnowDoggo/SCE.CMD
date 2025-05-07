@@ -1,4 +1,6 @@
-﻿namespace SCE
+﻿using System.Text;
+
+namespace SCE
 {
     internal class ConsolePKG : Package
     {
@@ -7,13 +9,13 @@
             Name = "Console";
             Commands = new()
             {
-                { "printl", new(Cmd.Translator(PrintLCMD, new[] { typeof(string), typeof(int), typeof(bool) }))
-                    { MaxArgs = 3, Description = "Prints the string a given amount of times with a newline.",
-                    Usage = "?<Message> ?<Count->1> ?<True/False->True>" } },
+                { "printl", new(PrintlCMD) { MaxArgs = -1, 
+                    Description = "Prints the given message with a newline.",
+                    Usage = "?<Message1>..." } },
 
-                { "print", new(Cmd.Translator(PrintCMD, new[] { typeof(string), typeof(int) }) )
-                    { MinArgs = 1, MaxArgs = 2, Description = "Prints the string a given amount of times.",
-                    Usage = "<Message> ?<Count->1>" } },
+                { "print", new(PrintCMD) { MinArgs = 1, MaxArgs = -1, 
+                    Description = "Prints the given message.",
+                    Usage = "<Message>" } },
 
                 { "escins", new(EscapeInsertCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Inserts control characters into the given command.",
@@ -60,6 +62,30 @@
         }
 
         #region Commands
+
+        private static void PrintlCMD(string[] args)
+        {
+            StringBuilder sb = new();
+            for (int i = 0; i < args.Length; ++i)
+            {
+                if (i != 0)
+                    sb.Append(' ');
+                sb.Append(args[i]);
+            }
+            Console.WriteLine(sb.ToString());
+        }
+
+        private static void PrintCMD(string[] args)
+        {
+            StringBuilder sb = new();
+            for (int i = 0; i < args.Length; ++i)
+            {
+                if (i != 0)
+                    sb.Append(' ');
+                sb.Append(args[i]);
+            }
+            Console.Write(sb.ToString());
+        }
 
         private static void TitleCMD(string[] args, Cmd.Callback cb)
         {
