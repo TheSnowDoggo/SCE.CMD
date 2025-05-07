@@ -19,8 +19,11 @@
                     Description = "Inserts control characters into the given command.",
                     Usage = "<CommandName> ?<Arg1>..." } },
 
-                { "read", new(a => new Cmd.MemItem(Console.ReadLine())) {
-                    Description = "Reads from the console." } },
+                { "readl", new(a => new Cmd.MemItem(Console.ReadLine())) {
+                    Description = "Reads a line from the console." } },
+
+                { "readkey", new(a => new Cmd.MemItem(Console.ReadKey())) {
+                    Description = "Reads a key from the console." } },
 
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets the Foreground color of the Console.",
@@ -36,11 +39,19 @@
                 { "clear", new(args => Console.Clear()) {
                     Description = "Clears the Console." } },
 
-                { "cursor", Cmd.QCommand<bool>(c => Console.CursorVisible = c,
+                { "setcurpos", new(SetCurPosCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Sets the cursor position.",
+                    Usage = "<Left> <Top>" } },
+
+                { "getcurpos", new(GetCurPosCMD) {
+                    Description = "Gets the cursor position." } },
+
+                { "curvis", Cmd.QCommand<bool>(c => Console.CursorVisible = c,
                     "Sets the visible state of the Cursor.") },
 
-                { "title", Cmd.QCommand<string>(name => Console.Title = name,
-                    "Sets the title of the Console.") },
+                { "title", new(TitleCMD) {
+                    Description = "Sets the title of the Console.",
+                    Usage = "<Title>" } },
 
                 { "beep", new(BeepCMD) { MinArgs = 0, MaxArgs = 2,
                     Description = "Makes a beep sound.",
@@ -49,6 +60,24 @@
         }
 
         #region Commands
+
+        private static void TitleCMD(string[] args, Cmd.Callback cb)
+        {
+            Console.Title = args[0];
+            cb.Launcher.FeedbackLine($"Title set to \'{args[0]}\'.");
+        }
+
+        private static void SetCurPosCMD(string[] args)
+        {
+            Console.SetCursorPosition(int.Parse(args[0]), int.Parse(args[1]));
+        }
+
+        private static Cmd.MemItem GetCurPosCMD(string[] args, Cmd.Callback cb)
+        {
+            var pos = Console.GetCursorPosition();
+            cb.Launcher.FeedbackLine(pos);
+            return new(pos);
+        }
 
         private static void EscapeInsertCMD(string[] args, Cmd.Callback cb)
         {

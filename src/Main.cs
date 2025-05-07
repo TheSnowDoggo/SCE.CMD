@@ -10,6 +10,7 @@
                 Packages = new()
                 {
                     new NativePKG(),
+                    new MemoryPKG(),
                     new ConsolePKG(),
                     new ExternalPKG(),
                     new AliasPKG(), 
