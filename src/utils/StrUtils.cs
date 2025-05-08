@@ -42,6 +42,18 @@ namespace SCE
             return sb.ToString();
         }
 
+        public static int Longest<T>(IEnumerable<T> collection, Func<T, int> lengthFunc)
+        {
+            int longest = int.MinValue;
+            foreach (var item in collection)
+            {
+                var len = lengthFunc(item);
+                if (len > longest)
+                    longest = len;
+            }
+            return longest;
+        }
+
         public static string[] TrimArgs(string str)
         {
             if (str.Length == 0)

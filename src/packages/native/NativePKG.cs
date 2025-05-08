@@ -202,17 +202,18 @@ namespace SCE
                 cb.Launcher.FeedbackLine($"No package with name \'{args}\' found.");
                 return new(false);
             }
-
         }
 
         private void PackagesCMD(string[] args, Cmd.Callback cb)
         {
+            int longest = StrUtils.Longest(cb.Launcher.Packages(), p => p.Name.Length);
             StringBuilder sb = new();
             int total = 0;
-            foreach (var p in cb.Launcher.Packages())
+            foreach (var pkg in cb.Launcher.Packages())
             {
-                int count = p.Commands.Count;
-                sb.AppendLine($"{(p.Name == "" ? "Unnamed*" : p.Name)} | Commands: {count}");
+                int count = pkg.Commands.Count;
+                var name = pkg.Name == "" ? "Unnamed*" : pkg.Name;
+                sb.AppendLine($"{Utils.FTL(name, longest)} | Commands: {count}");
                 total += count;
             }
             sb.AppendLine($"Total commands: {total}");
@@ -286,10 +287,8 @@ namespace SCE
                 throw new CmdException("Launcher", $"Invalid loops \'{args[0]}\'.");
             var cmdArgs = Utils.TrimFromStart(args, 2);
             for (int i = 0; i < loops; ++i)
-            {
                 if (!cb.Launcher.SExecuteCommand(args[1], cmdArgs))
                     throw new CmdException("Launcher", "Loop ended as command failed to execute.");
-            }
         }
 
         private void CatchCMD(string[] args, Cmd.Callback cb)
@@ -299,14 +298,13 @@ namespace SCE
                 cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
             }
             catch
-            {
-            }
+            {}
         }
 
         private void IfCMD(string[] args, Cmd.Callback cb)
         {
             if (!bool.TryParse(args[0], out var result))
-                throw new CmdException("Launcher", $"Invalid boolean \'{args[0]}\'.");
+                throw new CmdException("Launcher", $"Cannot convert \'{args[0]}\' to bool.");
             if (result)
                 cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
