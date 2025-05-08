@@ -18,8 +18,9 @@ namespace SCE
                     Description = "Displays help info for the given commands.",
                     Usage = "<CommandName>..." } },
 
-                { "haspkg", Cmd.QCommand<string>(HasPackageCMD,
-                    "Displays whether a package with the specified name exists.") },
+                { "viewpkg", new(ViewPackageCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Outputs whether a package with the specified name exists.",
+                    Usage = "<PackageName>" } },
 
                 { "packages", new(PackagesCMD) {
                     Description = "Displays all loaded packages." } },
@@ -30,9 +31,7 @@ namespace SCE
                 { "quitlauncher", new((args, cb) => cb.Launcher.Exit()) { 
                     Description = "Exits the launcher." } },
 
-                { "proc", new(args => Process.Start(new ProcessStartInfo() { FileName = args[0], 
-                    Arguments = Utils.Build(Utils.TrimFirst(args)), UseShellExecute = true })) {
-                    MinArgs = 1, MaxArgs = -1, 
+                { "proc", new(ProcCMD) { MinArgs = 1, MaxArgs = -1, 
                     Description = "Starts the specified process.",
                     Usage = "<FileName> ?<Arg1>..."} },
 
@@ -160,7 +159,7 @@ namespace SCE
             StringBuilder sb = new("- Commands -\n");
             if (args.Length == 0)
             {
-                foreach (var pkg in cb.Launcher.Packages)
+                foreach (var pkg in cb.Launcher.Packages())
                     sb.Append(BuildPackageHelp(pkg));
             }
             else
@@ -191,19 +190,26 @@ namespace SCE
             Console.Write(sb.ToString());
         }
 
-        private void HasPackageCMD(string name, Cmd.Callback cb)
+        private Cmd.MemItem ViewPackageCMD(string[] args, Cmd.Callback cb)
         {
-            if (cb.Launcher.TryGetPackage(name, out var package))
+            if (cb.Launcher.TryGetPackage(args[0], out var package))
+            {
                 cb.Launcher.FeedbackLine($"Found package \'{package.Name}\' with {package.Commands.Count} command(s).");
+                return new(true);
+            }
             else
-                cb.Launcher.FeedbackLine($"No package with name \'{name}\' found.");
+            {
+                cb.Launcher.FeedbackLine($"No package with name \'{args}\' found.");
+                return new(false);
+            }
+
         }
 
         private void PackagesCMD(string[] args, Cmd.Callback cb)
         {
             StringBuilder sb = new();
             int total = 0;
-            foreach (var p in cb.Launcher.Packages)
+            foreach (var p in cb.Launcher.Packages())
             {
                 int count = p.Commands.Count;
                 sb.AppendLine($"{(p.Name == "" ? "Unnamed*" : p.Name)} | Commands: {count}");
@@ -211,6 +217,16 @@ namespace SCE
             }
             sb.AppendLine($"Total commands: {total}");
             Console.Write(sb.ToString());
+        }
+
+        private static void ProcCMD(string[] args)
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = args[0],
+                Arguments = Utils.Build(Utils.TrimFirst(args)),
+                UseShellExecute = true
+            });
         }
 
         private Cmd.MemItem GetFeedCMD(string[] args, Cmd.Callback cb)
@@ -292,7 +308,7 @@ namespace SCE
             if (!bool.TryParse(args[0], out var result))
                 throw new CmdException("Launcher", $"Invalid boolean \'{args[0]}\'.");
             if (result)
-                cb.Launcher.SExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+                cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
 
         private static void AsyncCMD(string[] args, Cmd.Callback cb)

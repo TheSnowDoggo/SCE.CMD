@@ -3,28 +3,26 @@
     internal static class Launch
     {
         internal static void Main()
-        {        
-            CmdLauncher launcher = new()
-            {
-                Name = "- SCE Launcher v0.4.2 -",
-                Packages = new()
-                {
-                    new NativePKG(),
-                    new MemoryPKG(),
-                    new ConsolePKG(),
-                    new ExternalPKG(),
-                    new AliasPKG(), 
-                    new VariablePKG(),
-                    new ToolsPKG(),
-                    new CombinePKG(),
-                },
-            };
+        {
+            CmdLauncher launcher = new("- SCE Launcher v0.5.2 -");
 
-            string aScripts = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
-            if (Directory.Exists(aScripts))
-                launcher.SExecuteCommand("scrrundir", new[] { aScripts });
+            launcher.SafeLoadPackages(new Package[]
+            {
+                new NativePKG(),
+                new MemoryPKG(),
+                new ConsolePKG(),
+                new ExternalPKG(),
+                new AliasPKG(),
+                new VariablePKG(),
+                new CombinePKG(),
+                new ToolsPKG(),
+            });
+
+            var scrPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
+            if (Directory.Exists(scrPath))
+                launcher.SExecuteCommand("scrrundir", new[] { scrPath });
             else
-                Directory.CreateDirectory(aScripts);
+                Directory.CreateDirectory(scrPath);
 
             launcher.Run();
         }

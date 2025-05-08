@@ -33,10 +33,10 @@ namespace SCE
         public static string BuildWhile(string str, Predicate<char> predicate)
         {
             StringBuilder sb = new(str.Length);
-            foreach (char c in str)
+            foreach (var c in str)
             {
-                if (!predicate(c))
-                    return sb.ToString();
+                if (!predicate.Invoke(c))
+                    break;
                 sb.Append(c);
             }
             return sb.ToString();

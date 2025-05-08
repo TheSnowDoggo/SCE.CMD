@@ -287,41 +287,42 @@ namespace SCE
 
         private void PackageRemoveCMD(string[] args, Cmd.Callback cb)
         {
-            int removed = 0;
+            int count = 0;
             foreach (var arg in args)
             {
-                string search = arg.ToLower();
-                int res = cb.Launcher.Packages.RemoveWhere(p => p.Name.ToLower() == search);
-                if (res == 0)
-                    StrUtils.PrettyErr("External", $"No packages with name \'{search}\' found.");
-                removed += res;
+                var name = arg.ToLower();
+                if (!cb.Launcher.RemovePackage(name))
+                    StrUtils.PrettyErr("External", $"Package \'{name}\' not found.");
+                else
+                    ++count;
             }
-            if (removed > 0)
-                cb.Launcher.FeedbackLine($"Sucessfully removed {removed} package(s).");
+            if (count == 0)
+                throw new CmdException("External", "No package found.");
+            cb.Launcher.FeedbackLine($"Successfully removed {count} package(s).");
         }
 
         private void PackageLoadDirCMD(string[] args, Cmd.Callback cb)
         {
-            string path = args.Length > 0 ? Path.Combine(directory, args[0]) : directory;
-            int i = 0;
+            var path = args.Length > 0 ? Path.Combine(directory, args[0]) : directory;
+            int count = 0;
             foreach (var pkg in PkgLoadUtils.DiscoverAllPackages(path))
             {
-                cb.Launcher.Packages.Add(pkg);
-                ++i;
+                cb.Launcher.LoadPackage(pkg);
+                ++count;
             }
-            cb.Launcher.FeedbackLine($"Sucessfully loaded {i} package(s).");
+            cb.Launcher.FeedbackLine($"Successfully loaded {count} package(s).");
         }
 
         private void PackageLoadCMD(string[] args, Cmd.Callback cb)
         {
-            string path = Path.Combine(directory, args[0]);
-            int i = 0;
+            var path = Path.Combine(directory, args[0]);
+            int count = 0;
             foreach (var pkg in PkgLoadUtils.DiscoverPackages(path))
             {
-                cb.Launcher.Packages.Add(pkg);
-                ++i;
+                cb.Launcher.LoadPackage(pkg);
+                ++count;
             }
-            cb.Launcher.FeedbackLine($"Sucessfully loaded {i} package(s).");
+            cb.Launcher.FeedbackLine($"Successfully loaded {count} package(s).");
         }
 
         private void RenameCMD(string[] args, Cmd.Callback cb)

@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-
 namespace SCE
 {
     internal static class PkgLoadUtils
@@ -33,10 +32,8 @@ namespace SCE
         public static IEnumerable<Package> DiscoverPackages(Assembly assembly)
         {
             foreach (var type in assembly.GetExportedTypes())
-            {
                 if (type.IsAssignableTo(typeof(Package)) && Activator.CreateInstance(type) is Package pkg)
                     yield return pkg;
-            }
         }
     }
 }
