@@ -96,10 +96,11 @@ namespace SCE
             if (!Utils.BoolPrompt($"Are you sure you want to remove {count} define(s)?\n" +
                 $"Yes[Y] or No[N]: "))
             {
+                cb.Launcher.FeedbackLine("Define clear canceled.");
                 return;
             }
             _definePRP.Defines.Clear();
-            cb.Launcher.FeedbackLine($"Successfully removed {count} #define(s)");
+            cb.Launcher.FeedbackLine($"Successfully removed {count} define(s)");
         }
 
         private void ViewDefinesCMD(string[] args)
