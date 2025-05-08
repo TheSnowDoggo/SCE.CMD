@@ -4,7 +4,7 @@ namespace SCE
 {
     public class CmdLauncher
     {
-        public const string VERSION = "0.5.2";
+        public const string VERSION = "0.6.2";
 
         private readonly Dictionary<string, Package> _packages = new();
 
