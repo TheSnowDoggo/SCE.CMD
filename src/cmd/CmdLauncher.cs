@@ -195,7 +195,7 @@ namespace SCE
 
         #region Execute
 
-        public void ExecuteCommand(string name, string[] args)
+        private void ExecuteCommand(string name, string[] args)
         {
             if (!TryGetCommand(name, out var cmd, out var package))
                 throw new CmdException("Launcher", $"Unrecognised command \'{name}\'.");

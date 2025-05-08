@@ -355,9 +355,8 @@ namespace SCE
         {
             if (!int.TryParse(args[0], out var loops))
                 throw new CmdException("Launcher", $"Invalid loops \'{args[0]}\'.");
-            var cmdArgs = Utils.TrimFromStart(args, 2);
             for (int i = 0; i < loops; ++i)
-                if (!cb.Launcher.SExecuteCommand(args[1], cmdArgs))
+                if (!cb.Launcher.SExecuteCommand(Utils.Infill(Utils.TrimFirst(args), " ")))
                     throw new CmdException("Launcher", "Loop ended as command failed to execute.");
         }
 
@@ -365,7 +364,7 @@ namespace SCE
         {
             try
             {
-                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
             }
             catch
             {}
@@ -376,15 +375,14 @@ namespace SCE
             if (!bool.TryParse(args[0], out var result))
                 throw new CmdException("Launcher", $"Cannot convert \'{args[0]}\' to bool.");
             if (result)
-                cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+                cb.Launcher.ExecuteCommand(Utils.Infill(Utils.TrimFirst(args), " "));
         }
 
         private static void AsyncCMD(string[] args, Cmd.Callback cb)
         {
             Thread thread = new(() =>
             {
-                var newArgs = Utils.TrimFirst(args);
-                cb.Launcher.SExecuteCommand(args[0], newArgs);
+                cb.Launcher.SExecuteCommand(Utils.Infill(args, " "));
             });
             thread.Start();
         }
@@ -393,8 +391,7 @@ namespace SCE
         {
             bool prev = cb.Launcher.CommandFeedback;
             cb.Launcher.CommandFeedback = false;
-            var newArgs = Utils.TrimFirst(args);
-            cb.Launcher.ExecuteCommand(args[0], newArgs);
+            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
             cb.Launcher.CommandFeedback = prev;
         }
 

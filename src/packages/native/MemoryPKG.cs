@@ -128,7 +128,7 @@ namespace SCE
                 }
                 args[i] = sb.ToString();
             }
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
         }
     }
 }

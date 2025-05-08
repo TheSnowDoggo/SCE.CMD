@@ -117,9 +117,8 @@ namespace SCE
         private void InsertCMD(string[] args, Cmd.Callback cb)
         {
             for (int i = 0; i < args.Length; ++i)
-                args[i] = Replace(args[i]);
-            var newArgs = Utils.TrimFirst(args);       
-            cb.Launcher.ExecuteCommand(args[0], newArgs);
+                args[i] = Replace(args[i]);     
+            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
         }
     }
 }

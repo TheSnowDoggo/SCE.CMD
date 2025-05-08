@@ -110,7 +110,7 @@ namespace SCE
         {
             for (int i = 1; i < args.Length; ++i)
                 args[i] = Utils.InsertEscapeCharacters(args[i]);
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
         }
 
         private static void PrintLCMD(object[] args)
