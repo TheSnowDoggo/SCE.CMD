@@ -364,7 +364,7 @@ namespace SCE
         {
             try
             {
-                cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
             }
             catch
             {}
@@ -375,7 +375,7 @@ namespace SCE
             if (!bool.TryParse(args[0], out var result))
                 throw new CmdException("Launcher", $"Cannot convert \'{args[0]}\' to bool.");
             if (result)
-                cb.Launcher.ExecuteCommand(Utils.Infill(Utils.TrimFirst(args), " "));
+                cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
 
         private static void AsyncCMD(string[] args, Cmd.Callback cb)
@@ -391,7 +391,7 @@ namespace SCE
         {
             bool prev = cb.Launcher.CommandFeedback;
             cb.Launcher.CommandFeedback = false;
-            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
             cb.Launcher.CommandFeedback = prev;
         }
 

@@ -118,7 +118,7 @@ namespace SCE
         {
             for (int i = 0; i < args.Length; ++i)
                 args[i] = Replace(args[i]);     
-            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
     }
 }

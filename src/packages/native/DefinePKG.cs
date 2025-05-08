@@ -92,7 +92,7 @@ namespace SCE
             var newArgs = Utils.TrimFromStart(args, 2);
             _userdefines.Defines[args[0]] = () =>
             {
-                cb.Launcher.ExecuteCommand(Utils.Infill(Utils.TrimFirst(args), " "));
+                cb.Launcher.ExecuteCommand(args[1], newArgs);
                 if (cb.Launcher.MemoryStack.Count == 0)
                     throw new CmdException("Define", $"#func \'{args[0]}\' call failed | Memory stack empty.");
                 var obj = cb.Launcher.MemoryStack.Pop() ??
@@ -116,7 +116,7 @@ namespace SCE
             var newArgs = Utils.TrimFromStart(args, 2);
             _userdefines.Defines[args[0]] = () =>
             {
-                cb.Launcher.ExecuteCommand(Utils.Infill(Utils.TrimFirst(args), " "));
+                cb.Launcher.ExecuteCommand(args[1], newArgs);
                 return "";
             };
             _defineview[args[0]] = args[1] + Utils.Infill(newArgs, " ");
@@ -160,7 +160,7 @@ namespace SCE
         {
             for (int i = 0; i < args.Length; ++i)
                 args[i] = args[i].Replace(DefinePRP.PASL, null);
-            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
     }
 }

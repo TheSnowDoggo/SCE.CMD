@@ -4,7 +4,7 @@ namespace SCE
 {
     public class CmdLauncher
     {
-        public const string VERSION = "0.6.3";
+        public const string VERSION = "0.6.4";
 
         private readonly Dictionary<string, Package> _packages = new();
 
@@ -195,8 +195,14 @@ namespace SCE
 
         #region Execute
 
-        private void ExecuteCommand(string name, string[] args)
+        public void ExecuteCommand(string name, string[] args, bool bypassPrp = false)
         {
+            if (!bypassPrp)
+            {
+                name = Process(name);
+                for (int i = 0; i < args.Length; ++i)
+                    args[i] = Process(args[i]);
+            }
             if (!TryGetCommand(name, out var cmd, out var package))
                 throw new CmdException("Launcher", $"Unrecognised command \'{name}\'.");
             if (args.Length < cmd.MinArgs)
@@ -216,7 +222,7 @@ namespace SCE
                 return;
             var name = StrUtils.BuildWhile(line, (c) => c != ' ');
             var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
-            ExecuteCommand(name, args);
+            ExecuteCommand(name, args, true);
         }
 
         public bool SExecuteCommand(string name, string[] args)

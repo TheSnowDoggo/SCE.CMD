@@ -252,14 +252,14 @@ namespace SCE
         {
             for (int i = 1; i < args.Length; ++i)
                 args[i] = args[i].Replace("%", AppDomain.CurrentDomain.BaseDirectory);
-            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private void ChoDirCMD(string[] args, Cmd.Callback cb)
         {
             for (int i = 1; i < args.Length; ++i)
                 args[i] = args[i].Replace("%", directory);
-            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private Cmd.MemItem ReadFileCMD(string[] args, Cmd.Callback cb)
