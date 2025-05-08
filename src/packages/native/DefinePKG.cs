@@ -10,7 +10,7 @@ namespace SCE
         public DefinePKG()
         {
             Name = "Define";
-            Version = "0.0.0";
+            Version = "0.1.0";
             Commands = new()
             {
                 { "#define", new(DefineCMD) { MinArgs = 2, MaxArgs = 2,
