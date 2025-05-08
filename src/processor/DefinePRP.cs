@@ -55,15 +55,20 @@ namespace SCE
                     i += ASL.Length - 1;
                     continue;
                 }
-                if (!ignore && asl != i)
+                if (!ignore)
                 {
                     bool found = false;
                     foreach (var def in Defines)
                     {
                         if (Match(str, def.Key, i))
                         {
-                            found = true;
-                            sb.Append(def.Value.Invoke());
+                            if (asl == i)
+                                sb.Append(def.Key);
+                            else
+                            {
+                                found = true;
+                                sb.Append(def.Value.Invoke());
+                            }
                             i += def.Key.Length - 1;
                             break;
                         }
