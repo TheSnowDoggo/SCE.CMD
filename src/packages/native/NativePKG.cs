@@ -82,6 +82,10 @@ namespace SCE
                     Description = "Sets whether error feedback should be displayed.",
                     Usage = "?<True/False->Toggle>" } },
 
+                { "neaterror", new(NeatErrorsCMD) { MaxArgs = 1,
+                    Description = "Sets whether errors should only display their message.",
+                    Usage = "?<True/False->Toggle>" } },
+
                 #endregion
 
                 #region Cache
@@ -345,6 +349,15 @@ namespace SCE
                 throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
             cb.Launcher.ErrorFeedback = set;
             cb.Launcher.FeedbackLine($"Error feedback set to {set}.");
+        }
+
+        private static void NeatErrorsCMD(string[] args, Cmd.Callback cb)
+        {
+            bool set = !cb.Launcher.NeatExport;
+            if (args.Length > 0 && !bool.TryParse(args[0], out set))
+                throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
+            cb.Launcher.NeatExport = set;
+            cb.Launcher.FeedbackLine($"Neat export set to {set}.");
         }
 
         #endregion

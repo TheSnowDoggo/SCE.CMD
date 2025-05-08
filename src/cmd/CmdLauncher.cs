@@ -36,6 +36,8 @@ namespace SCE
 
         public bool CommandCaching { get; set; } = true;
 
+        public bool NeatExport { get; set; } = true;
+
         #endregion
 
         public void Exit()
@@ -226,10 +228,14 @@ namespace SCE
                 ExecuteCommand(name, args);
                 return true;
             }
+            catch (CmdException e)
+            {
+                Console.WriteLine(e);
+            }
             catch (Exception e)
             {
                 if (ErrorFeedback)
-                    Console.WriteLine(e);
+                    Console.WriteLine(NeatExport ? e.Message : e);
             }
             return false;
         }
@@ -241,10 +247,14 @@ namespace SCE
                 ExecuteCommand(line);
                 return true;
             }
+            catch (CmdException e)
+            {
+                Console.WriteLine(e);
+            }
             catch (Exception e)
             {
                 if (ErrorFeedback)
-                    Console.WriteLine(e);
+                    Console.WriteLine(NeatExport ? e.Message : e);
             }
             return false;
         }
