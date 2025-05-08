@@ -212,6 +212,7 @@ namespace SCE
 
         public void ExecuteCommand(string line)
         {
+            line = Process(line);
             var name = StrUtils.BuildWhile(line, (c) => c != ' ');
             var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
             ExecuteCommand(name, args);
@@ -236,10 +237,7 @@ namespace SCE
         {
             try
             {
-                line = Process(line);
-                var name = StrUtils.BuildWhile(line, (c) => c != ' ');
-                var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
-                ExecuteCommand(name, args);
+                ExecuteCommand(line);
                 return true;
             }
             catch (Exception e)
