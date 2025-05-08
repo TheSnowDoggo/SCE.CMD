@@ -8,7 +8,7 @@ namespace SCE
         public MemoryPKG()
         {
             Name = "Memory";
-            Version = "0.0.0";
+            Version = "0.1.0";
             Commands = new()
             {
                 { "memclear", new(MemClearCMD) {
@@ -44,8 +44,8 @@ namespace SCE
 
         private void MemAddCMD(string[] args, Cmd.Callback cb)
         {
-            foreach (var item in args)
-                cb.Launcher.MemoryStack.Push(item);
+            foreach (var arg in args)
+                cb.Launcher.MemoryStack.Push(arg);
             cb.Launcher.FeedbackLine($"Sucessfully added {args.Length} items to memory.");
         }
 
@@ -66,25 +66,19 @@ namespace SCE
         private void MemViewCMD(string[] args, Cmd.Callback cb)
         {
             if (cb.Launcher.MemoryStack.Count == 0)
-                cb.Launcher.FeedbackLine("No items to view.");
-            else
-            {
-                StringBuilder sb = new();
-                foreach (var item in cb.Launcher.MemoryStack)
-                    sb.AppendLine($"> \"{item}\"");
-                Console.Write(sb.ToString());
-            }
+                throw new CmdException("Memory", "No items to view.");
+            StringBuilder sb = new();
+            foreach (var item in cb.Launcher.MemoryStack)
+                sb.AppendLine($"> \'{item}\'");
+            Console.Write(sb.ToString());
         }
 
         private void MemClearCMD(string[] args, Cmd.Callback cb)
         {
             if (cb.Launcher.MemoryStack.Count == 0)
-                cb.Launcher.FeedbackLine($"No items to clear.");
-            else
-            {
-                cb.Launcher.FeedbackLine($"Successfully cleared {cb.Launcher.MemoryStack.Count} items from memory.");
-                cb.Launcher.MemoryStack.Clear();
-            }
+                throw new CmdException("Memory", "No items to clear.");
+            cb.Launcher.FeedbackLine($"Successfully cleared {cb.Launcher.MemoryStack.Count} items from memory.");
+            cb.Launcher.MemoryStack.Clear();
         }
 
         private void MemLockCMD(string[] args, Cmd.Callback cb)
@@ -107,7 +101,7 @@ namespace SCE
         {
             for (int i = 1; i < args.Length; ++i)
                 cb.Launcher.MemoryStack.Push(args[i]);
-            cb.Launcher.SExecuteCommand(args[0]);
+            cb.Launcher.ExecuteCommand(args[0]);
         }
 
         private void MemInsCMD(string[] args, Cmd.Callback cb)

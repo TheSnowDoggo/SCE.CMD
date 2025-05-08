@@ -97,7 +97,7 @@ namespace SCE
                 return obj.ToString() ??
                     throw new CmdException("Define", $"#func \'{args[0]}\' call failed | Memory item was null.");
             };
-            _defineview[args[0]] = Utils.Infill(newArgs, " ");
+            _defineview[args[0]] = args[1] + Utils.Infill(newArgs, " ");
             cb.Launcher.FeedbackLine("#func created successfully.");
         }
 
@@ -116,7 +116,7 @@ namespace SCE
                 cb.Launcher.ExecuteCommand(args[1], newArgs);
                 return "";
             };
-            _defineview[args[0]] = Utils.Infill(newArgs, " ");
+            _defineview[args[0]] = args[1] + Utils.Infill(newArgs, " ");
             cb.Launcher.FeedbackLine("#action created successfully.");
         }
 
