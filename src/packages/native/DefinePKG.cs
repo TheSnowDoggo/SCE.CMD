@@ -48,6 +48,9 @@ namespace SCE
 
                 { "#viewdefines", new(ViewDefinesCMD) {
                     Description = "Views every define." } },
+
+                { "#prep", new(PrepCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Preprocesses the following command." } },
             };
         }
 
@@ -151,6 +154,15 @@ namespace SCE
             foreach (var def in _userdefines.Defines)
                 sb.AppendLine($"{def.Key} = {_defineview[def.Key]}");
             Console.Write(sb.ToString());
+        }
+
+        private static void PrepCMD(string[] args, Cmd.Callback cb)
+        {
+            var name = cb.Launcher.Process(args[0]);
+            var newArgs = Utils.TrimFirst(args);
+            for (int i = 0; i < newArgs.Length; ++i)
+                newArgs[i] = cb.Launcher.Process(newArgs[i]);
+            cb.Launcher.ExecuteCommand(name, newArgs);
         }
     }
 }
