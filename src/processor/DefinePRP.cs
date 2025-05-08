@@ -7,8 +7,6 @@ namespace SCE
         public const string IGNORE = "@IGNORE";
         public const string END_IGNORE = "@ENDIGNORE";
         public const string ASL = "@ASL";
-        public const string ASL_N = "@ASL<";
-        public const string PASL = "@PASL";
 
         public DefinePRP(int priority)
             : base(priority)
@@ -50,30 +48,11 @@ namespace SCE
                     i += END_IGNORE.Length - 1;
                     continue;
                 }
-                else if (Match(str, ASL_N, i))
-                {
-                    int next = str.IndexOf('>', i + 1);
-                    if (next != -1 && int.TryParse(str[(i + ASL_N.Length)..next], out var num) && num > 0)
-                    {
-                        for (int j = 0; j < num; ++j)
-                            sb.Append(ASL);
-                        asl = next + 1;
-                        i = next;
-                        continue;
-                    }
-                }
                 else if (Match(str, ASL, i))
                 {
                     sb.Append(ASL);
                     asl = i + ASL.Length;
                     i += ASL.Length - 1;
-                    continue;
-                }
-                else if (Match(str, PASL, i))
-                {
-                    sb.Append(PASL);
-                    pasl = i + PASL.Length;
-                    i += PASL.Length - 1;
                     continue;
                 }
                 if (!ignore)
@@ -83,18 +62,12 @@ namespace SCE
                     {
                         if (Match(str, def.Key, i))
                         {
-                            if (i == asl)
+                            if (i != asl)
+                                sb.Append(def.Value.Invoke());
+                            else
                             {
                                 sb.Remove(sb.Length - ASL.Length, ASL.Length);
                                 sb.Append(def.Key);
-                            }
-                            else if (i == pasl)
-                            {
-                                sb.Append(def.Key);
-                            }
-                            else
-                            {
-                                sb.Append(def.Value.Invoke());
                             }
                             found = true;
                             i += def.Key.Length - 1;

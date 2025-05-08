@@ -195,14 +195,8 @@ namespace SCE
 
         #region Execute
 
-        public void ExecuteCommand(string name, string[] args, bool bypassPrp = false)
+        public void ExecuteCommand(string name, string[] args)
         {
-            if (!bypassPrp)
-            {
-                name = Process(name);
-                for (int i = 0; i < args.Length; ++i)
-                    args[i] = Process(args[i]);
-            }
             if (!TryGetCommand(name, out var cmd, out var package))
                 throw new CmdException("Launcher", $"Unrecognised command \'{name}\'.");
             if (args.Length < cmd.MinArgs)
@@ -222,7 +216,7 @@ namespace SCE
                 return;
             var name = StrUtils.BuildWhile(line, (c) => c != ' ');
             var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
-            ExecuteCommand(name, args, true);
+            ExecuteCommand(name, args);
         }
 
         public bool SExecuteCommand(string name, string[] args)
