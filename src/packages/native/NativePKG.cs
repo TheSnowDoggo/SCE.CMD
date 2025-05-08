@@ -8,7 +8,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "1.0.0";
+            Version = "1.1.0";
             Commands = new()
             {
                 #region Main
@@ -152,8 +152,15 @@ namespace SCE
         {
             StringBuilder sb = new();
             sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
+            bool first = true;
             foreach (var item in pkg.Commands)
-                sb.AppendLine(BuildCommand(item.Key, item.Value));
+            {
+                if (!first)
+                    sb.AppendLine();
+                else
+                    first = false;
+                sb.Append(BuildCommand(item.Key, item.Value));
+            }
             return sb.ToString();
         }
 
