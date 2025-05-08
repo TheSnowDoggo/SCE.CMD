@@ -2,12 +2,12 @@
 {
     internal class AliasPKG : Package
     {
-        private readonly Dictionary<string, string> _aliases;
+        private readonly Dictionary<string, string> _aliases = new();
 
         public AliasPKG()
         {
-            _aliases = new();
             Name = "Alias";
+            Version = "0.0.0";
             Commands = new()
             {
                 { "alias", new(AddAliasCMD) { MinArgs = 1, MaxArgs = -1,

@@ -8,6 +8,7 @@ namespace SCE
         public CombinePKG()
         {
             Name = "Combine";
+            Version = "0.0.0";
             Commands = new()
             {
                 { "combine", new(CombineCMD) { MinArgs = 2, MaxArgs = -1,

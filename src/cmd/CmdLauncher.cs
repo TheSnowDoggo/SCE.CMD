@@ -6,11 +6,11 @@ namespace SCE
     {
         public const string VERSION = "0.5.2";
 
-        private bool active;
-
         private readonly Dictionary<string, Package> _packages = new();
 
         private readonly Dictionary<string, string> _commandCache = new();
+
+        private bool active;
 
         public CmdLauncher(string? name = null)
         {
@@ -21,6 +21,8 @@ namespace SCE
         public string Name { get; init; } = "Launcher";
 
         public Func<string>? InputRender { get; set; }
+
+        public SortedSet<Preprocessor> Preprocessors { get; set; } = new();
 
         public Stack<object?> MemoryStack { get; } = new();
 
@@ -50,11 +52,22 @@ namespace SCE
             {
                 if (InputRender != null)
                     Console.Write(InputRender.Invoke());
-                var input = Console.ReadLine() ?? string.Empty;
-                if (input != string.Empty)
-                    SExecuteCommand(input);
+                var input = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(input))
+                    SExecuteCommand(Process(input));
             }
         }
+
+        #region Preprocess
+
+        public string Process(string input)
+        {
+            foreach (var p in Preprocessors)
+                input = p.Process(input);
+            return input;
+        }
+
+        #endregion
 
         #region Package
 
@@ -70,6 +83,7 @@ namespace SCE
             if (_packages.ContainsKey(name))
                 return false;
             _packages[name] = pkg;
+            pkg.Initialize(this);
             return true;
         }
 
@@ -87,7 +101,7 @@ namespace SCE
 
         #endregion
 
-        #region Search
+        #region Get
 
         public bool TryGetCommand(string cmd, string pkgName, [NotNullWhen(true)] out Cmd? command, [NotNullWhen(true)] out Package? package)
         {

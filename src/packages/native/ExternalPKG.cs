@@ -11,6 +11,7 @@ namespace SCE
         public ExternalPKG()
         {
             Name = "External";
+            Version = "0.0.0";
             Commands = new()
             {
                 { "pkgload", new(PackageLoadCMD) { MinArgs = 1, MaxArgs = 1,

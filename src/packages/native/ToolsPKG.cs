@@ -9,6 +9,7 @@ namespace SCE
         public ToolsPKG()
         {
             Name = "Tools";
+            Version = "0.0.0";
             Commands = new()
             {
                 { "roll", new(DiceCMD) { MinArgs = 1, MaxArgs = 1,

@@ -14,6 +14,12 @@
 
         public Dictionary<string, Cmd> Commands { get; init; }
 
-        public string Name { get; init; } = string.Empty;
+        public string Name { get; init; } = "";
+
+        public string Version { get; init; } = "UNDEFINED";
+
+        public virtual void Initialize(CmdLauncher launcher)
+        {
+        }
     }
 }

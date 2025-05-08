@@ -8,6 +8,7 @@ namespace SCE
         public MemoryPKG()
         {
             Name = "Memory";
+            Version = "0.0.0";
             Commands = new()
             {
                 { "memclear", new(MemClearCMD) {

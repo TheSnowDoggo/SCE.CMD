@@ -8,10 +8,19 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
+            Version = "1.0.0";
             Commands = new()
             {
+                #region Main
+
                 { "version", new(VersionCMD) {
                     Description = "Outputs the version of the launcher." } },
+
+                { "quit", new(QuitCMD) {
+                    Description = "Stops all processes." } },
+
+                { "quitlauncher", new((args, cb) => cb.Launcher.Exit()) {
+                    Description = "Exits the launcher." } },
 
                 { "help", new(HelpCMD) { MaxArgs = -1,
                     Description = "Displays every command.",
@@ -21,22 +30,31 @@ namespace SCE
                     Description = "Displays help info for the given commands.",
                     Usage = "<CommandName>..." } },
 
-                { "viewpkg", new(ViewPackageCMD) { MinArgs = 1, MaxArgs = 1,
+                { "pkgview", new(PackageViewCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Outputs whether a package with the specified name exists.",
+                    Usage = "<PackageName>" } },
+
+                { "pkgversion", new(PackageVersionCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Outputs the version of the given package.",
                     Usage = "<PackageName>" } },
 
                 { "packages", new(PackagesCMD) {
                     Description = "Displays all loaded packages." } },
 
-                { "quit", new(QuitCMD) { 
-                    Description = "Stops all processes." } },
+                { "cmdexists", new(CommandExistsCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Determines whether the given command exists.",
+                    Usage = "<CommandName>" } },
 
-                { "quitlauncher", new((args, cb) => cb.Launcher.Exit()) { 
-                    Description = "Exits the launcher." } },
-
-                { "proc", new(ProcCMD) { MinArgs = 1, MaxArgs = -1, 
+                { "proc", new(ProcCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Starts the specified process.",
                     Usage = "<FileName> ?<Arg1>..."} },
+
+                { "abort", new(args => throw new Exception("Aborted.")) {
+                    Description = "Ends execution of a command chain." } },
+
+                #endregion
+
+                #region Feedback
 
                 { "isfeed", new(GetFeedCMD) {
                     Description = "Adds the feed state to memory." } },
@@ -57,9 +75,9 @@ namespace SCE
                     Description = "Sets whether error feedback should be displayed.",
                     Usage = "?<True/False->Toggle>" } },
 
-                { "usecache", new(CacheEnabledCMD) { MaxArgs = 1,
-                    Description = "Sets whether command caching should be enabled.",
-                    Usage = "?<True/False->Toggle>" } },
+                #endregion
+
+                #region Cache
 
                 { "cacheclear", new(CacheClearCMD) {
                     Description = "Clears the command cache." } },
@@ -67,13 +85,17 @@ namespace SCE
                 { "cachesize", new(CacheSizeCMD) {
                     Description = "Outputs the number of items in the command cache." } },
 
-                { "nofeed", new(NoFeedCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Runs the following command without command feedback.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "usecache", new(CacheEnabledCMD) { MaxArgs = 1,
+                    Description = "Sets whether command caching should be enabled.",
+                    Usage = "?<True/False->Toggle>" } },
 
-                { "cmdexists", new(CommandExistsCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Determines whether the given command exists.",
-                    Usage = "<CommandName>" } },
+                #endregion
+
+                #region Chain
+
+                { "runall", new(RunAllCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Runs every given command",
+                    Usage = "<Command1>..." } },
 
                 { "loop", new(LoopCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Runs the command a given amount of times.",
@@ -83,20 +105,21 @@ namespace SCE
                     Description = "Catches command execution errors. Useful in command chains.",
                     Usage = "<Command> ?<Arg1>..." } },
 
-                { "abort", new(args => throw new Exception("Aborted.")) {
-                    Description = "Ends execution of a command chain." } },
-
                 { "if", new(IfCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Runs the command if the condition is true.",
                     Usage = "<True/False> <Command> ?<Arg1>..."} },
 
-                { "runall", new((args, cb) => cb.Launcher.ExecuteEveryCommand(args)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Runs every given command",
-                    Usage = "<Command1>..." } },
-
                 { "async", new(AsyncCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Runs the given command on a new thread.",
                     Usage = "<CommandName> ?<Arg1>..." } },
+
+                { "nofeed", new(NoFeedCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Runs the following command without command feedback.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
+
+                #endregion
+
+                #region Time
 
                 { "time", new(TimeCMD) { MaxArgs = 1,
                     Description = "Gets the current time or a constant specified by the given argument.",
@@ -113,39 +136,18 @@ namespace SCE
                 { "waits", new(WaitSCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Precisely waits for a given amount of time in seconds.",
                     Usage = "<(double)Time(s)>" } },
+
+                #endregion
             };
         }
 
-        private static Cmd.MemItem VersionCMD(string[] args, Cmd.Callback cb)
+        private static string BuildPackageHelp(Package pkg)
         {
-            var v = $"Version: {CmdLauncher.VERSION}";
-            cb.Launcher.FeedbackLine(v);
-            return new(v);
-        }
-
-        private static void WaitSCMD(string[] args)
-        {
-            var dur_s = double.Parse(args[0]);
-            var sw = Stopwatch.StartNew();
-            while (sw.Elapsed.TotalSeconds < dur_s) ;
-        }
-
-        private static void WaitMSCMD(string[] args)
-        {
-            var dur_ms = double.Parse(args[0]);
-            var sw = Stopwatch.StartNew();
-            while (sw.Elapsed.TotalMilliseconds < dur_ms) ;
-        }
-
-        private static void SleepCMD(string[] args)
-        {
-            Thread.Sleep(int.Parse(args[0]));
-        }
-
-        private static void QuitCMD(string[] args)
-        {
-            int code = args.Length > 0 ? int.Parse(args[0]) : 0;
-            Environment.Exit(code);
+            StringBuilder sb = new();
+            sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
+            foreach (var item in pkg.Commands)
+                sb.AppendLine(BuildCommand(item.Key, item.Value));
+            return sb.ToString();
         }
 
         private static string BuildCommand(string name, Cmd c)
@@ -165,13 +167,18 @@ namespace SCE
             return sb.ToString();
         }
 
-        private static string BuildPackageHelp(Package pkg)
+        #region MainCommands
+
+        private static Cmd.MemItem VersionCMD(string[] args, Cmd.Callback cb)
         {
-            StringBuilder sb = new();
-            sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
-            foreach (var item in pkg.Commands)
-                sb.AppendLine(BuildCommand(item.Key, item.Value));
-            return sb.ToString();
+            cb.Launcher.FeedbackLine($"Version: {CmdLauncher.VERSION}");
+            return new(CmdLauncher.VERSION);
+        }
+
+        private static void QuitCMD(string[] args)
+        {
+            int code = args.Length > 0 ? int.Parse(args[0]) : 0;
+            Environment.Exit(code);
         }
 
         private void HelpCMD(string[] args, Cmd.Callback cb)
@@ -210,7 +217,7 @@ namespace SCE
             Console.Write(sb.ToString());
         }
 
-        private Cmd.MemItem ViewPackageCMD(string[] args, Cmd.Callback cb)
+        private Cmd.MemItem PackageViewCMD(string[] args, Cmd.Callback cb)
         {
             if (cb.Launcher.TryGetPackage(args[0], out var package))
             {
@@ -222,6 +229,14 @@ namespace SCE
                 cb.Launcher.FeedbackLine($"No package with name \'{args}\' found.");
                 return new(false);
             }
+        }
+
+        private Cmd.MemItem PackageVersionCMD(string[] args, Cmd.Callback cb)
+        {
+            if (!cb.Launcher.TryGetPackage(args[0], out var pkg))
+                throw new CmdException("Native", $"Unknown package \'{args[0]}\'.");
+            cb.Launcher.FeedbackLine($"Version: {pkg.Version}");
+            return new(pkg.Version);
         }
 
         private void PackagesCMD(string[] args, Cmd.Callback cb)
@@ -240,6 +255,13 @@ namespace SCE
             Console.Write(sb.ToString());
         }
 
+        private Cmd.MemItem CommandExistsCMD(string[] args, Cmd.Callback cb)
+        {
+            var exists = cb.Launcher.CommandExists(args[0]);
+            cb.Launcher.FeedbackLine(exists);
+            return new(exists);
+        }
+
         private static void ProcCMD(string[] args)
         {
             Process.Start(new ProcessStartInfo()
@@ -249,6 +271,10 @@ namespace SCE
                 UseShellExecute = true
             });
         }
+
+        #endregion
+
+        #region Feedback
 
         private Cmd.MemItem GetFeedCMD(string[] args, Cmd.Callback cb)
         {
@@ -268,15 +294,6 @@ namespace SCE
             };
         }
 
-        private static void NoFeedCMD(string[] args, Cmd.Callback cb)
-        {
-            bool prev = cb.Launcher.CommandFeedback;
-            cb.Launcher.CommandFeedback = false;
-            var newArgs = Utils.TrimFirst(args);
-            cb.Launcher.ExecuteCommand(args[0], newArgs);
-            cb.Launcher.CommandFeedback = prev;
-        }
-
         private static void ShowFeedCMD(string[] args, Cmd.Callback cb)
         {
             bool set = !cb.Launcher.CommandFeedback;
@@ -294,14 +311,9 @@ namespace SCE
             cb.Launcher.FeedbackLine($"Error feedback set to {set}.");
         }
 
-        private static void CacheEnabledCMD(string[] args, Cmd.Callback cb)
-        {
-            bool set = !cb.Launcher.CommandCaching;
-            if (args.Length > 0 && !bool.TryParse(args[0], out set))
-                throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
-            cb.Launcher.CommandCaching = set;
-            cb.Launcher.FeedbackLine($"Command Caching set to {set}.");
-        }
+        #endregion
+
+        #region CacheCommands
 
         private static void CacheClearCMD(string[] args, Cmd.Callback cb)
         {
@@ -321,14 +333,25 @@ namespace SCE
             return new(count);
         }
 
-        private Cmd.MemItem CommandExistsCMD(string[] args, Cmd.Callback cb)
+        private static void CacheEnabledCMD(string[] args, Cmd.Callback cb)
         {
-            var exists = cb.Launcher.CommandExists(args[0]);
-            cb.Launcher.FeedbackLine(exists);
-            return new(exists);
+            bool set = !cb.Launcher.CommandCaching;
+            if (args.Length > 0 && !bool.TryParse(args[0], out set))
+                throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
+            cb.Launcher.CommandCaching = set;
+            cb.Launcher.FeedbackLine($"Command Caching set to {set}.");
         }
 
-        private void LoopCMD(string[] args, Cmd.Callback cb)
+        #endregion
+
+        #region ChainCommands
+
+        private static void RunAllCMD(string[] args, Cmd.Callback cb)
+        {
+            cb.Launcher.ExecuteEveryCommand(args);
+        }
+
+        private static void LoopCMD(string[] args, Cmd.Callback cb)
         {
             if (!int.TryParse(args[0], out var loops))
                 throw new CmdException("Launcher", $"Invalid loops \'{args[0]}\'.");
@@ -338,7 +361,7 @@ namespace SCE
                     throw new CmdException("Launcher", "Loop ended as command failed to execute.");
         }
 
-        private void CatchCMD(string[] args, Cmd.Callback cb)
+        private static void CatchCMD(string[] args, Cmd.Callback cb)
         {
             try
             {
@@ -348,7 +371,7 @@ namespace SCE
             {}
         }
 
-        private void IfCMD(string[] args, Cmd.Callback cb)
+        private static void IfCMD(string[] args, Cmd.Callback cb)
         {
             if (!bool.TryParse(args[0], out var result))
                 throw new CmdException("Launcher", $"Cannot convert \'{args[0]}\' to bool.");
@@ -366,6 +389,19 @@ namespace SCE
             thread.Start();
         }
 
+        private static void NoFeedCMD(string[] args, Cmd.Callback cb)
+        {
+            bool prev = cb.Launcher.CommandFeedback;
+            cb.Launcher.CommandFeedback = false;
+            var newArgs = Utils.TrimFirst(args);
+            cb.Launcher.ExecuteCommand(args[0], newArgs);
+            cb.Launcher.CommandFeedback = prev;
+        }
+
+        #endregion
+
+        #region TimeCommands
+
         private static Cmd.MemItem TimeCMD(string[] args, Cmd.Callback cb)
         {
             var timeOpt = args.Length > 0 ? args[0].ToLower() : "local";
@@ -380,5 +416,26 @@ namespace SCE
             cb.Launcher.FeedbackLine(time);
             return new(time);
         }
+
+        private static void WaitSCMD(string[] args)
+        {
+            var dur_s = double.Parse(args[0]);
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed.TotalSeconds < dur_s) ;
+        }
+
+        private static void WaitMSCMD(string[] args)
+        {
+            var dur_ms = double.Parse(args[0]);
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed.TotalMilliseconds < dur_ms) ;
+        }
+
+        private static void SleepCMD(string[] args)
+        {
+            Thread.Sleep(int.Parse(args[0]));
+        }
+
+        #endregion
     }
 }

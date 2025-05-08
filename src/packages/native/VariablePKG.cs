@@ -10,6 +10,7 @@ namespace SCE
         public VariablePKG()
         {
             Name = "Variable";
+            Version = "0.0.0";
             Commands = new()
             {
                 { "takefmem", new(StoreMemCMD) { MinArgs = 1, MaxArgs = -1, 

@@ -7,6 +7,7 @@ namespace SCE
         public ConsolePKG()
         {
             Name = "Console";
+            Version = "0.0.0";
             Commands = new()
             {
                 { "printl", new(PrintlCMD) { MaxArgs = -1, 
