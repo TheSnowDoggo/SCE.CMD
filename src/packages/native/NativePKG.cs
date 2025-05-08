@@ -269,7 +269,7 @@ namespace SCE
 
         private static void HelpCMDCMD(string[] args, Cmd.Callback cb)
         {
-            Console.Write(BuildHelpCMD(Utils.TrimFirst(args), cb));
+            Console.Write(BuildHelpCMD(args, cb));
         }
 
         private static void HelpCMDExpCMD(string[] args, Cmd.Callback cb)
