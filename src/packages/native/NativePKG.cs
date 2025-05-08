@@ -356,7 +356,7 @@ namespace SCE
             if (!int.TryParse(args[0], out var loops))
                 throw new CmdException("Launcher", $"Invalid loops \'{args[0]}\'.");
             for (int i = 0; i < loops; ++i)
-                if (!cb.Launcher.SExecuteCommand(Utils.Infill(Utils.TrimFirst(args), " ")))
+                if (!cb.Launcher.SExecuteCommand(args[1], Utils.TrimFromStart(args, 2)))
                     throw new CmdException("Launcher", "Loop ended as command failed to execute.");
         }
 

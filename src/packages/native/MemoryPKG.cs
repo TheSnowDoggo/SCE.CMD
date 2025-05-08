@@ -101,7 +101,7 @@ namespace SCE
         {
             for (int i = 1; i < args.Length; ++i)
                 cb.Launcher.MemoryStack.Push(args[i]);
-            cb.Launcher.ExecuteCommand(args[0]);
+            cb.Launcher.ExecuteCommand(args[0], Array.Empty<string>());
         }
 
         private void MemInsCMD(string[] args, Cmd.Callback cb)
