@@ -5,7 +5,20 @@ namespace SCE
 {
     internal class DefinePKG : Package
     {
-        private readonly DefinePRP _definePRP = new(0);
+        private static readonly DefinePRP _nativedefines = new(-1)
+        {
+            AutoRemoveIgnore = false,
+            Defines = new()
+            {
+                { "#define", () => "@IGNORE#define" },
+                { "#func", () => "@IGNORE#func" },
+                { "#undefine", () => "@IGNORE#undefine" },
+            },
+        };
+
+        private readonly DefinePRP _userdefines = new(0);
+
+        private readonly Dictionary<string, string> _defineview = new();
 
         public DefinePKG()
         {
@@ -21,28 +34,33 @@ namespace SCE
                     Description = "Creates a new #func.",
                     Usage = "<FuncName> <CommandName> ?<Arg1>..." } },
 
+                { "#action", new(ActionCMD) { MinArgs = 2, MaxArgs = -1,
+                    Description = "Creates a new #action.",
+                    Usage = "<ActionName> <CommandName> ?<Arg1>..." } },
+
                 { "#undefine", new(UndefineCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Removes a given #define or #func.",
+                    Description = "Removes a given define.",
                     Usage = "<DefineName>" } },
 
                 { "#cleardefines", new(ClearDefinesCMD) {
-                    Description = "Removes every #define and #func." } },
+                    Description = "Removes every define." } },
 
                 { "#viewdefines", new(ViewDefinesCMD) {
-                    Description = "Views every #define and #func." } },
+                    Description = "Views every define." } },
             };
         }
 
         public override void Initialize(CmdLauncher launcher)
         {
-            launcher.Preprocessors.Add(_definePRP);
+            launcher.Preprocessors.Add(_nativedefines);
+            launcher.Preprocessors.Add(_userdefines);
         }
 
         private bool VerifyName(string name)
         {
             if (name.Length == 0)
                 throw new CmdException("Define", "Defined name cannot be empty.");
-            return !_definePRP.Defines.ContainsKey(name) || Utils.BoolPrompt($"Define with name \'{name}\' already exists\n" +
+            return !_userdefines.Defines.ContainsKey(name) || Utils.BoolPrompt($"Define with name \'{name}\' already exists\n" +
                 $"Do you want to overwrite it? Yes[Y] or No[N]: ");
         }
 
@@ -53,7 +71,8 @@ namespace SCE
                 cb.Launcher.FeedbackLine("Define canceled.");
                 return;
             }
-            _definePRP.Defines[args[0]] = () => args[1];
+            _userdefines.Defines[args[0]] = () => args[1];
+            _defineview[args[0]] = args[1];
             cb.Launcher.FeedbackLine("#define created successfully.");
         }
 
@@ -67,7 +86,7 @@ namespace SCE
                 return;
             }
             var newArgs = Utils.TrimFromStart(args, 2);
-            _definePRP.Defines[args[0]] = () =>
+            _userdefines.Defines[args[0]] = () =>
             {
                 cb.Launcher.ExecuteCommand(args[1], newArgs);
                 if (cb.Launcher.MemoryStack.Count == 0)
@@ -77,20 +96,41 @@ namespace SCE
                 return obj.ToString() ??
                     throw new CmdException("Define", $"#func \'{args[0]}\' call failed | Memory item was null.");
             };
+            _defineview[args[0]] = Utils.Infill(newArgs, " ");
             cb.Launcher.FeedbackLine("#func created successfully.");
+        }
+
+        private void ActionCMD(string[] args, Cmd.Callback cb)
+        {
+            if (!cb.Launcher.CommandExists(args[1]))
+                throw new CmdException("Define", $"Unknown command \'{args[1]}\'.");
+            if (!VerifyName(args[0]))
+            {
+                cb.Launcher.FeedbackLine("#action creation canceled.");
+                return;
+            }
+            var newArgs = Utils.TrimFromStart(args, 2);
+            _userdefines.Defines[args[0]] = () =>
+            {
+                cb.Launcher.ExecuteCommand(args[1], newArgs);
+                return "";
+            };
+            _defineview[args[0]] = Utils.Infill(newArgs, " ");
+            cb.Launcher.FeedbackLine("#action created successfully.");
         }
 
         private void UndefineCMD(string[] args, Cmd.Callback cb)
         {
-            if (!_definePRP.Defines.ContainsKey(args[0]))
+            if (!_userdefines.Defines.ContainsKey(args[0]))
                 throw new CmdException("Define", $"No define with name \'{args[0]}\' found.");
-            _definePRP.Defines.Remove(args[0]);
+            _userdefines.Defines.Remove(args[0]);
+            _defineview.Remove(args[0]);
             cb.Launcher.FeedbackLine("#define removed successfully.");
         }
 
         private void ClearDefinesCMD(string[] args, Cmd.Callback cb)
         {
-            int count = _definePRP.Defines.Count;
+            int count = _userdefines.Defines.Count;
             if (count == 0)
                 throw new CmdException("Define", "No defines to remove.");
             if (!Utils.BoolPrompt($"Are you sure you want to remove {count} define(s)?\n" +
@@ -99,15 +139,16 @@ namespace SCE
                 cb.Launcher.FeedbackLine("Define clear canceled.");
                 return;
             }
-            _definePRP.Defines.Clear();
+            _userdefines.Defines.Clear();
+            _defineview.Clear();
             cb.Launcher.FeedbackLine($"Successfully removed {count} define(s)");
         }
 
         private void ViewDefinesCMD(string[] args)
         {
             StringBuilder sb = new();
-            foreach (var def in _definePRP.Defines)
-                sb.AppendLine($"{def.Key} = {def.Value}");
+            foreach (var def in _userdefines.Defines)
+                sb.AppendLine($"{def.Key} = {_defineview[def.Key]}");
             Console.Write(sb.ToString());
         }
     }

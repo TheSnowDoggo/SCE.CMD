@@ -54,7 +54,7 @@ namespace SCE
                     Console.Write(InputRender.Invoke());
                 var input = Console.ReadLine();
                 if (!string.IsNullOrWhiteSpace(input))
-                    SExecuteCommand(Process(input));
+                    SExecuteCommand(input);
             }
         }
 
@@ -234,9 +234,21 @@ namespace SCE
 
         public bool SExecuteCommand(string line)
         {
-            var name = StrUtils.BuildWhile(line, (c) => c != ' ');
-            var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
-            return SExecuteCommand(name, args);
+            try
+            {
+                line = Process(line);
+                var name = StrUtils.BuildWhile(line, (c) => c != ' ');
+                var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
+                ExecuteCommand(name, args);
+                return true;
+            }
+            catch (Exception e)
+            {
+                if (ErrorFeedback)
+                    Console.WriteLine(e);
+            }
+            return false;
+            
         }
 
         public void ExecuteEveryCommand(IEnumerable<string> lines)
