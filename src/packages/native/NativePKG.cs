@@ -23,12 +23,19 @@ namespace SCE
                     Description = "Exits the launcher." } },
 
                 { "help", new(HelpCMD) { MaxArgs = -1,
-                    Description = "Displays every command.",
-                    Usage = "?<PackageName>..." } },
+                    Description = "Displays help info for every command in the given packages.",
+                    Usage = "?<PackageName1>..." } },
+
+                { "helpexp", new(HelpExpCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Exports help info for every command in the given packages to a file.",
+                    Usage = "<FilePath> ?<PackageName1>..." } },
 
                 { "helpcmd", new(HelpCMDCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Displays help info for the given commands.",
                     Usage = "<CommandName>..." } },
+
+                { "helpcmdexp", new(HelpCMDExpCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Exports help info for the given commands to a file." } },
 
                 { "pkgview", new(PackageViewCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Outputs whether a package with the specified name exists.",
@@ -167,6 +174,40 @@ namespace SCE
             return sb.ToString();
         }
 
+        private static string BuildHelp(string[] args, Cmd.Callback cb)
+        {
+            StringBuilder sb = new("- Commands -\n");
+            if (args.Length == 0)
+            {
+                foreach (var pkg in cb.Launcher.Packages())
+                    sb.Append(BuildPackageHelp(pkg));
+                return sb.ToString();
+            }
+            foreach (var name in args)
+            {
+                if (!cb.Launcher.TryGetPackage(name, out var pkg))
+                    throw new CmdException("Launcher", $"Unknown package \'{name}\'.");
+                sb.Append(BuildPackageHelp(pkg));
+            }
+            return sb.ToString();
+        }
+
+        private static string BuildHelpCMD(string[] args, Cmd.Callback cb)
+        {
+            StringBuilder sb = new();
+            foreach (var name in args)
+            {
+                if (!cb.Launcher.TryGetCommand(name, out var cmd, out var pkg))
+                    Console.Write($"Unknown Command \'{name}\'.");
+                else
+                {
+                    sb.Append($"{pkg.Name} | ");
+                    sb.AppendLine(BuildCommand(name, cmd));
+                }
+            }
+            return sb.ToString();
+        }
+
         #region MainCommands
 
         private static Cmd.MemItem VersionCMD(string[] args, Cmd.Callback cb)
@@ -181,40 +222,28 @@ namespace SCE
             Environment.Exit(code);
         }
 
-        private void HelpCMD(string[] args, Cmd.Callback cb)
+        private static void HelpCMD(string[] args, Cmd.Callback cb)
         {
-            StringBuilder sb = new("- Commands -\n");
-            if (args.Length == 0)
-            {
-                foreach (var pkg in cb.Launcher.Packages())
-                    sb.Append(BuildPackageHelp(pkg));
-            }
-            else
-            {
-                foreach (var name in args)
-                {
-                    if (!cb.Launcher.TryGetPackage(name, out var pkg))
-                        throw new CmdException("Launcher", $"Unknown package \'{name}\'.");
-                    sb.Append(BuildPackageHelp(pkg));
-                }
-            }
-            Console.Write(sb.ToString());
+            Console.Write(BuildHelp(args, cb));
         }
 
-        private void HelpCMDCMD(string[] args, Cmd.Callback cb)
+        private static void HelpExpCMD(string[] args, Cmd.Callback cb)
         {
-            StringBuilder sb = new();
-            foreach (var name in args)
-            {
-                if (!cb.Launcher.TryGetCommand(name, out var cmd, out var pkg))
-                    Console.Write($"Unknown Command \'{name}\'.");
-                else
-                {
-                    sb.Append($"{pkg.Name} | ");
-                    sb.AppendLine(BuildCommand(name, cmd));
-                }
-            }
-            Console.Write(sb.ToString());
+            var help = BuildHelp(Utils.TrimFirst(args), cb);
+            File.WriteAllText(args[0], help);
+            cb.Launcher.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
+        }
+
+        private static void HelpCMDCMD(string[] args, Cmd.Callback cb)
+        {
+            Console.Write(BuildHelpCMD(Utils.TrimFirst(args), cb));
+        }
+
+        private static void HelpCMDExpCMD(string[] args, Cmd.Callback cb)
+        {
+            var help = BuildHelp(Utils.TrimFirst(args), cb);
+            File.WriteAllText(args[0], help);
+            cb.Launcher.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
         }
 
         private Cmd.MemItem PackageViewCMD(string[] args, Cmd.Callback cb)
