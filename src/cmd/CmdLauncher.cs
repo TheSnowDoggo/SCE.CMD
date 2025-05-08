@@ -209,7 +209,7 @@ namespace SCE
                 MemoryStack.Push(res.Value);
         }
 
-        public void ExecuteCommand(string line)
+        private void ExecuteCommand(string line)
         {
             line = Process(line);
             if (string.IsNullOrWhiteSpace(line))
@@ -234,7 +234,7 @@ namespace SCE
             return false;
         }
 
-        public bool SExecuteCommand(string line)
+        private bool SExecuteCommand(string line)
         {
             try
             {
@@ -247,7 +247,6 @@ namespace SCE
                     Console.WriteLine(e);
             }
             return false;
-            
         }
 
         public void ExecuteEveryCommand(IEnumerable<string> lines)
