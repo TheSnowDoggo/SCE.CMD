@@ -61,15 +61,14 @@ namespace SCE
                     Usage = "<FileName> ?<Arg1>..."} },
 
                 { "!s", new(SaveCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Saves the given command until ran again.",
+                    Description = "Saves the given command until oversaved.",
                     Usage = "<CommandName> ?<Arg1>..." } },
 
                 { "!r", new(LoadCMD) {
                     Description = "Runs the saved command." } },
 
-                { "!c", new(ClearCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Clears the saved command.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "!c", new(ClearCMD) {
+                    Description = "Clears the saved command." } },
 
                 { "abort", new(args => throw new Exception("Aborted.")) {
                     Description = "Ends execution of a command chain." } },
