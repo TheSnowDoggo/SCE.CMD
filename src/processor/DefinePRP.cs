@@ -8,6 +8,7 @@ namespace SCE
         public const string END_IGNORE = "@ENDIGNORE";
         public const string ASL = "@ASL";
         public const string ASL_N = "@ASL<";
+        public const string PASL = "@PASL";
 
         public DefinePRP(int priority)
             : base(priority)
@@ -32,7 +33,7 @@ namespace SCE
         {
             StringBuilder sb = new();
             bool ignore = false;
-            int asl = -1;
+            int asl = -1, pasl = -1;
             for (int i = 0; i < str.Length; ++i)
             {
                 if (Match(str, IGNORE, i))
@@ -68,6 +69,13 @@ namespace SCE
                     i += ASL.Length - 1;
                     continue;
                 }
+                else if (Match(str, PASL, i))
+                {
+                    sb.Append(PASL);
+                    pasl = i + PASL.Length;
+                    i += PASL.Length - 1;
+                    continue;
+                }
                 if (!ignore)
                 {
                     bool found = false;
@@ -75,12 +83,18 @@ namespace SCE
                     {
                         if (Match(str, def.Key, i))
                         {
-                            if (asl != i)
-                                sb.Append(def.Value.Invoke());
-                            else
+                            if (i == asl)
                             {
                                 sb.Remove(sb.Length - ASL.Length, ASL.Length);
                                 sb.Append(def.Key);
+                            }
+                            else if (i == pasl)
+                            {
+                                sb.Append(def.Key);
+                            }
+                            else
+                            {
+                                sb.Append(def.Value.Invoke());
                             }
                             found = true;
                             i += def.Key.Length - 1;

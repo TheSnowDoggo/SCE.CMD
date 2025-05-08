@@ -24,7 +24,7 @@ namespace SCE
         public DefinePKG()
         {
             Name = "Define";
-            Version = "0.1.1";
+            Version = "0.2.1";
             Commands = new()
             {
                 { "#define", new(DefineCMD) { MinArgs = 2, MaxArgs = 2,
@@ -48,6 +48,9 @@ namespace SCE
 
                 { "#viewdefines", new(ViewDefinesCMD) {
                     Description = "Views every define." } },
+
+                { "#depasl", new(DepaslCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Removes @PASL from the following command." } }
             };
         }
 
@@ -151,6 +154,13 @@ namespace SCE
             foreach (var def in _userdefines.Defines)
                 sb.AppendLine($"{def.Key} = {_defineview[def.Key]}");
             Console.Write(sb.ToString());
+        }
+
+        private void DepaslCMD(string[] args, Cmd.Callback cb)
+        {
+            for (int i = 0; i < args.Length; ++i)
+                args[i] = args[i].Replace(DefinePRP.PASL, null);
+            cb.Launcher.ExecuteCommand(Utils.Infill(args, " "));
         }
     }
 }
