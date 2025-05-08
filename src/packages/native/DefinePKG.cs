@@ -12,6 +12,7 @@ namespace SCE
             {
                 { "#define", () => "@IGNORE#define" },
                 { "#func", () => "@IGNORE#func" },
+                { "#action", () => "@IGNORE#action" },
                 { "#undefine", () => "@IGNORE#undefine" },
             },
         };
@@ -23,7 +24,7 @@ namespace SCE
         public DefinePKG()
         {
             Name = "Define";
-            Version = "0.1.0";
+            Version = "0.1.1";
             Commands = new()
             {
                 { "#define", new(DefineCMD) { MinArgs = 2, MaxArgs = 2,

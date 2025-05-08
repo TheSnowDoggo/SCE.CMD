@@ -26,10 +26,8 @@ namespace SCE
             return true;
         }
 
-        private static string SmartReplace(string str, string oldVal, Func<string> newVal)
+        private string SmartReplace(string str)
         {
-            if (oldVal.Length == 0)
-                return str;
             StringBuilder sb = new();
             bool ignore = false;
             for (int i = 0; i < str.Length; ++i)
@@ -39,22 +37,32 @@ namespace SCE
                     sb.Append(IGNORE);
                     ignore = true;
                     i += IGNORE.Length - 1;
+                    continue;
                 }
                 else if (Match(str, END_IGNORE, i))
                 {
                     sb.Append(END_IGNORE);
                     ignore = false;
                     i += END_IGNORE.Length - 1;
+                    continue;
                 }
-                else if (!ignore && Match(str, oldVal, i))
+                if (!ignore)
                 {
-                    sb.Append(newVal.Invoke());
-                    i += oldVal.Length - 1;
+                    bool found = false;
+                    foreach (var def in Defines)
+                    {
+                        if (Match(str, def.Key, i))
+                        {
+                            found = true;
+                            sb.Append(def.Value.Invoke());
+                            i += def.Key.Length - 1;
+                            break;
+                        }
+                    }
+                    if (found)
+                        continue;
                 }
-                else
-                {
-                    sb.Append(str[i]);
-                }
+                sb.Append(str[i]);
             }
             return sb.ToString();
         }
@@ -76,8 +84,7 @@ namespace SCE
 
         public override string Process(string input)
         {
-            foreach (var def in Defines)
-                input = SmartReplace(input, def.Key, def.Value);
+            input = SmartReplace(input);
             return AutoRemoveIgnore ? RemoveIgnore(input) : input;
         }
     }
