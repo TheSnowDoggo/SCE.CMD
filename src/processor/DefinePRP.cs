@@ -7,6 +7,7 @@ namespace SCE
         public const string IGNORE = "@IGNORE";
         public const string END_IGNORE = "@ENDIGNORE";
         public const string ASL = "@ASL";
+        public const string ASL_N = "@ASL<";
 
         public DefinePRP(int priority)
             : base(priority)
@@ -48,6 +49,18 @@ namespace SCE
                     i += END_IGNORE.Length - 1;
                     continue;
                 }
+                else if (Match(str, ASL_N, i))
+                {
+                    int next = str.IndexOf('>', i + 1);
+                    if (next != -1 && int.TryParse(str[(i + ASL_N.Length)..next], out var num) && num > 0)
+                    {
+                        for (int j = 0; j < num; ++j)
+                            sb.Append(ASL);
+                        asl = next + 1;
+                        i = next;
+                        continue;
+                    }
+                }
                 else if (Match(str, ASL, i))
                 {
                     sb.Append(ASL);
@@ -62,10 +75,13 @@ namespace SCE
                     {
                         if (Match(str, def.Key, i))
                         {
-                            if (asl == i)
-                                sb.Append(def.Key);
-                            else
+                            if (asl != i)
                                 sb.Append(def.Value.Invoke());
+                            else
+                            {
+                                sb.Remove(sb.Length - ASL.Length, ASL.Length);
+                                sb.Append(def.Key);
+                            }
                             found = true;
                             i += def.Key.Length - 1;
                             break;
@@ -88,8 +104,6 @@ namespace SCE
                     i += IGNORE.Length - 1;
                 else if (Match(str, END_IGNORE, i))
                     i += END_IGNORE.Length - 1;
-                else if (Match(str, ASL, i))
-                    i += ASL.Length - 1;
                 else
                     sb.Append(str[i]);
             }
