@@ -60,15 +60,14 @@ namespace SCE
                     Description = "Starts the specified process.",
                     Usage = "<FileName> ?<Arg1>..."} },
 
-                { "%s", new(SaveCMD) { MinArgs = 1, MaxArgs = -1,
+                { "!s", new(SaveCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Saves the given command until ran again.",
                     Usage = "<CommandName> ?<Arg1>..." } },
 
-                { "%r", new(LoadCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Runs the saved command.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "!r", new(LoadCMD) {
+                    Description = "Runs the saved command." } },
 
-                { "%c", new(ClearCMD) { MinArgs = 1, MaxArgs = 1,
+                { "!c", new(ClearCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Clears the saved command.",
                     Usage = "<CommandName> ?<Arg1>..." } },
 
