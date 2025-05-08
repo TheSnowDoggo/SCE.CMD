@@ -4,9 +4,13 @@ namespace SCE
 {
     public class CmdLauncher
     {
+        public const string VERSION = "0.5.2";
+
         private bool active;
 
         private readonly Dictionary<string, Package> _packages = new();
+
+        private readonly Dictionary<string, string> _commandCache = new();
 
         public CmdLauncher(string? name = null)
         {
@@ -27,6 +31,8 @@ namespace SCE
         public bool ErrorFeedback { get; set; } = true;
 
         public bool MemoryLock { get; set; } = false;
+
+        public bool CommandCaching { get; set; } = true;
 
         #endregion
 
@@ -83,13 +89,26 @@ namespace SCE
 
         #region Search
 
-        public bool TryGetCommand(string name, [NotNullWhen(true)] out Cmd? command, [NotNullWhen(true)] out Package? package)
+        public bool TryGetCommand(string cmd, string pkgName, [NotNullWhen(true)] out Cmd? command, [NotNullWhen(true)] out Package? package)
         {
+            command = null;
+            return TryGetPackage(pkgName, out package) && package.Commands.TryGetValue(cmd, out command);
+        }
+
+        public bool TryGetCommand(string cmd, [NotNullWhen(true)] out Cmd? command, [NotNullWhen(true)] out Package? package)
+        {
+            if (CommandCaching && _commandCache.TryGetValue(cmd, out var cachedPName) &&
+                TryGetPackage(cachedPName, out package) && package.Commands.TryGetValue(cmd, out command))
+            {
+                return true;
+            }
             foreach (var pkg in Packages())
             {
-                if (pkg.Commands.TryGetValue(name, out command))
+                if (pkg.Commands.TryGetValue(cmd, out command))
                 {
                     package = pkg;
+                    if (CommandCaching)
+                        _commandCache[cmd] = pkg.Name;
                     return true;
                 }
             }
@@ -98,9 +117,9 @@ namespace SCE
             return false;
         }
 
-        public bool TryGetCommand(string name, [NotNullWhen(true)] out Cmd? command)
+        public bool TryGetCommand(string cmd, [NotNullWhen(true)] out Cmd? command)
         {
-            return TryGetCommand(name, out command, out _);
+            return TryGetCommand(cmd, out command, out _);
         }
 
         public bool CommandExists(string name)
@@ -123,7 +142,23 @@ namespace SCE
             return TryGetPackage(name, out _);
         }
 
-        #endregion 
+        #endregion
+
+        #region Cache
+
+        public int ClearCache()
+        {
+            int count = _commandCache.Count;
+            _commandCache.Clear();
+            return count;
+        }
+
+        public int CacheSize()
+        {
+            return _commandCache.Count;
+        }
+
+        #endregion
 
         #region Feedback
 
@@ -156,7 +191,7 @@ namespace SCE
             if (cmd.MaxArgs >= 0 && args.Length > cmd.MaxArgs)
                 throw new CmdException("Launcher", $"Too many args given for command \'{name}\' (max of {cmd.MaxArgs}, got {args.Length}).");
 
-            var res = cmd.Func(args, new(package, this));
+            var res = cmd.Func.Invoke(args, new(package, this));
             if (res != null && !MemoryLock)
                 MemoryStack.Push(res.Value);
         }

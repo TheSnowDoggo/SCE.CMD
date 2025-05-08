@@ -10,6 +10,9 @@ namespace SCE
             Name = "Native";
             Commands = new()
             {
+                { "version", new(VersionCMD) {
+                    Description = "Outputs the version of the launcher." } },
+
                 { "help", new(HelpCMD) { MaxArgs = -1,
                     Description = "Displays every command.",
                     Usage = "?<PackageName>..." } },
@@ -46,13 +49,23 @@ namespace SCE
                     Description = "Feedbacks the given arguments on new lines.",
                     Usage = "<Output1>..." } },
 
-                { "showfeed", new(ShowFeedCMD) { MinArgs = 0, MaxArgs = 1,
+                { "showfeed", new(ShowFeedCMD) {MaxArgs = 1,
                     Description = "Sets whether command feedback should be displayed.",
                     Usage = "?<True/False->Toggle>" } },
 
-                { "showerror", new(ErrorsCMD) { MinArgs = 1, MaxArgs = 1,
+                { "showerror", new(ShowErrorsCMD) { MaxArgs = 1,
                     Description = "Sets whether error feedback should be displayed.",
                     Usage = "?<True/False->Toggle>" } },
+
+                { "usecache", new(CacheEnabledCMD) { MaxArgs = 1,
+                    Description = "Sets whether command caching should be enabled.",
+                    Usage = "?<True/False->Toggle>" } },
+
+                { "cacheclear", new(CacheClearCMD) {
+                    Description = "Clears the command cache." } },
+
+                { "cachesize", new(CacheSizeCMD) {
+                    Description = "Outputs the number of items in the command cache." } },
 
                 { "nofeed", new(NoFeedCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Runs the following command without command feedback.",
@@ -101,6 +114,13 @@ namespace SCE
                     Description = "Precisely waits for a given amount of time in seconds.",
                     Usage = "<(double)Time(s)>" } },
             };
+        }
+
+        private static Cmd.MemItem VersionCMD(string[] args, Cmd.Callback cb)
+        {
+            var v = $"Version: {CmdLauncher.VERSION}";
+            cb.Launcher.FeedbackLine(v);
+            return new(v);
         }
 
         private static void WaitSCMD(string[] args)
@@ -265,13 +285,40 @@ namespace SCE
             cb.Launcher.CommandFeedback = set;
         }
 
-        private void ErrorsCMD(string[] args, Cmd.Callback cb)
+        private static void ShowErrorsCMD(string[] args, Cmd.Callback cb)
         {
             bool set = !cb.Launcher.ErrorFeedback;
             if (args.Length > 0 && !bool.TryParse(args[0], out set))
                 throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
             cb.Launcher.ErrorFeedback = set;
             cb.Launcher.FeedbackLine($"Error feedback set to {set}.");
+        }
+
+        private static void CacheEnabledCMD(string[] args, Cmd.Callback cb)
+        {
+            bool set = !cb.Launcher.CommandCaching;
+            if (args.Length > 0 && !bool.TryParse(args[0], out set))
+                throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
+            cb.Launcher.CommandCaching = set;
+            cb.Launcher.FeedbackLine($"Command Caching set to {set}.");
+        }
+
+        private static void CacheClearCMD(string[] args, Cmd.Callback cb)
+        {
+            int count = cb.Launcher.ClearCache();
+            if (count == 0)
+                throw new CmdException("Native", "No items to clear.");
+            cb.Launcher.FeedbackLine($"Successfully cleared {count} item(s) from the command cache.");
+        }
+
+        private static Cmd.MemItem CacheSizeCMD(string[] args, Cmd.Callback cb)
+        {
+            int count = cb.Launcher.CacheSize();
+            if (count == 0)
+                cb.Launcher.FeedbackLine("Command cache is empty.");
+            else
+                cb.Launcher.FeedbackLine($"Command Cache contains {count} item(s).");
+            return new(count);
         }
 
         private Cmd.MemItem CommandExistsCMD(string[] args, Cmd.Callback cb)

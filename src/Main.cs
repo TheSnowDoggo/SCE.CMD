@@ -4,7 +4,7 @@
     {
         internal static void Main()
         {
-            CmdLauncher launcher = new("- SCE Launcher v0.5.2 -");
+            CmdLauncher launcher = new($"- SCE Launcher v{CmdLauncher.VERSION} -");
 
             launcher.SafeLoadPackages(new Package[]
             {
