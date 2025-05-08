@@ -8,7 +8,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "1.2.0";
+            Version = "1.3.0";
             Commands = new()
             {
                 #region Main
@@ -59,6 +59,18 @@ namespace SCE
                 { "proc", new(ProcCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Starts the specified process.",
                     Usage = "<FileName> ?<Arg1>..."} },
+
+                { "%s", new(SaveCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Saves the given command until ran again.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
+
+                { "%r", new(LoadCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Runs the saved command.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
+
+                { "%c", new(ClearCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Clears the saved command.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
 
                 { "abort", new(args => throw new Exception("Aborted.")) {
                     Description = "Ends execution of a command chain." } },
@@ -336,6 +348,28 @@ namespace SCE
                 Arguments = Utils.Build(Utils.TrimFirst(args)),
                 UseShellExecute = true
             });
+        }
+
+        private string[] _save = Array.Empty<string>();
+
+        private void SaveCMD(string[] args, Cmd.Callback cb)
+        {
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            _save = args;
+        }
+
+        private void LoadCMD(string[] args, Cmd.Callback cb)
+        {
+            if (_save.Length == 0)
+                throw new CmdException("Native", "No command saved.");
+            cb.Launcher.ExecuteCommand(_save[0], Utils.TrimFirst(_save));
+        }
+
+        private void ClearCMD(string[] args, Cmd.Callback cb)
+        {
+            if (_save.Length == 0)
+                throw new CmdException("Native", "No command to clear.");
+            _save = Array.Empty<string>();
         }
 
         #endregion
