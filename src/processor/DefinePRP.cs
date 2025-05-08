@@ -51,8 +51,8 @@ namespace SCE
                 else if (Match(str, ASL, i))
                 {
                     sb.Append(ASL);
-                    asl = ASL.Length;
-                    i += asl - 1;
+                    asl = i + ASL.Length;
+                    i += ASL.Length - 1;
                     continue;
                 }
                 if (!ignore && asl != i)
