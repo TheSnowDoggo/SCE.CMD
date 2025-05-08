@@ -8,7 +8,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "1.1.0";
+            Version = "1.2.0";
             Commands = new()
             {
                 #region Main
@@ -29,6 +29,10 @@ namespace SCE
                 { "helpexp", new(HelpExpCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Exports help info for every command in the given packages to a file.",
                     Usage = "<FilePath> ?<PackageName1>..." } },
+
+                { "helpexpdir", new(HelpExpDirCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Exports help info for every command in the given packages to files in a directory.",
+                    Usage = "<DirectoryPath> ?<PackageName1>..." } },
 
                 { "helpcmd", new(HelpCMDCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Displays help info for the given commands.",
@@ -185,21 +189,25 @@ namespace SCE
             return sb.ToString();
         }
 
-        private static string BuildHelp(string[] args, Cmd.Callback cb)
+        private static IEnumerable<Package> ReadPackages(string[] args, Cmd.Callback cb)
         {
-            StringBuilder sb = new("- Commands -\n");
             if (args.Length == 0)
-            {
-                foreach (var pkg in cb.Launcher.Packages())
-                    sb.Append(BuildPackageHelp(pkg));
-                return sb.ToString();
-            }
+                return cb.Launcher.Packages();
+            List<Package> packages = new(args.Length);
             foreach (var name in args)
             {
                 if (!cb.Launcher.TryGetPackage(name, out var pkg))
                     throw new CmdException("Launcher", $"Unknown package \'{name}\'.");
-                sb.Append(BuildPackageHelp(pkg));
+                packages.Add(pkg);
             }
+            return packages;
+        }
+
+        private static string BuildHelp(string[] args, Cmd.Callback cb)
+        {
+            StringBuilder sb = new("- Commands -\n");
+            foreach (var pkg in ReadPackages(args, cb))
+                sb.Append(BuildPackageHelp(pkg));
             return sb.ToString();
         }
 
@@ -243,6 +251,20 @@ namespace SCE
             var help = BuildHelp(Utils.TrimFirst(args), cb);
             File.WriteAllText(args[0], help);
             cb.Launcher.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
+        }
+
+        private static void HelpExpDirCMD(string[] args, Cmd.Callback cb)
+        {
+            var packages = ReadPackages(Utils.TrimFirst(args), cb).ToArray();
+            if (packages.Length == 0)
+                throw new CmdException("Native", "No packages selected.");
+            Directory.CreateDirectory(args[0]);
+            foreach (var pkg in packages)
+            {
+                var path = Path.Combine(args[0], $"{pkg.Name}.txt");
+                File.WriteAllText(path, BuildPackageHelp(pkg));
+            }
+            cb.Launcher.FeedbackLine($"Successfully created directory with {packages.Length} file(s) at:\n{args[0]}");
         }
 
         private static void HelpCMDCMD(string[] args, Cmd.Callback cb)
