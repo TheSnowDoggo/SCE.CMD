@@ -214,15 +214,19 @@ namespace SCE
         private static string BuildHelpCMD(string[] args, Cmd.Callback cb)
         {
             StringBuilder sb = new();
+            bool first = true;
             foreach (var name in args)
             {
                 if (!cb.Launcher.TryGetCommand(name, out var cmd, out var pkg))
-                    Console.Write($"Unknown Command \'{name}\'.");
-                else
                 {
-                    sb.Append($"{pkg.Name} | ");
-                    sb.AppendLine(BuildCommand(name, cmd));
+                    Console.Write($"Unknown Command \'{name}\'.");
+                    continue;
                 }
+                if (!first)
+                    sb.AppendLine();
+                else
+                    first = false;
+                sb.Append($"{pkg.Name} | {BuildCommand(name, cmd)}");
             }
             return sb.ToString();
         }
