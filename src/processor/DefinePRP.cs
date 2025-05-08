@@ -65,10 +65,8 @@ namespace SCE
                             if (asl == i)
                                 sb.Append(def.Key);
                             else
-                            {
-                                found = true;
                                 sb.Append(def.Value.Invoke());
-                            }
+                            found = true;
                             i += def.Key.Length - 1;
                             break;
                         }
