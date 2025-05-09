@@ -53,7 +53,7 @@ namespace SCE
                     Description = "Stores the data into a variable.",
                     Usage = "<VariableName> <Data>" } },
 
-                { "ststoreres", new(StoreResCMD) { MinArgs = 2, MaxArgs = 1,
+                { "ststoreres", new(StoreResCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Stores the latest memory item into the variable after running the given command.",
                     Usage = "<VariableName> <CommandName> ?<Arg1>..." } },
 
