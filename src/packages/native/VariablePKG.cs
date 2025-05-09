@@ -126,29 +126,32 @@ namespace SCE
             return GetVariable(name, out _);
         }
 
-        private string Replace(string str, int lim = -1)
+        private string[] Replace(string[] arr, int lim = -1)
         {
-            StringBuilder sb = new();
             int count = 0;
-            for (int i = 0; i < str.Length; ++i)
+            for (int i = 0; i < arr.Length; ++i)
             {
-                int next = str.IndexOf('$', i + 1);
-                if (str[i] != '$' || next == -1 || next == i + 1)
-                    sb.Append(str[i]);
-                else
+                StringBuilder sb = new();
+                var str = arr[i];
+                for (int j = 0; j < str.Length; ++j)
                 {
-                    var name = str[(i + 1)..next];
-                    sb.Append(GetVariable(name));
-                    i = next;
-                    ++count;
-                    if (lim >= 0 && count >= lim)
+                    int next = str.IndexOf('$', j + 1);
+                    if (str[j] != '$' || next == -1 || next == j + 1)
+                        sb.Append(str[j]);
+                    else
                     {
-                        sb.Append(str[(i + 1)..]);
-                        break;
+                        var name = str[(j + 1)..next];
+                        sb.Append(GetVariable(name));
+                        j = next;
+                        ++count;
+                        if (lim >= 0 && count >= lim)
+                            break;
                     }
                 }
+                arr[i] = sb.ToString();
+                sb.Clear();
             }
-            return sb.ToString();
+            return arr;
         }
 
         private void EnterGlobalCMD(string[] args)
@@ -269,16 +272,14 @@ namespace SCE
 
         private void InsertCMD(string[] args, Cmd.Callback cb)
         {
-            for (int i = 0; i < args.Length; ++i)
-                args[i] = Replace(args[i]);
+            args = Replace(args);
             cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private void InsertLimCMD(string[] args, Cmd.Callback cb)
         {
             int lim = int.Parse(args[0]);
-            for (int i = 0; i < args.Length; ++i)
-                args[i] = Replace(args[i], lim);
+            args = Replace(args, lim);
             cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
 
