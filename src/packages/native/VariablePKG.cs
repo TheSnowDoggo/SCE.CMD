@@ -145,7 +145,7 @@ namespace SCE
                         j = next;
                         ++count;
                         if (lim >= 0 && count >= lim)
-                            break;
+                            return arr;
                     }
                 }
                 arr[i] = sb.ToString();
