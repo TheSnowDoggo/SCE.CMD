@@ -1,6 +1,5 @@
 ﻿using CSUtils;
 using System.Text;
-
 namespace SCE
 {
     internal class DefinePKG : Package
