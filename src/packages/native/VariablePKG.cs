@@ -17,7 +17,7 @@ namespace SCE
         public VariablePKG()
         {
             Name = "Variable";
-            Version = "1.1.0";
+            Version = "1.2.0";
             Commands = new()
             {
                 { ">scope", new(EnterScopeCMD) {
@@ -64,6 +64,10 @@ namespace SCE
                 { "ins", new(InsertCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Inserts variables into the given command: $var_name$",
                     Usage = "<CommandName> <Arg1>..." } },
+
+                { "insl", new(InsertLimCMD) { MinArgs = 2, MaxArgs = -1,
+                    Description = "Inserts a select number of variables into the given command: $var_name$",
+                    Usage = "<VariableCount> <CommandName> <Arg1>..." } },
 
                 { "stmem", new(StoreMemCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Stores the variables into the memory stack.",
@@ -122,9 +126,10 @@ namespace SCE
             return GetVariable(name, out _);
         }
 
-        private string Replace(string str)
+        private string Replace(string str, int lim = -1)
         {
             StringBuilder sb = new();
+            int count = 0;
             for (int i = 0; i < str.Length; ++i)
             {
                 int next = str.IndexOf('$', i + 1);
@@ -135,6 +140,9 @@ namespace SCE
                     var name = str[(i + 1)..next];
                     sb.Append(GetVariable(name));
                     i = next;
+                    ++count;
+                    if (lim >= 0 && count >= lim)
+                        break;
                 }
             }
             return sb.ToString();
@@ -261,6 +269,14 @@ namespace SCE
             for (int i = 0; i < args.Length; ++i)
                 args[i] = Replace(args[i]);
             cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+        }
+
+        private void InsertLimCMD(string[] args, Cmd.Callback cb)
+        {
+            int lim = int.Parse(args[0]);
+            for (int i = 0; i < args.Length; ++i)
+                args[i] = Replace(args[i], lim);
+            cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
 
         private Cmd.MemItem StoreMemCMD(string[] args)
