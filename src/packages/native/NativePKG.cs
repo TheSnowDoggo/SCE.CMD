@@ -8,7 +8,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "1.3.0";
+            Version = "1.4.0";
             Commands = new()
             {
                 #region Main
@@ -70,7 +70,7 @@ namespace SCE
                 { "!c", new(ClearCMD) {
                     Description = "Clears the saved command." } },
 
-                { "abort", new(args => throw new Exception("Aborted.")) {
+                { "abort", new(args => throw new CmdException("Native", "Aborted.")) {
                     Description = "Ends execution of a command chain." } },
 
                 #endregion
@@ -126,7 +126,7 @@ namespace SCE
                     Description = "Runs the command a given amount of times.",
                     Usage = "<Count> <Command> ?<Arg1>..." } },
 
-                { "catch", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
+                { "noexcepts", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Catches command execution errors. Useful in command chains.",
                     Usage = "<Command> ?<Arg1>..." } },
 
@@ -169,7 +169,7 @@ namespace SCE
         private static string BuildPackageHelp(Package pkg)
         {
             StringBuilder sb = new();
-            sb.AppendLine(pkg.Name == "" ? "Anonymous Package:\n" : $"{pkg.Name}:\n");
+            sb.AppendLine($"- {pkg.Name} | Version: {pkg.Version} -\n");
             bool first = true;
             foreach (var item in pkg.Commands)
             {

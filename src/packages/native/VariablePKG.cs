@@ -14,7 +14,7 @@ namespace SCE
             Commands = new()
             {
                 { "takefmem", new(StoreMemCMD) { MinArgs = 1, MaxArgs = -1, 
-                    Description = "Stores the latest memory and removes it.",
+                    Description = "Stores the latest items in memory stack and removes it.",
                     Usage = "<VariableName1>..." } },
 
                 { "ststore", new(StoreCMD) { MinArgs = 2, MaxArgs = 2,

@@ -1,17 +1,14 @@
 ﻿using CSUtils;
-using System.IO;
-using System.Text;
-
 namespace SCE
 {
     internal class ExternalPKG : Package
     {
-        private string directory = string.Empty;
+        private string directory = "";
 
         public ExternalPKG()
         {
             Name = "External";
-            Version = "0.0.0";
+            Version = "0.1.0";
             Commands = new()
             {
                 { "pkgload", new(PackageLoadCMD) { MinArgs = 1, MaxArgs = 1,
@@ -130,10 +127,11 @@ namespace SCE
 
         private void SetDir(string dir, CmdLauncher launcher)
         {
+            dir = Utils.Capitalize(dir.Replace('\\', '/'));
             if (!Directory.Exists(dir))
                 throw new CmdException("External", $"Unknown directory \"{dir}\".");
             directory = dir;
-            launcher.InputRender = () => $"{directory}>";
+            launcher.InputRender = () => $"{Path.TrimEndingDirectorySeparator(directory)}>";
         }
 
         #region Commands
@@ -149,14 +147,7 @@ namespace SCE
         private void WriteFileCMD(string[] args, Cmd.Callback cb)
         {
             var relPath = Path.Combine(directory, args[0]);
-            StringBuilder sb = new();
-            for (int i = 1; i < args.Length; ++i)
-            {
-                if (i != 1)
-                    sb.Append(' ');
-                sb.Append(args[i]);
-            }
-            var str = sb.ToString();
+            var str = Utils.Infill(Utils.TrimFirst(args), " ");
             File.WriteAllText(relPath, str);
             cb.Launcher.FeedbackLine($"Successfully wrote {str.Length} characters to:\n{relPath}");
         }
@@ -269,12 +260,7 @@ namespace SCE
                 throw new CmdException("External", $"File does not exist \'{path}\'.");
             var lines = File.ReadAllLines(path);
             if (cb.Launcher.CmdFeedback)
-            {
-                StringBuilder sb = new();
-                foreach (var line in lines)
-                    sb.AppendLine(line);
-                Console.Write(sb.ToString());
-            }
+                Console.WriteLine(Utils.Infill(lines, "\n"));
             return new(lines);
         }
 
@@ -412,10 +398,7 @@ namespace SCE
 
         private void CDAddCMD(string[] args, Cmd.Callback cb)
         {
-            string path = args[0].Replace('/', '\\');
-            if (directory.Length > 0 && path.Length > 0 && path[0] != '\\')
-                path = '\\' + path;
-            SetDir(directory + path, cb.Launcher);
+            SetDir(Path.Combine(directory, args[0]), cb.Launcher);
         }
 
         private void CDSetCMD(string[] args, Cmd.Callback cb)
@@ -424,7 +407,7 @@ namespace SCE
                 SetDir(args[0], cb.Launcher);
             else
             {
-                directory = string.Empty;
+                directory = "";
                 cb.Launcher.InputRender = null;
             }
         }

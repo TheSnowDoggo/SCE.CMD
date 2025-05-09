@@ -21,6 +21,8 @@ namespace SCE
             };
         }
 
+        #region Combine
+
         private void DeleteCMD(string[] args, Cmd.Callback cb)
         {
             if (args[0] == "*")
@@ -58,5 +60,7 @@ namespace SCE
             _combines.Add(args[0]);
             cb.Launcher.FeedbackLine($"Sucessfully made new command \'{args[0]}\'.");
         }
+
+        #endregion
     }
 }

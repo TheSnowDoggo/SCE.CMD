@@ -8,10 +8,10 @@ namespace SCE
         public MemoryPKG()
         {
             Name = "Memory";
-            Version = "0.1.0";
+            Version = "0.2.0";
             Commands = new()
             {
-                { "memclear", new(MemClearCMD) {
+                { "memclr", new(MemClearCMD) {
                     Description = "Clears all items in laucher memory." } },
 
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
@@ -29,7 +29,7 @@ namespace SCE
                     Description = "Sets the lock state of memory.",
                     Usage = "?<True/False->Toggle>" } },
 
-                { "memcount", new(MemSizeCMD) {
+                { "memsize", new(MemSizeCMD) {
                     Description = "Outputs the number of items in the memory stack." } },
 
                 { "memrun", new(MemRunCMD) { MinArgs = 1, MaxArgs = -1,

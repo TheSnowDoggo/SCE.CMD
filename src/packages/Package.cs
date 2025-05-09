@@ -14,7 +14,7 @@
 
         public Dictionary<string, Cmd> Commands { get; init; }
 
-        public string Name { get; init; } = "";
+        public string Name { get; init; } = "UNNAMED";
 
         public string Version { get; init; } = "UNDEFINED";
 

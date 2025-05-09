@@ -7,7 +7,7 @@ namespace SCE
         public ConsolePKG()
         {
             Name = "Console";
-            Version = "0.0.0";
+            Version = "0.1.0";
             Commands = new()
             {
                 { "printl", new(PrintlCMD) { MaxArgs = -1, 
@@ -25,8 +25,12 @@ namespace SCE
                 { "readl", new(a => new Cmd.MemItem(Console.ReadLine())) {
                     Description = "Reads a line from the console." } },
 
-                { "readkey", new(a => new Cmd.MemItem(Console.ReadKey())) {
-                    Description = "Reads a key from the console." } },
+                { "readkey", new(ReadKeyCMD) { MinArgs = 1,
+                    Description = "Console.ReadKey().",
+                    Usage = "?<Intercept:True/False->False>" } },
+
+                { "read", new(a => new Cmd.MemItem(Console.Read())) {
+                    Description = "Reads the next character from the input stream." } },
 
                 { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
                     Description = "Sets the Foreground color of the Console.",
@@ -109,7 +113,7 @@ namespace SCE
         private static void EscapeInsertCMD(string[] args, Cmd.Callback cb)
         {
             for (int i = 1; i < args.Length; ++i)
-                args[i] = Utils.InsertEscapeCharacters(args[i]);
+                args[i] = Utils.InsertEscapeCharacters(args[i], @"*/");
             cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
@@ -122,6 +126,14 @@ namespace SCE
             if (args.Length > 1 && !int.TryParse(args[1], out duration))
                 throw new CmdException("Console", $"Duration invalid \'{args[1]}\'.");
             Console.Beep(frequency, duration);
+        }
+
+        private static Cmd.MemItem ReadKeyCMD(string[] args)
+        {
+            bool intercept = false;
+            if (args.Length > 0 && !bool.TryParse(args[0], out intercept))
+                throw new CmdException("Console", $"Cannot convert \'{args[0]}\' to bool.");
+            return new(Console.ReadKey(intercept));
         }
 
         private static Action<string[], Cmd.Callback> SetColorCMD(bool foreground)
