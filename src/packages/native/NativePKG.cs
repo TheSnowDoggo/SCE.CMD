@@ -130,10 +130,6 @@ namespace SCE
                     Description = "Runs the command a given amount of times.",
                     Usage = "<Count> <Command> ?<Arg1>..." } },
 
-                { "noexcepts", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Catches command execution errors. Useful in command chains.",
-                    Usage = "<Command> ?<Arg1>..." } },
-
                 { "if", new(IfCMD) { MinArgs = 2, MaxArgs = -1,
                     Description = "Runs the command if the condition is true.",
                     Usage = "<True/False> <Command> ?<Arg1>..."} },
@@ -145,6 +141,14 @@ namespace SCE
                 { "nofeed", new(NoFeedCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Runs the following command without command feedback.",
                     Usage = "<CommandName> ?<Arg1>..." } },
+
+                { "noexcept", new(NoExceptCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Catches command execution errors without error feedback.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
+
+                { "catch", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Catches command execution errors.",
+                    Usage = "<Command> ?<Arg1>..." } },
 
                 #endregion
 
@@ -480,12 +484,7 @@ namespace SCE
 
         private static void CatchCMD(string[] args, Cmd.Callback cb)
         {
-            try
-            {
-                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
-            }
-            catch
-            {}
+            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private static void IfCMD(string[] args, Cmd.Callback cb)
@@ -509,8 +508,21 @@ namespace SCE
         {
             bool prev = cb.Launcher.CmdFeedback;
             cb.Launcher.CmdFeedback = false;
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
             cb.Launcher.CmdFeedback = prev;
+        }
+
+        private static void NoExceptCMD(string[] args, Cmd.Callback cb)
+        {
+            bool prev = cb.Launcher.ErrFeedback;
+            cb.Launcher.ErrFeedback = false;
+            try
+            {
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            }
+            catch
+            { }
+            cb.Launcher.ErrFeedback = prev;
         }
 
         #endregion

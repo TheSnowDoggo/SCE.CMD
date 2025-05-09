@@ -1,6 +1,5 @@
 ﻿using CSUtils;
 using System.Text;
-
 namespace SCE
 {
     internal class MemoryPKG : Package
@@ -11,7 +10,11 @@ namespace SCE
             Version = "0.2.0";
             Commands = new()
             {
-                { "memclr", new(MemClearCMD) {
+                { "nout", new(NoMemCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Locks memory for the subsequent command.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
+
+                { "memclear", new(MemClearCMD) {
                     Description = "Clears all items in laucher memory." } },
 
                 { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
@@ -40,6 +43,14 @@ namespace SCE
                     Description = "Inserts items from memory into the command ('&'=peek '&^'=pop).",
                     Usage = "<Command> ?<Arg1>..." } },
             };
+        }
+
+        private static void NoMemCMD(string[] args, Cmd.Callback cb)
+        {
+            bool old = cb.Launcher.MemLock;
+            cb.Launcher.MemLock = true;
+            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
+            cb.Launcher.MemLock = old;
         }
 
         private void MemAddCMD(string[] args, Cmd.Callback cb)

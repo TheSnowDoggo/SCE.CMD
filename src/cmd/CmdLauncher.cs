@@ -4,7 +4,7 @@ namespace SCE
 {
     public class CmdLauncher
     {
-        public const string VERSION = "0.6.4";
+        public const string VERSION = "0.7.4";
 
         private readonly Dictionary<string, Package> _packages = new();
 
@@ -227,7 +227,8 @@ namespace SCE
             }
             catch (CmdException e)
             {
-                Console.WriteLine(e);
+                if (ErrFeedback)
+                    Console.WriteLine(e);
             }
             catch (Exception e)
             {
@@ -246,7 +247,8 @@ namespace SCE
             }
             catch (CmdException e)
             {
-                Console.WriteLine(e);
+                if (ErrFeedback)
+                    Console.WriteLine(e);
             }
             catch (Exception e)
             {
