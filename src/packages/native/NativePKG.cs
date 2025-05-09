@@ -73,6 +73,10 @@ namespace SCE
                 { "abort", new(args => throw new CmdException("Native", "Aborted.")) {
                     Description = "Ends execution of a command chain." } },
 
+                { "mod", new(ModCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Performs a mod operation.",
+                    Usage = "<a> <b>" } },
+
                 #endregion
 
                 #region Feedback
@@ -219,6 +223,11 @@ namespace SCE
             foreach (var pkg in ReadPackages(args, cb))
                 sb.Append(BuildPackageHelp(pkg));
             return sb.ToString();
+        }
+
+        private static Cmd.MemItem ModCMD(string[] args, Cmd.Callback cb)
+        {
+            return new(Utils.Mod(int.Parse(args[0]), int.Parse(args[1])));
         }
 
         private static string BuildHelpCMD(string[] args, Cmd.Callback cb)
