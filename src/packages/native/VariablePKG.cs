@@ -1,8 +1,5 @@
 ﻿using CSUtils;
 using System.Text;
-using static System.Formats.Asn1.AsnWriter;
-using System.Xml.Linq;
-
 namespace SCE
 {
     internal class VariablePKG : Package
@@ -20,7 +17,7 @@ namespace SCE
         public VariablePKG()
         {
             Name = "Variable";
-            Version = "1.0.0";
+            Version = "1.1.0";
             Commands = new()
             {
                 { ">scope", new(EnterScopeCMD) {
@@ -55,6 +52,10 @@ namespace SCE
                 { "ststore", new(StoreCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Stores the data into a variable.",
                     Usage = "<VariableName> <Data>" } },
+
+                { "ststoreres", new(StoreResCMD) { MinArgs = 2, MaxArgs = 1,
+                    Description = "Stores the latest memory item into the variable after running the given command.",
+                    Usage = "<VariableName> <CommandName> ?<Arg1>..." } },
 
                 { "tfm", new(TakeFMemCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Stores the latest items in memory stack and removes it.",
@@ -226,6 +227,18 @@ namespace SCE
         private void StoreCMD(string[] args, Cmd.Callback cb)
         {
             StoreVariable(args[0], args[1], cb);
+        }
+
+        private void StoreResCMD(string[] args, Cmd.Callback cb)
+        {
+            cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+            if (cb.Launcher.MemoryStack.Count == 0)
+                throw new CmdException("Variable", "No items in memory to store.");
+            var obj = cb.Launcher.MemoryStack.Pop() ??
+                throw new CmdException("Variable", "Memory object was null.");
+            var str = obj.ToString() ??
+                throw new CmdException("Variable", "Memory string conversion was null.");
+            StoreVariable(args[0], str, cb);
         }
 
         private void TakeFMemCMD(string[] args, Cmd.Callback cb)
