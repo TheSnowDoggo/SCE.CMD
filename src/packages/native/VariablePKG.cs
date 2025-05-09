@@ -142,7 +142,10 @@ namespace SCE
                     i = next;
                     ++count;
                     if (lim >= 0 && count >= lim)
+                    {
+                        sb.Append(str[(i + 1)..]);
                         break;
+                    }
                 }
             }
             return sb.ToString();
