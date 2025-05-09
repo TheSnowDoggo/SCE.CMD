@@ -145,7 +145,11 @@ namespace SCE
                         j = next;
                         ++count;
                         if (lim >= 0 && count >= lim)
+                        {
+                            sb.Append(str[(j + 1)..]);
+                            arr[i] = sb.ToString();
                             return arr;
+                        }
                     }
                 }
                 arr[i] = sb.ToString();
