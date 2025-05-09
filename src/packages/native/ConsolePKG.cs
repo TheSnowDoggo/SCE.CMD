@@ -107,7 +107,7 @@ namespace SCE
         {
             var pos = Console.GetCursorPosition();
             cb.Launcher.FeedbackLine(pos);
-            return new(pos);
+            return new($"{pos.Left} {pos.Top}");
         }
 
         private static void EscapeInsertCMD(string[] args, Cmd.Callback cb)
