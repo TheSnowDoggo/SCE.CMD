@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="CSUtils">
       <HintPath>lib\CSUtils.dll</HintPath>
     </Reference>

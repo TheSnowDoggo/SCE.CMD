@@ -24,21 +24,21 @@ namespace SCE
             int asl = -1;
             for (int i = 0; i < str.Length; ++i)
             {
-                if (Utils.Match(str, IGNORE, i))
+                if (Utils.MatchAll(str, IGNORE, i))
                 {
                     sb.Append(IGNORE);
                     ignore = true;
                     i += IGNORE.Length - 1;
                     continue;
                 }
-                else if (Utils.Match(str, END_IGNORE, i))
+                else if (Utils.MatchAll(str, END_IGNORE, i))
                 {
                     sb.Append(END_IGNORE);
                     ignore = false;
                     i += END_IGNORE.Length - 1;
                     continue;
                 }
-                else if (Utils.Match(str, ASL, i))
+                else if (Utils.MatchAll(str, ASL, i))
                 {
                     sb.Append(ASL);
                     asl = i + ASL.Length;
@@ -50,7 +50,7 @@ namespace SCE
                     bool found = false;
                     foreach (var def in Defines)
                     {
-                        if (Utils.Match(str, def.Key, i))
+                        if (Utils.MatchAll(str, def.Key, i))
                         {
                             if (i != asl)
                                 sb.Append(def.Value.Invoke());
@@ -77,9 +77,9 @@ namespace SCE
             StringBuilder sb = new();
             for (int i = 0; i < str.Length; ++i)
             {
-                if (Utils.Match(str, IGNORE, i))
+                if (Utils.MatchAll(str, IGNORE, i))
                     i += IGNORE.Length - 1;
-                else if (Utils.Match(str, END_IGNORE, i))
+                else if (Utils.MatchAll(str, END_IGNORE, i))
                     i += END_IGNORE.Length - 1;
                 else
                     sb.Append(str[i]);
