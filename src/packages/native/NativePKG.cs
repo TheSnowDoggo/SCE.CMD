@@ -227,7 +227,9 @@ namespace SCE
 
         private static Cmd.MemItem ModCMD(string[] args, Cmd.Callback cb)
         {
-            return new(Utils.Mod(int.Parse(args[0]), int.Parse(args[1])));
+            int res = Utils.Mod(int.Parse(args[0]), int.Parse(args[1]));
+            cb.Launcher.FeedbackLine(res);
+            return new(res);
         }
 
         private static string BuildHelpCMD(string[] args, Cmd.Callback cb)
