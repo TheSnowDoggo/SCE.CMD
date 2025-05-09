@@ -83,10 +83,10 @@ namespace SCE
 
         private void MemLockCMD(string[] args, Cmd.Callback cb)
         {
-            bool set = !cb.Launcher.MemoryLock;
+            bool set = !cb.Launcher.MemLock;
             if (args.Length > 0 && !bool.TryParse(args[0], out set))
                 throw new CmdException("Native", $"Unable to convert \'{args[0]}\' to bool.");
-            cb.Launcher.MemoryLock = set;
+            cb.Launcher.MemLock = set;
             cb.Launcher.FeedbackLine($"Memory lock set to {set}.");
         }
 

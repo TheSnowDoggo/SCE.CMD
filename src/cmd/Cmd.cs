@@ -36,6 +36,8 @@
 
         public Func<string[], Callback, MemItem?> Func { get; }
 
+        #region Utilites
+
         public static Cmd QCommand<T>(Action<T, Callback> action, string description = "")
         {
             return new(Translator((args, cb) => action.Invoke((T)args[0], cb), new[] { typeof(T) }))
@@ -81,5 +83,7 @@
         {
             return Translator((args, _) => action(args), types);
         }
+
+        #endregion
     }
 }

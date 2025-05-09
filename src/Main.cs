@@ -1,4 +1,6 @@
-﻿namespace SCE
+﻿using System.Xml.Linq;
+
+namespace SCE
 {
     internal static class Launch
     {
@@ -6,7 +8,7 @@
         {
             CmdLauncher launcher = new($"- SCE Launcher v{CmdLauncher.VERSION} -");
 
-            launcher.SafeLoadPackages(new Package[]
+            launcher.SLoadPackages(new Package[]
             {
                 new NativePKG(),
                 new MemoryPKG(),
@@ -15,7 +17,6 @@
                 new AliasPKG(),
                 new VariablePKG(),
                 new CombinePKG(),
-                new ToolsPKG(),
                 new DefinePKG(),
             });
 
@@ -25,6 +26,7 @@
             else
                 Directory.CreateDirectory(scrPath);
 
+            Console.WriteLine($"{launcher.Name}\nStart typing or type help to see available commands:");
             launcher.Run();
         }
     }

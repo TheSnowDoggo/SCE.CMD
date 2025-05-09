@@ -333,7 +333,7 @@ namespace SCE
 
         private Cmd.MemItem CommandExistsCMD(string[] args, Cmd.Callback cb)
         {
-            var exists = cb.Launcher.CommandExists(args[0]);
+            var exists = cb.Launcher.ContainsCommand(args[0]);
             cb.Launcher.FeedbackLine(exists);
             return new(exists);
         }
@@ -376,14 +376,14 @@ namespace SCE
 
         private Cmd.MemItem GetFeedCMD(string[] args, Cmd.Callback cb)
         {
-            return new(cb.Launcher.CommandFeedback);
+            return new(cb.Launcher.CmdFeedback);
         }
 
         private static Action<string[], Cmd.Callback> FeedbackCMD(bool newLine)
         {
             return (args, cb) =>
             {
-                if (!cb.Launcher.CommandFeedback)
+                if (!cb.Launcher.CmdFeedback)
                     return;
                 StringBuilder sb = new();
                 foreach (var arg in args)
@@ -394,27 +394,27 @@ namespace SCE
 
         private static void ShowFeedCMD(string[] args, Cmd.Callback cb)
         {
-            bool set = !cb.Launcher.CommandFeedback;
+            bool set = !cb.Launcher.CmdFeedback;
             if (args.Length > 0 && !bool.TryParse(args[0], out set))
                 throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
-            cb.Launcher.CommandFeedback = set;
+            cb.Launcher.CmdFeedback = set;
         }
 
         private static void ShowErrorsCMD(string[] args, Cmd.Callback cb)
         {
-            bool set = !cb.Launcher.ErrorFeedback;
+            bool set = !cb.Launcher.ErrFeedback;
             if (args.Length > 0 && !bool.TryParse(args[0], out set))
                 throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
-            cb.Launcher.ErrorFeedback = set;
+            cb.Launcher.ErrFeedback = set;
             cb.Launcher.FeedbackLine($"Error feedback set to {set}.");
         }
 
         private static void NeatErrorsCMD(string[] args, Cmd.Callback cb)
         {
-            bool set = !cb.Launcher.NeatExport;
+            bool set = !cb.Launcher.NeatErrors;
             if (args.Length > 0 && !bool.TryParse(args[0], out set))
                 throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
-            cb.Launcher.NeatExport = set;
+            cb.Launcher.NeatErrors = set;
             cb.Launcher.FeedbackLine($"Neat export set to {set}.");
         }
 
@@ -442,10 +442,10 @@ namespace SCE
 
         private static void CacheEnabledCMD(string[] args, Cmd.Callback cb)
         {
-            bool set = !cb.Launcher.CommandCaching;
+            bool set = !cb.Launcher.CmdCaching;
             if (args.Length > 0 && !bool.TryParse(args[0], out set))
                 throw new CmdException("Native", $"Cannot convert \'{args[0]}\' to bool.");
-            cb.Launcher.CommandCaching = set;
+            cb.Launcher.CmdCaching = set;
             cb.Launcher.FeedbackLine($"Command Caching set to {set}.");
         }
 
@@ -496,10 +496,10 @@ namespace SCE
 
         private static void NoFeedCMD(string[] args, Cmd.Callback cb)
         {
-            bool prev = cb.Launcher.CommandFeedback;
-            cb.Launcher.CommandFeedback = false;
+            bool prev = cb.Launcher.CmdFeedback;
+            cb.Launcher.CmdFeedback = false;
             cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
-            cb.Launcher.CommandFeedback = prev;
+            cb.Launcher.CmdFeedback = prev;
         }
 
         #endregion

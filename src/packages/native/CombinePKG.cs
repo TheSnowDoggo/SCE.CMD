@@ -50,7 +50,7 @@ namespace SCE
 
         private void CombineCMD(string[] args, Cmd.Callback cb)
         {
-            if (cb.Launcher.CommandExists(args[0]))
+            if (cb.Launcher.ContainsCommand(args[0]))
                 throw new CmdException("Combine", $"Command \'{args[0]}\' already exists.");
             var trim = Utils.TrimFirst(args);
             Commands.Add(args[0], new(_ => cb.Launcher.ExecuteEveryCommand(trim)) { 

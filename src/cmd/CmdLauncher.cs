@@ -12,13 +12,12 @@ namespace SCE
 
         private bool active;
 
-        public CmdLauncher(string? name = null)
+        public CmdLauncher(string name = "Unnamed Launcher")
         {
-            if (name != null)
-                Name = name;
+            Name = name;
         }
 
-        public string Name { get; init; } = "Launcher";
+        public string Name { get; init; }
 
         public Func<string>? InputRender { get; set; }
 
@@ -28,15 +27,15 @@ namespace SCE
 
         #region Options
 
-        public bool CommandFeedback { get; set; } = true;
+        public bool CmdFeedback { get; set; } = true;
 
-        public bool ErrorFeedback { get; set; } = true;
+        public bool ErrFeedback { get; set; } = true;
 
-        public bool MemoryLock { get; set; } = false;
+        public bool MemLock { get; set; } = false;
 
-        public bool CommandCaching { get; set; } = true;
+        public bool CmdCaching { get; set; } = true;
 
-        public bool NeatExport { get; set; } = true;
+        public bool NeatErrors { get; set; } = true;
 
         #endregion
 
@@ -47,8 +46,6 @@ namespace SCE
 
         public void Run()
         {
-            Console.WriteLine($"{Name}\nStart typing or type help to see available commands:");
-
             active = true;
             while (active)
             {
@@ -88,7 +85,7 @@ namespace SCE
             return true;
         }
 
-        public void SafeLoadPackages(IEnumerable<Package> packages)
+        public void SLoadPackages(IEnumerable<Package> packages)
         {
             foreach (var pkg in packages)
                 if (!LoadPackage(pkg))
@@ -112,7 +109,7 @@ namespace SCE
 
         public bool TryGetCommand(string cmd, [NotNullWhen(true)] out Cmd? command, [NotNullWhen(true)] out Package? package)
         {
-            if (CommandCaching && _commandCache.TryGetValue(cmd, out var cachedPName) &&
+            if (CmdCaching && _commandCache.TryGetValue(cmd, out var cachedPName) &&
                 TryGetPackage(cachedPName, out package) && package.Commands.TryGetValue(cmd, out command))
             {
                 return true;
@@ -122,7 +119,7 @@ namespace SCE
                 if (pkg.Commands.TryGetValue(cmd, out command))
                 {
                     package = pkg;
-                    if (CommandCaching)
+                    if (CmdCaching)
                         _commandCache[cmd] = pkg.Name;
                     return true;
                 }
@@ -137,7 +134,7 @@ namespace SCE
             return TryGetCommand(cmd, out command, out _);
         }
 
-        public bool CommandExists(string name)
+        public bool ContainsCommand(string name)
         {
             return TryGetCommand(name, out _);
         }
@@ -179,7 +176,7 @@ namespace SCE
 
         public bool FeedbackLine(object? obj = null)
         {
-            if (!CommandFeedback)
+            if (!CmdFeedback)
                 return false;
             Console.WriteLine(obj);
             return true;
@@ -187,7 +184,7 @@ namespace SCE
 
         public bool Feedback(object? obj)
         {
-            if (!CommandFeedback)
+            if (!CmdFeedback)
                 return false;
             Console.Write(obj);
             return true;
@@ -206,8 +203,8 @@ namespace SCE
             if (cmd.MaxArgs >= 0 && args.Length > cmd.MaxArgs)
                 throw new CmdException("Launcher", $"Too many args given for command \'{name}\' (max of {cmd.MaxArgs}, got {args.Length}).");
 
-            var res = cmd.Func.Invoke(args, new(package, this));
-            if (res != null && !MemoryLock)
+            var res = cmd.Func.Invoke(args, new Cmd.Callback(package, this));
+            if (res != null && !MemLock)
                 MemoryStack.Push(res.Value);
         }
 
@@ -234,8 +231,8 @@ namespace SCE
             }
             catch (Exception e)
             {
-                if (ErrorFeedback)
-                    Console.WriteLine(NeatExport ? e.Message : e);
+                if (ErrFeedback)
+                    Console.WriteLine(NeatErrors ? e.Message : e);
             }
             return false;
         }
@@ -253,8 +250,8 @@ namespace SCE
             }
             catch (Exception e)
             {
-                if (ErrorFeedback)
-                    Console.WriteLine(NeatExport ? e.Message : e);
+                if (ErrFeedback)
+                    Console.WriteLine(NeatErrors ? e.Message : e);
             }
             return false;
         }

@@ -82,7 +82,7 @@ namespace SCE
 
         private void FuncCMD(string[] args, Cmd.Callback cb)
         {
-            if (!cb.Launcher.CommandExists(args[1]))
+            if (!cb.Launcher.ContainsCommand(args[1]))
                 throw new CmdException("Define", $"Unknown command \'{args[1]}\'.");
             if (!VerifyName(args[0]))
             {
@@ -106,7 +106,7 @@ namespace SCE
 
         private void ActionCMD(string[] args, Cmd.Callback cb)
         {
-            if (!cb.Launcher.CommandExists(args[1]))
+            if (!cb.Launcher.ContainsCommand(args[1]))
                 throw new CmdException("Define", $"Unknown command \'{args[1]}\'.");
             if (!VerifyName(args[0]))
             {

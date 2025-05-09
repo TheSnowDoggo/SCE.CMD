@@ -268,7 +268,7 @@ namespace SCE
             if (!File.Exists(path))
                 throw new CmdException("External", $"File does not exist \'{path}\'.");
             var lines = File.ReadAllLines(path);
-            if (cb.Launcher.CommandFeedback)
+            if (cb.Launcher.CmdFeedback)
             {
                 StringBuilder sb = new();
                 foreach (var line in lines)

@@ -36,7 +36,7 @@
                     throw new CmdException("Alias", $"Invalid alias \'{alias}\'.");
                 if (!cb.Launcher.TryGetCommand(split[1], out var command))
                     throw new CmdException("Alias", $"Unknown command \'{split[1]}\'.");
-                if (cb.Launcher.CommandExists(split[0]))
+                if (cb.Launcher.ContainsCommand(split[0]))
                     throw new CmdException("Alias", $"Command with name \'{split[0]}\' already exists.");
                 Commands.Add(split[0], command);
                 _aliases[split[0]] = split[1];
