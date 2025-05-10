@@ -71,8 +71,9 @@ namespace SCE
                 { "!c", new(ClearCMD) {
                     Description = "Clears the saved command." } },
 
-                { "abort", new(args => throw new CmdException("Native", "Aborted.")) {
-                    Description = "Ends execution of a command chain." } },
+                { "abort", new(AbortCMD) { MaxArgs = -1,
+                    Description = "Ends execution of a command chain.",
+                    Usage = "?<MsgPart1>..." } },
 
                 { "mod", new(ModCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Performs a mod operation.",
@@ -552,6 +553,11 @@ namespace SCE
         #endregion
 
         #region ChainCommands
+
+        private static void AbortCMD(string[] args, Cmd.Callback cb)
+        {
+            throw new CmdException("Native", args.Length > 0 ? Utils.Infill(args, " ") : "Abort called.");
+        }
 
         private static void RunAllCMD(string[] args, Cmd.Callback cb)
         {
