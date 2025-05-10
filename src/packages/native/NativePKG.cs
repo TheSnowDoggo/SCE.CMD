@@ -236,6 +236,14 @@ namespace SCE
                     Description = "Determines if the last mem item is a type.",
                     Usage = "<Type>" } },
 
+                { "convarg", new(ConvArgCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Converts a given argument to the given type.",
+                    Usage = "<Target> <Type>" } },
+
+                { "conv", new(ConvCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Converts the last mem item to the given type.",
+                    Usage = "<Type>" } },
+
                 #endregion 
 
                 #region Time
@@ -799,14 +807,37 @@ namespace SCE
         private static Cmd.MemItem IsTypeArgCMD(string[] args)
         {
             var t = StrUtils.BetterGetType(args[1]);
-            var res = Convert.ChangeType(args[0], t);
-            return new(res != null);
+            try
+            {
+                var res = Convert.ChangeType(args[0], t);
+                return new(res != null);
+            }
+            catch
+            {
+                return new(false);
+            }
         }
 
         private static Cmd.MemItem IsTypeCMD(string[] args, Cmd.Callback cb)
         {
             var t = StrUtils.BetterGetType(args[0]);
             return new(MemObj(cb).GetType() == t);
+        }
+
+        private static Cmd.MemItem ConvArgCMD(string[] args)
+        {
+            var t = StrUtils.BetterGetType(args[1]);
+            var res = Convert.ChangeType(args[0], t) ??
+                throw new CmdException("Native", "Conversion resulted in null.");
+            return new(res);
+        }
+
+        private static Cmd.MemItem ConvCMD(string[] args, Cmd.Callback cb)
+        {
+            var t = StrUtils.BetterGetType(args[0]);
+            var res = Convert.ChangeType(MemObj(cb), t) ??
+                throw new CmdException("Native", "Conversion resulted in null.");
+            return new(res);
         }
 
         #endregion
