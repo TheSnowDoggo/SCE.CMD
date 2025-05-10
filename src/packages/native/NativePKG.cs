@@ -641,11 +641,11 @@ namespace SCE
             throw new CmdException("Launcher", $"Invalid conditional \'{input}\'.");
         }
 
-        private static object MemObj(Cmd.Callback cb)
+        private static object MemObj(Cmd.Callback cb, bool pop = true)
         {
             if (cb.Launcher.MemoryStack.Count == 0)
                 throw new CmdException("Native", "Memory stack is empty.");
-            var obj = cb.Launcher.MemoryStack.Pop() ??
+            var obj = (pop ? cb.Launcher.MemoryStack.Pop() : cb.Launcher.MemoryStack.Peek()) ??
                 throw new CmdException("Native", "Memory item is null.");
             return obj;
         }
@@ -821,7 +821,7 @@ namespace SCE
         private static Cmd.MemItem IsTypeCMD(string[] args, Cmd.Callback cb)
         {
             var t = StrUtils.BetterGetType(args[0]);
-            return new(MemObj(cb).GetType() == t);
+            return new(MemObj(cb, false).GetType() == t);
         }
 
         private static Cmd.MemItem ConvArgCMD(string[] args)
