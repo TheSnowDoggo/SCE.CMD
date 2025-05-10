@@ -1,5 +1,6 @@
 ﻿using CSUtils;
 using System.Diagnostics;
+using System.Diagnostics.SymbolStore;
 using System.Text;
 namespace SCE
 {
@@ -8,7 +9,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "1.4.0";
+            Version = "2.4.0";
             Commands = new()
             {
                 #region Main
@@ -130,10 +131,6 @@ namespace SCE
                     Description = "Runs the command a given amount of times.",
                     Usage = "<Count> <Command> ?<Arg1>..." } },
 
-                { "if", new(IfCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Runs the command if the condition is true.",
-                    Usage = "<True/False> <Command> ?<Arg1>..."} },
-
                 { "async", new(AsyncCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Runs the given command on a new thread.",
                     Usage = "<CommandName> ?<Arg1>..." } },
@@ -150,7 +147,71 @@ namespace SCE
                     Description = "Catches command execution errors.",
                     Usage = "<Command> ?<Arg1>..." } },
 
+                { "jview", new(JViewCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Takes and feedbacks the last item in memory after running the given command.",
+                    Usage = "<Command> ?<Arg1>..." } },
+
                 #endregion
+
+                #region Condition
+
+                { "ifarg", new(IfArgCMD) { MinArgs = 2, MaxArgs = -1,
+                    Description = "Runs the command if the argument condition is true.",
+                    Usage = "<True/False:!=0->True;False> <Command> ?<Arg1>..."} },
+
+                { "!ifarg", new(IfArgNotCMD) { MinArgs = 2, MaxArgs = -1,
+                    Description = "Runs the command if the argument condition is false.",
+                    Usage = "<True/False:!=0->True;False> <Command> ?<Arg1>..."} },
+
+                { "if", new(IfCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Runs the command if the last item in memory is true.",
+                    Usage = "<Command> ?<Arg1>..."} },
+
+                { "!if", new(IfNotCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Runs the command if the last item in memory is false.",
+                    Usage = "<Command> ?<Arg1>..."} },
+
+                { "eql", new(EqualsCMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether the given arguments are equal.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "!eql", new(EqualsNotCMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether the given arguments are not equal.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "!res", new(NotResCMD) { MaxArgs = -1,
+                    Description = "Nots and outputs the last item in memory after running the given command.",
+                    Usage = "?<CommandName> ?<Arg1>..." } },
+
+                { "cmp=", new(EQCMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether left = right.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "cmp!=", new(NEQCMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether left != right.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "cmp<", new(LTCMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether left < right.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "cmp>", new(GTCMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether left > right.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "cmp<=", new(LTECMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether left <= right.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "cmp>=", new(GTECMD) { MinArgs = 2, MaxArgs = 3,
+                    Description = "Outputs whether left >= right.",
+                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+
+                { "not", new(NotCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Nots the given boolean.",
+                    Usage = "<Boolean>" } },
+
+                #endregion 
 
                 #region Time
 
@@ -487,12 +548,16 @@ namespace SCE
             cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
-        private static void IfCMD(string[] args, Cmd.Callback cb)
+        private static void JViewCMD(string[] args, Cmd.Callback cb)
         {
-            if (!bool.TryParse(args[0], out var result))
-                throw new CmdException("Launcher", $"Cannot convert \'{args[0]}\' to bool.");
-            if (result)
-                cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            if (cb.Launcher.MemoryStack.Count == 0)
+                throw new CmdException("Native", "Memory stack is empty.");
+            var obj = cb.Launcher.MemoryStack.Pop() ??
+                throw new CmdException("Native", "Memory item is null.");
+            var str = obj.ToString() ??
+                throw new CmdException("Native", "Memory string conversion is null.");
+            cb.Launcher.FeedbackLine(str);
         }
 
         private static void AsyncCMD(string[] args, Cmd.Callback cb)
@@ -523,6 +588,156 @@ namespace SCE
             catch
             { }
             cb.Launcher.ErrFeedback = prev;
+        }
+
+        #endregion
+
+        #region ConditionCommands
+
+        private static bool Condition(string input)
+        {
+            if (bool.TryParse(input, out var result))
+                return result;
+            if (int.TryParse(input, out var num))
+                return num != 0;
+            throw new CmdException("Launcher", $"Invalid conditional \'{input}\'.");
+        }
+
+        private static bool MemBool(Cmd.Callback cb)
+        {
+            if (cb.Launcher.MemoryStack.Count == 0)
+                throw new CmdException("Native", "Memory stack is empty.");
+            var obj = cb.Launcher.MemoryStack.Pop() ??
+                throw new CmdException("Native", "Memory item is null.");
+            if (obj is bool c)
+                return c;
+            var str = obj.ToString() ??
+                throw new CmdException("Native", "Last memory item was not a valid boolean.");
+            return !Condition(str);
+        }
+
+        private static void IfArgCMD(string[] args, Cmd.Callback cb)
+        {
+            if (Condition(args[0]))
+                cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+        }
+
+        private static void IfArgNotCMD(string[] args, Cmd.Callback cb)
+        {
+            if (!Condition(args[0]))
+                cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+        }
+
+        private static void IfCMD(string[] args, Cmd.Callback cb)
+        {
+            if (MemBool(cb))
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+        }
+
+        private static void IfNotCMD(string[] args, Cmd.Callback cb)
+        {
+            if (!MemBool(cb))
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+        }
+
+        private static (object, object) GetAsTypes(string[] args)
+        {
+            if (args.Length == 2)
+                return (args[0], args[1]);
+            var types = args[2].Split(',');
+            object o1, o2;
+            if (types.Length == 1)
+            {
+                var t = StrUtils.BetterGetType(types[0]);
+                o1 = Convert.ChangeType(args[0], t);
+                o2 = Convert.ChangeType(args[1], t);
+            }
+            else if (types.Length == 2)
+            {
+                var t1 = StrUtils.BetterGetType(types[0]);
+                var t2 = StrUtils.BetterGetType(types[1]);
+                o1 = Convert.ChangeType(args[0], t1);
+                o2 = Convert.ChangeType(args[1], t2);
+            }
+            else
+            {
+                throw new CmdException("Native", $"Invalid number of types given \'{args[0]}\'.");
+            }
+            return (o1, o2);
+        }
+
+        private static bool Equals(string[] args)
+        {
+            (var o1, var o2) = GetAsTypes(args);
+            return o1.Equals(o2);
+        }
+
+        private static int Compare(string[] args)
+        {
+            (var o1, var o2) = GetAsTypes(args);
+            if (o1 is not IComparable c1)
+                throw new CmdException("Native", "Left item is not comparable.");
+            return c1.CompareTo(o2);
+        }
+
+        private static Cmd.MemItem EqualsCMD(string[] args)
+        {
+            return new(Equals(args));
+        }
+
+        private static Cmd.MemItem EqualsNotCMD(string[] args)
+        {
+            return new(!Equals(args));
+        }
+
+        private static Cmd.MemItem NotResCMD(string[] args, Cmd.Callback cb)
+        {
+            if (args.Length > 0)
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            if (cb.Launcher.MemoryStack.Count == 0)
+                throw new CmdException("Native", "Memory stack is empty.");
+            var obj = cb.Launcher.MemoryStack.Pop() ??
+                throw new CmdException("Native", "Memory item is null.");
+            if (obj is bool c)
+                return new(!c);
+            var str = obj.ToString() ??
+                throw new CmdException("Native", "Last memory item was not a valid boolean.");
+            return new(!Condition(str));
+        }
+
+        private static Cmd.MemItem EQCMD(string[] args)
+        {
+            return new(Compare(args) == 0);
+        }
+
+        private static Cmd.MemItem NEQCMD(string[] args)
+        {
+            return new(Compare(args) != 0);
+        }
+
+        private static Cmd.MemItem LTCMD(string[] args)
+        {
+            return new(Compare(args) < 0);
+        }
+
+        private static Cmd.MemItem GTCMD(string[] args)
+        {
+            return new(Compare(args) > 0);
+        }
+
+        private static Cmd.MemItem LTECMD(string[] args)
+        {
+            return new(Compare(args) <= 0);
+        }
+
+        private static Cmd.MemItem GTECMD(string[] args)
+        {
+            return new(Compare(args) >= 0);
+        }
+
+        private static Cmd.MemItem NotCMD(string[] args, Cmd.Callback cb)
+        {
+            return new(!Condition(args[0]));
         }
 
         #endregion
