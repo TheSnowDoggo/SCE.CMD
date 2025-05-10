@@ -236,11 +236,11 @@ namespace SCE
                     Description = "Determines if the last mem item is a type.",
                     Usage = "<Type>" } },
 
-                { "convarg", new(ConvArgCMD) { MinArgs = 2, MaxArgs = 2,
+                { "convtarg", new(ConvArgCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Converts a given argument to the given type.",
                     Usage = "<Target> <Type>" } },
 
-                { "conv", new(ConvCMD) { MinArgs = 1, MaxArgs = 1,
+                { "convt", new(ConvCMD) { MinArgs = 1, MaxArgs = 1,
                     Description = "Converts the last mem item to the given type.",
                     Usage = "<Type>" } },
 
