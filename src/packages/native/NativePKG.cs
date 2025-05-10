@@ -1,6 +1,5 @@
 ﻿using CSUtils;
 using System.Diagnostics;
-using System.Diagnostics.SymbolStore;
 using System.Text;
 namespace SCE
 {
@@ -9,7 +8,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "2.5.0";
+            Version = "2.6.0";
             Commands = new()
             {
                 #region Main
