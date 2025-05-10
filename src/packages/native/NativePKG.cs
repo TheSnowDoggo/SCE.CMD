@@ -143,8 +143,16 @@ namespace SCE
                     Description = "Catches command execution errors without error feedback.",
                     Usage = "<CommandName> ?<Arg1>..." } },
 
+                 { "noexcept?", new(NoExceptOCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Catches command execution errors without error feedback and outputs whether an error was caught.",
+                    Usage = "<CommandName> ?<Arg1>..." } },
+
                 { "catch", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Catches command execution errors.",
+                    Usage = "<Command> ?<Arg1>..." } },
+
+                { "catch?", new(CatchOCMD) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Catches command execution errors and outputs whether an error was caught.",
                     Usage = "<Command> ?<Arg1>..." } },
 
                 { "jview", new(JViewCMD) { MinArgs = 1, MaxArgs = -1,
@@ -585,6 +593,11 @@ namespace SCE
             cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
+        private static Cmd.MemItem CatchOCMD(string[] args, Cmd.Callback cb)
+        {
+            return new(!cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args)));
+        }
+
         private static void JViewCMD(string[] args, Cmd.Callback cb)
         {
             cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
@@ -624,6 +637,22 @@ namespace SCE
             }
             catch
             { }
+            cb.Launcher.ErrFeedback = prev;
+        }
+
+        private static Cmd.MemItem NoExceptOCMD(string[] args, Cmd.Callback cb)
+        {
+            bool prev = cb.Launcher.ErrFeedback;
+            cb.Launcher.ErrFeedback = false;
+            try
+            {
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                return new(true);
+            }
+            catch
+            {
+                return new(false);
+            }
             cb.Launcher.ErrFeedback = prev;
         }
 
