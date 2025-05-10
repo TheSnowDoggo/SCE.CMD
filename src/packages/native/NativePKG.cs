@@ -227,6 +227,14 @@ namespace SCE
                     Description = "Nots the given boolean.",
                     Usage = "<Boolean>" } },
 
+                { "istypearg", new(IsTypeArgCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Determines if the given argument is a type.",
+                    Usage = "<Check> <Type>" } },
+
+                { "istype", new(IsTypeCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Determines if the last mem item is a type.",
+                    Usage = "<Type>" } },
+
                 #endregion 
 
                 #region Time
@@ -619,12 +627,18 @@ namespace SCE
             throw new CmdException("Launcher", $"Invalid conditional \'{input}\'.");
         }
 
-        private static bool MemBool(Cmd.Callback cb)
+        private static object MemObj(Cmd.Callback cb)
         {
             if (cb.Launcher.MemoryStack.Count == 0)
                 throw new CmdException("Native", "Memory stack is empty.");
             var obj = cb.Launcher.MemoryStack.Pop() ??
                 throw new CmdException("Native", "Memory item is null.");
+            return obj;
+        }
+
+        private static bool MemBool(Cmd.Callback cb)
+        {
+            var obj = MemObj(cb);
             if (obj is bool c)
                 return c;
             var str = obj.ToString() ??
@@ -774,6 +788,19 @@ namespace SCE
         private static Cmd.MemItem NotCMD(string[] args, Cmd.Callback cb)
         {
             return new(!Condition(args[0]));
+        }
+
+        private static Cmd.MemItem IsTypeArgCMD(string[] args)
+        {
+            var t = StrUtils.BetterGetType(args[1]);
+            var res = Convert.ChangeType(args[0], t);
+            return new(res != null);
+        }
+
+        private static Cmd.MemItem IsTypeCMD(string[] args, Cmd.Callback cb)
+        {
+            var t = StrUtils.BetterGetType(args[0]);
+            return new(MemObj(cb).GetType() == t);
         }
 
         #endregion
