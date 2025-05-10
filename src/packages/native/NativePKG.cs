@@ -9,7 +9,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "2.4.0";
+            Version = "2.5.0";
             Commands = new()
             {
                 #region Main
@@ -163,13 +163,29 @@ namespace SCE
                     Description = "Runs the command if the argument condition is false.",
                     Usage = "<True/False:!=0->True;False> <Command> ?<Arg1>..."} },
 
+                { "elifarg", new(ElseIfArgCMD) { MinArgs = 3, MaxArgs = 3,
+                    Description = "Runs left cmd if argument condition true; right cmd.",
+                    Usage = "<True/False:!=0->True;False> <Command1> <Command2>"} },
+
+                { "!elifarg", new(ElseIfArgNotCMD) { MinArgs = 3, MaxArgs = 3,
+                    Description = "Runs left cmd if argument condition false; right cmd.",
+                    Usage = "<True/False:!=0->True;False> <Command1> <Command2>"} },
+
                 { "if", new(IfCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Runs the command if the last item in memory is true.",
                     Usage = "<Command> ?<Arg1>..."} },
 
+                { "elif", new(ElseIfCMD)  { MinArgs = 2, MaxArgs = 2,
+                    Description = "Runs left cmd if last mem item true; right cmd.",
+                    Usage = "<Command1> <Command2>"} },
+
                 { "!if", new(IfNotCMD) { MinArgs = 1, MaxArgs = -1,
                     Description = "Runs the command if the last item in memory is false.",
                     Usage = "<Command> ?<Arg1>..."} },
+
+                { "!elif", new(ElseIfNotCMD)  { MinArgs = 2, MaxArgs = 2,
+                    Description = "Runs left cmd if last mem item false; right cmd.",
+                    Usage = "<Command1> <Command2>"} },
 
                 { "eql", new(EqualsCMD) { MinArgs = 2, MaxArgs = 3,
                     Description = "Outputs whether the given arguments are equal.",
@@ -622,10 +638,20 @@ namespace SCE
                 cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
 
+        private static void ElseIfArgCMD(string[] args, Cmd.Callback cb)
+        {
+            cb.Launcher.ExecuteCommand(Condition(args[0]) ? args[1] : args[2]);
+        }
+
         private static void IfArgNotCMD(string[] args, Cmd.Callback cb)
         {
             if (!Condition(args[0]))
                 cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+        }
+
+        private static void ElseIfArgNotCMD(string[] args, Cmd.Callback cb)
+        {
+            cb.Launcher.ExecuteCommand(!Condition(args[0]) ? args[1] : args[2]);
         }
 
         private static void IfCMD(string[] args, Cmd.Callback cb)
@@ -634,10 +660,20 @@ namespace SCE
                 cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
+        private static void ElseIfCMD(string[] args, Cmd.Callback cb)
+        {
+            cb.Launcher.ExecuteCommand(MemBool(cb) ? args[0] : args[1]);
+        }
+
         private static void IfNotCMD(string[] args, Cmd.Callback cb)
         {
             if (!MemBool(cb))
                 cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+        }
+
+        private static void ElseIfNotCMD(string[] args, Cmd.Callback cb)
+        {
+            cb.Launcher.ExecuteCommand(!MemBool(cb) ? args[0] : args[1]);
         }
 
         private static (object, object) GetAsTypes(string[] args)

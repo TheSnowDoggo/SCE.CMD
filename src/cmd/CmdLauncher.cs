@@ -208,11 +208,8 @@ namespace SCE
                 MemoryStack.Push(res.Value);
         }
 
-        private void ExecuteCommand(string line)
+        public void ExecuteCommand(string line)
         {
-            line = Process(line);
-            if (string.IsNullOrWhiteSpace(line))
-                return;
             var name = StrUtils.BuildWhile(line, (c) => c != ' ');
             var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
             ExecuteCommand(name, args);
@@ -242,6 +239,9 @@ namespace SCE
         {
             try
             {
+                line = Process(line);
+                if (string.IsNullOrWhiteSpace(line))
+                    return false;
                 ExecuteCommand(line);
                 return true;
             }
