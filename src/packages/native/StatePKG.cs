@@ -13,6 +13,14 @@ namespace SCE
             Desc = "Conditional and State manipulation utilities.";
             Commands = new()
             {
+                { "while", WhileGEN(false, true) },
+
+                { "while^", WhileGEN(true, true) },
+
+                { "dowhile", WhileGEN(false, false) },
+
+                { "dowhile^", WhileGEN(true, false) },
+
                 { "if*", new(IfArgGEN(false)) { Min = 2, Max = -1,
                     Desc = "Runs the command if the argument condition is true.",
                     Usage = IFA_USG } },
@@ -145,6 +153,25 @@ namespace SCE
             var str = obj.ToString() ??
                 throw new CmdException("Native", "Last memory item was not a valid boolean.");
             return !Condition(str);
+        }
+
+        private static Cmd WhileGEN(bool pop, bool onStart)
+        {
+            return new((args, cl) =>
+            {
+                bool first = true;
+                while ((!onStart && first) || MemBool(cl, pop))
+                {
+                    if (!cl.SExecuteCommand(args[0], Utils.TrimFirst(args)))
+                        throw new CmdException("Launcher", "Loop ended as command failed to execute.");
+                    first = false;
+                }
+            })
+            {
+                Min = 1, Max = -1,
+                Desc = "Runs the command while the last mem item is true.",
+                Usage = Cmd.BCHAIN
+            };
         }
 
         private static Action<string[], CmdLauncher> IfArgGEN(bool invert)
