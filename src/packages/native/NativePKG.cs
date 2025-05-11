@@ -74,8 +74,12 @@ namespace SCE
                     Description = "Ends execution of a command chain.",
                     Usage = "?<MsgPart1>..." } },
 
-                { "mod", new(ModCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Performs a mod operation.",
+                { "mod", new(ModCMD) { MaxArgs = -1,
+                    Description = "Performs a mod operation from the last 2 memory items (top item is last arg).",
+                    Usage = "?<CommandName> ?<Arg1>..." } },
+
+                { "mod*", new(ModArgCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Performs a mod operation on the given args.",
                     Usage = "<a> <b>" } },
 
                 #endregion
@@ -136,19 +140,19 @@ namespace SCE
                     Description = "Catches command execution errors and outputs whether an error was caught.",
                     Usage = "<Command> ?<Arg1>..." } },
 
-                { "jview", new(JViewCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Pops and prints the last item in memory after running the given command.",
+                { "jview", new(JViewGEN(false)) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Peeks and prints the last item in memory after running the given command.",
                     Usage = "<Command> ?<Arg1>..." } },
 
-                { "jview^", new(JViewPopCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Peeks and prints the last item in memory after running the given command.",
+                { "jview^", new(JViewGEN(true)) { MinArgs = 1, MaxArgs = -1,
+                    Description = "Pops and prints the last item in memory after running the given command.",
                     Usage = "<Command> ?<Arg1>..." } },
 
                 #endregion
 
                 #region Convert
 
-                { "convtarg", new(ConvArgCMD) { MinArgs = 2, MaxArgs = 2,
+                { "convt*", new(ConvArgCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Converts a given argument to the given type.",
                     Usage = "<Target> <Type>" } },
 
@@ -237,9 +241,18 @@ namespace SCE
 
         private static Cmd.MemItem ModCMD(string[] args, Cmd.Callback cb)
         {
-            int res = Utils.Mod(int.Parse(args[0]), int.Parse(args[1]));
-            cb.Launcher.FeedbackLine(res);
-            return new(res);
+            var o1 = MemObj(cb, true);
+            if (o1 is not int b)
+                b = Convert.ToInt32(o1);
+            var o2 = MemObj(cb, true);
+            if (o2 is not int a)
+                a = Convert.ToInt32(o2);
+            return new(Utils.Mod(a, b));
+        }
+
+        private static Cmd.MemItem ModArgCMD(string[] args, Cmd.Callback cb)
+        {
+            return new(Utils.Mod(int.Parse(args[0]), int.Parse(args[1])));
         }
 
         private static string BuildHelpCMD(string[] args, Cmd.Callback cb)
@@ -463,16 +476,13 @@ namespace SCE
             return new(!cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args)));
         }
 
-        private static void JViewCMD(string[] args, Cmd.Callback cb)
+        private static Action<string[], Cmd.Callback> JViewGEN(bool pop)
         {
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
-            Console.WriteLine(MemStr(cb, true));
-        }
-
-        private static void JViewPopCMD(string[] args, Cmd.Callback cb)
-        {
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
-            Console.WriteLine(MemStr(cb, false));
+            return (args, cb) =>
+            {
+                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                Console.WriteLine(MemStr(cb, pop));
+            };
         }
 
         private static void AsyncCMD(string[] args, Cmd.Callback cb)

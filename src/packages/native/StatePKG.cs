@@ -6,18 +6,18 @@ namespace SCE
         public StatePKG()
         {
             Name = "State";
-            Version = "0.1.0";
+            Version = "0.2.0";
             Commands = new()
             {
-                { "ifarg", new(IfArgGEN(false)) { MinArgs = 2, MaxArgs = -1,
+                { "if*", new(IfArgGEN(false)) { MinArgs = 2, MaxArgs = -1,
                     Description = "Runs the command if the argument condition is true.",
                     Usage = "<True/False:!=0->True;False> <Command> ?<Arg1>..."} },
 
-                { "!ifarg", new(IfArgGEN(true)) { MinArgs = 2, MaxArgs = -1,
+                { "!if*", new(IfArgGEN(true)) { MinArgs = 2, MaxArgs = -1,
                     Description = "Runs the command if the argument condition is false.",
                     Usage = "<True/False:!=0->True;False> <Command> ?<Arg1>..."} },
 
-                { "elifarg", new(ElseIfArgCMD) { MinArgs = 3, MaxArgs = 3,
+                { "elif*", new(ElseIfArgCMD) { MinArgs = 3, MaxArgs = 3,
                     Description = "Runs left cmd if argument condition true; right cmd.",
                     Usage = "<True/False:!=0->True;False> <Command1> <Command2>"} },
 
@@ -53,9 +53,33 @@ namespace SCE
                     Description = "Outputs whether the given arguments are not equal.",
                     Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
 
-                { "!last", new(NotResCMD) { MaxArgs = -1,
-                    Description = "Nots and outputs the last item in memory after running the given command.",
+                { "not", new(NotGEN(false)) { MaxArgs = -1,
+                    Description = "Peek | Performs OR operatoin on the last item in memory after running the given command.",
                     Usage = "?<CommandName> ?<Arg1>..." } },
+
+                { "not^", new(NotGEN(true)) { MaxArgs = -1,
+                    Description = "Pop | Performs OR operatoin on the last item in memory after running the given command.",
+                    Usage = "?<CommandName> ?<Arg1>..." } },
+
+                { "and^", new(AndCMD) { MaxArgs = -1,
+                    Description = "Performs AND operation on the last 2 items in memory after running the given command.",
+                    Usage = "?<CommandName> ?<Arg1>..." } },
+
+                { "or^", new(OrCMD) { MaxArgs = -1,
+                    Description = "Performs OR operation on the last 2 items in memory after running the given command.",
+                    Usage = "?<CommandName> ?<Arg1>..." } },
+
+                { "not*", new(NotArgCMD) { MinArgs = 1, MaxArgs = 1,
+                    Description = "Nots the given boolean.",
+                    Usage = "<Boolean>" } },
+
+                { "and*", new(AndArgCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Ands the given booleans.",
+                    Usage = "<Boolean1> <Boolean2>" } },
+
+                { "or*", new(OrArgCMD) { MinArgs = 2, MaxArgs = 2,
+                    Description = "Ors the given booleans.",
+                    Usage = "<Boolean1> <Boolean2>" } },
 
                 { "cmp=", new(CmpGEN(x => x == 0)) { MinArgs = 2, MaxArgs = 3,
                     Description = "Outputs whether left = right.",
@@ -81,11 +105,7 @@ namespace SCE
                     Description = "Outputs whether left >= right.",
                     Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
 
-                { "notarg", new(NotArgCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Nots the given boolean.",
-                    Usage = "<Boolean>" } },
-
-                { "istypearg", new(IsTypeArgCMD) { MinArgs = 2, MaxArgs = 2,
+                { "istype*", new(IsTypeArgCMD) { MinArgs = 2, MaxArgs = 2,
                     Description = "Determines if the given argument is a type.",
                     Usage = "<Check> <Type>" } },
 
@@ -202,29 +222,63 @@ namespace SCE
             return new(!Equals(args));
         }
 
-        private static Cmd.MemItem NotResCMD(string[] args, Cmd.Callback cb)
+        private static bool MemGenCon(Cmd.Callback cb, bool pop)
         {
-            if (args.Length > 0)
-                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
-            if (cb.Launcher.MemoryStack.Count == 0)
-                throw new CmdException("Native", "Memory stack is empty.");
-            var obj = cb.Launcher.MemoryStack.Pop() ??
-                throw new CmdException("Native", "Memory item is null.");
+            var obj = NativePKG.MemObj(cb, pop);
             if (obj is bool c)
-                return new(!c);
+                return c;
             var str = obj.ToString() ??
                 throw new CmdException("Native", "Last memory item was not a valid boolean.");
-            return new(!Condition(str));
+            return Condition(str);
+        }
+
+        private static bool MaybeRun(string[] args, Cmd.Callback cb)
+        {
+            if (args.Length == 0)
+                return false;
+            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            return true;
+        }
+
+        private static Func<string[], Cmd.Callback, Cmd.MemItem> NotGEN(bool pop)
+        {
+            return (args, cb) =>
+            {
+                MaybeRun(args, cb);
+                return new(!MemGenCon(cb, pop));
+            };
+        }
+
+        private static Cmd.MemItem AndCMD(string[] args, Cmd.Callback cb)
+        {
+            MaybeRun(args, cb);
+            return new(MemGenCon(cb, true) && MemGenCon(cb, true));
+        }
+
+        private static Cmd.MemItem OrCMD(string[] args, Cmd.Callback cb)
+        {
+            MaybeRun(args, cb);
+            return new(MemGenCon(cb, true) || MemGenCon(cb, true));
+        }
+
+        private static Cmd.MemItem NotArgCMD(string[] args)
+        {
+            return new(!Condition(args[0]));
+        }
+
+        private static Cmd.MemItem AndArgCMD(string[] args)
+        {
+            return new(Condition(args[0]) && Condition(args[1]));
+        }
+
+        private static Cmd.MemItem OrArgCMD(string[] args)
+        {
+            return new(Condition(args[0]) || Condition(args[1]));
         }
 
         private static Func<string[], Cmd.MemItem> CmpGEN(Predicate<int> predicate)
         {
             return args => new(predicate.Invoke(Compare(args)));
-        }
-
-        private static Cmd.MemItem NotArgCMD(string[] args, Cmd.Callback cb)
-        {
-            return new(!Condition(args[0]));
         }
 
         private static Cmd.MemItem IsTypeArgCMD(string[] args)
@@ -275,8 +329,7 @@ namespace SCE
         {
             return new((args, cb) =>
             {
-                if (args.Length > 0)
-                    cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                MaybeRun(args, cb);
                 var c = MemBool(cb, pop);
                 set.Invoke(cb, c);
             })
