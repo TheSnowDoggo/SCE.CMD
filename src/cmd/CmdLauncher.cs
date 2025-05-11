@@ -76,10 +76,18 @@ namespace SCE
         {
             var name = pkg.Name.ToLower();
             if (_packages.ContainsKey(name))
-                throw new CmdException("PKGLoader", $"Package with name {name} already exists.");
+            {
+                StrUtils.PrettyErr("PKGLoader", $"Package with name {name} already exists.");
+                if (!Utils.BoolPrompt("Would you like to overwrite it? Yes[Y] or No[N]: "))
+                    return;
+            }
             if (!pkg.IsCompatible(this))
-                throw new CmdException("PKGLoader", $"{name} v{pkg.Version} " +
-                    $"is incompatible with launcher v{Version}");
+            {
+                StrUtils.PrettyErr("PKGLoader", $"{name} v{pkg.Version} " +
+                   $"is incompatible with launcher v{Version}");
+                if (!Utils.BoolPrompt("Would you still like to load it? Yes[Y] or No[N]: "))
+                    return;
+            }
             _packages[name] = pkg;
             pkg.Initialize(this);
         }
