@@ -16,6 +16,7 @@
                 new VariablePKG(),
                 new CombinePKG(),
                 new DefinePKG(),
+                new StatePKG(),
             });
 
             var scrPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");

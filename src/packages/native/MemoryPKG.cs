@@ -28,10 +28,6 @@ namespace SCE
                 { "memview", new(MemViewCMD) {
                     Description = "Displays all items in memory" } },
 
-                { "memlock", new(MemLockCMD) { MaxArgs = 1,
-                    Description = "Sets the lock state of memory.",
-                    Usage = "?<True/False->Toggle>" } },
-
                 { "memsize", new(MemSizeCMD) {
                     Description = "Outputs the number of items in the memory stack." } },
 
@@ -90,15 +86,6 @@ namespace SCE
                 throw new CmdException("Memory", "No items to clear.");
             cb.Launcher.FeedbackLine($"Successfully cleared {cb.Launcher.MemoryStack.Count} items from memory.");
             cb.Launcher.MemoryStack.Clear();
-        }
-
-        private void MemLockCMD(string[] args, Cmd.Callback cb)
-        {
-            bool set = !cb.Launcher.MemLock;
-            if (args.Length > 0 && !bool.TryParse(args[0], out set))
-                throw new CmdException("Native", $"Unable to convert \'{args[0]}\' to bool.");
-            cb.Launcher.MemLock = set;
-            cb.Launcher.FeedbackLine($"Memory lock set to {set}.");
         }
 
         private Cmd.MemItem MemSizeCMD(string[] args, Cmd.Callback cb)

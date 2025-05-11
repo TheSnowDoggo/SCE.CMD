@@ -292,7 +292,7 @@ namespace SCE
         {
             var path = args.Length > 0 ? Path.Combine(directory, args[0]) : directory;
             int count = 0;
-            foreach (var pkg in PkgLoadUtils.DiscoverAllPackages(path))
+            foreach (var pkg in PkgUtils.DiscoverAllPackages(path))
             {
                 cb.Launcher.LoadPackage(pkg);
                 ++count;
@@ -304,7 +304,7 @@ namespace SCE
         {
             var path = Path.Combine(directory, args[0]);
             int count = 0;
-            foreach (var pkg in PkgLoadUtils.DiscoverPackages(path))
+            foreach (var pkg in PkgUtils.DiscoverPackages(path))
             {
                 cb.Launcher.LoadPackage(pkg);
                 ++count;

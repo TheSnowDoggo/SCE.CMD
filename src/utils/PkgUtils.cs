@@ -2,7 +2,7 @@
 using System.Reflection;
 namespace SCE
 {
-    internal static class PkgLoadUtils
+    internal static class PkgUtils
     {
         public static IEnumerable<Package> DiscoverAllPackages(string dirPath)
         {
