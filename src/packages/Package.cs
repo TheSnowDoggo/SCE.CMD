@@ -16,11 +16,11 @@
 
         public string Name { get; init; } = "UNNAMED";
 
-        public Version Version { get; init; } = Version.Zero;
+        public PVersion Version { get; init; } = PVersion.Zero;
 
         public string Desc { get; init; } = "";
 
-        public virtual bool IsCompatible(Version version)
+        public virtual bool IsCompatible(CmdLauncher launcher)
         {
             return true;
         }

@@ -10,7 +10,7 @@ namespace SCE
 
         private bool active;
 
-        public Version Version { get; init; } = Version.Zero;
+        public PVersion Version { get; init; } = PVersion.Zero;
 
         public Func<string>? InputRender;
 
@@ -77,7 +77,7 @@ namespace SCE
             var name = pkg.Name.ToLower();
             if (_packages.ContainsKey(name))
                 throw new CmdException("PKGLoader", $"Package with name {name} already exists.");
-            if (!pkg.IsCompatible(Version))
+            if (!pkg.IsCompatible(this))
                 throw new CmdException("PKGLoader", $"{name} v{pkg.Version} " +
                     $"is incompatible with launcher v{Version}");
             _packages[name] = pkg;
