@@ -6,7 +6,7 @@ namespace SCE
         public StatePKG()
         {
             Name = "State";
-            Version = "0.0.0";
+            Version = "0.1.0";
             Commands = new()
             {
                 { "ifarg", new(IfArgGEN(false)) { MinArgs = 2, MaxArgs = -1,
