@@ -9,17 +9,13 @@ namespace SCE
         public StatePKG()
         {
             Name = "State";
-            Version = new(0, 3, 0);
+            Version = new(0, 3, 1);
             Desc = "Conditional and State manipulation utilities.";
             Commands = new()
             {
-                { "while", WhileGEN(false, true) },
+                { "while^", WhileGEN(true) },
 
-                { "while^", WhileGEN(true, true) },
-
-                { "dowhile", WhileGEN(false, false) },
-
-                { "dowhile^", WhileGEN(true, false) },
+                { "dowhile^", WhileGEN(false) },
 
                 { "if*", new(IfArgGEN(false)) { Min = 2, Max = -1,
                     Desc = "Runs the command if the argument condition is true.",
@@ -155,12 +151,12 @@ namespace SCE
             return !Condition(str);
         }
 
-        private static Cmd WhileGEN(bool pop, bool onStart)
+        private static Cmd WhileGEN(bool onStart)
         {
             return new((args, cl) =>
             {
                 bool first = true;
-                while ((!onStart && first) || MemBool(cl, pop))
+                while ((!onStart && first) || MemBool(cl))
                 {
                     if (!cl.SExecuteCommand(args[0], Utils.TrimFirst(args)))
                         throw new CmdException("Launcher", "Loop ended as command failed to execute.");
