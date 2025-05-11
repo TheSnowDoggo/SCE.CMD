@@ -53,7 +53,6 @@ namespace SCE
         {
             foreach (var arg in args)
                 cb.Launcher.MemoryStack.Push(arg);
-            cb.Launcher.FeedbackLine($"Sucessfully added {args.Length} items to memory.");
         }
 
         private void MemRemCMD(string[] args, Cmd.Callback cb)
@@ -91,7 +90,6 @@ namespace SCE
         private Cmd.MemItem MemSizeCMD(string[] args, Cmd.Callback cb)
         {
             int size = cb.Launcher.MemoryStack.Count;
-            cb.Launcher.FeedbackLine(size);
             return new(size);
         }
 
