@@ -37,8 +37,12 @@ namespace SCE
                     Description = "Peeks the last memory item, runs command if false.",
                     Usage = "<Command> ?<Arg1>..."} },
 
-                { "elif", new(ElseIfCMD)  { MinArgs = 2, MaxArgs = 2,
-                    Description = "Runs left cmd if last mem item true; right cmd.",
+                { "elif", new(ElseIfGEN(false))  { MinArgs = 2, MaxArgs = 2,
+                    Description = "Peek | Runs left cmd if last mem item true; right cmd.",
+                    Usage = "<Command1> <Command2>"} },
+
+                { "elif^", new(ElseIfGEN(true))  { MinArgs = 2, MaxArgs = 2,
+                    Description = "Pop | Runs left cmd if last mem item true; right cmd.",
                     Usage = "<Command1> <Command2>"} },
 
                 { "eql", new(EqualsCMD) { MinArgs = 2, MaxArgs = 3,
@@ -140,9 +144,12 @@ namespace SCE
             };
         }
 
-        private static void ElseIfCMD(string[] args, Cmd.Callback cb)
+        private static Action<string[], Cmd.Callback> ElseIfGEN(bool pop)
         {
-            cb.Launcher.ExecuteCommand(MemBool(cb) ? args[0] : args[1]);
+            return (args, cb) =>
+            {
+                cb.Launcher.ExecuteCommand(MemBool(cb, pop) ? args[0] : args[1]);
+            };
         }
 
         private static (object, object) GetAsTypes(string[] args)
@@ -254,7 +261,6 @@ namespace SCE
             return new((args, cb) =>
             {
                 var c = args.Length > 0 ? Condition(args[0]) : !get.Invoke(cb);
-                cb.Launcher.FeedbackLine($"{name} = {c}");
                 set.Invoke(cb, c);
             })
             {
@@ -272,7 +278,6 @@ namespace SCE
                 if (args.Length > 0)
                     cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
                 var c = MemBool(cb, pop);
-                cb.Launcher.FeedbackLine($"{name} = {c}");
                 set.Invoke(cb, c);
             })
             {
