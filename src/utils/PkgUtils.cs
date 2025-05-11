@@ -8,7 +8,7 @@ namespace SCE
         {
             if (!Directory.Exists(dirPath))
                 throw new CmdException("PkgLoadUtils", $"Unknown directory \'{dirPath}\'.");
-            foreach (var file in Directory.GetFiles(dirPath))
+            foreach (var file in Directory.EnumerateFiles(dirPath))
             {
                 try
                 {
