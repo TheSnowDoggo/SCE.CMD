@@ -90,6 +90,7 @@ namespace SCE
         private Cmd.MemItem MemSizeCMD(string[] args, Cmd.Callback cb)
         {
             int size = cb.Launcher.MemoryStack.Count;
+            cb.Launcher.FeedbackLine(size);
             return new(size);
         }
 
