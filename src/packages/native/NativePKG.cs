@@ -9,89 +9,90 @@ namespace SCE
         {
             Name = "Native";
             Version = "2.7.0";
+            Desc = "Core inbuilt commands.";
             Commands = new()
             {
                 #region Main
 
                 { "version", new(VersionCMD) {
-                    Description = "Outputs the version of the launcher." } },
+                    Desc = "Outputs the version of the launcher." } },
 
                 { "quit", new(QuitCMD) {
-                    Description = "Stops all processes." } },
+                    Desc = "Stops all processes." } },
 
-                { "quitlauncher", new((args, cb) => cb.Launcher.Exit()) {
-                    Description = "Exits the launcher." } },
+                { "quitlauncher", new((args, cl) => cl.Exit()) {
+                    Desc = "Exits the launcher." } },
 
-                { "help", new(HelpCMD) { MaxArgs = -1,
-                    Description = "Displays help info for every command in the given packages.",
+                { "help", new(HelpCMD) { Max = -1,
+                    Desc = "Displays help info for every command in the given packages.",
                     Usage = "?<PackageName1>..." } },
 
-                { "helpexp", new(HelpExpCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Exports help info for every command in the given packages to a file.",
+                { "helpexp", new(HelpExpCMD) { Min = 1, Max = -1,
+                    Desc = "Exports help info for every command in the given packages to a file.",
                     Usage = "<FilePath> ?<PackageName1>..." } },
 
-                { "helpexpdir", new(HelpExpDirCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Exports help info for every command in the given packages to files in a directory.",
+                { "helpexpdir", new(HelpExpDirCMD) { Min = 1, Max = -1,
+                    Desc = "Exports help info for every command in the given packages to files in a directory.",
                     Usage = "<DirectoryPath> ?<PackageName1>..." } },
 
-                { "helpcmd", new(HelpCMDCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Displays help info for the given commands.",
+                { "helpcmd", new(HelpCMDCMD) { Min = 1, Max = -1,
+                    Desc = "Displays help info for the given commands.",
                     Usage = "<CommandName>..." } },
 
-                { "helpcmdexp", new(HelpCMDExpCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Exports help info for the given commands to a file." } },
+                { "helpcmdexp", new(HelpCMDExpCMD) { Min = 1, Max = -1,
+                    Desc = "Exports help info for the given commands to a file." } },
 
-                { "pkgview", new(PackageViewCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Outputs whether a package with the specified name exists.",
+                { "pkgview", new(PackageViewCMD) { Min = 1, Max = 1,
+                    Desc = "Outputs whether a package with the specified name exists.",
                     Usage = "<PackageName>" } },
 
-                { "pkgversion", new(PackageVersionCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Outputs the version of the given package.",
+                { "pkgversion", new(PackageVersionCMD) { Min = 1, Max = 1,
+                    Desc = "Outputs the version of the given package.",
                     Usage = "<PackageName>" } },
 
                 { "packages", new(PackagesCMD) {
-                    Description = "Displays all loaded packages." } },
+                    Desc = "Displays all loaded packages." } },
 
-                { "cmdexists", new(CommandExistsCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Determines whether the given command exists.",
+                { "cmdexists", new(CommandExistsCMD) { Min = 1, Max = 1,
+                    Desc = "Determines whether the given command exists.",
                     Usage = "<CommandName>" } },
 
-                { "proc", new(ProcCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Starts the specified process.",
+                { "proc", new(ProcCMD) { Min = 1, Max = -1,
+                    Desc = "Starts the specified process.",
                     Usage = "<FileName> ?<Arg1>..."} },
 
-                { "!s", new(SaveCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Saves the given command until oversaved.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "!s", new(SaveCMD) { Min = 1, Max = -1,
+                    Desc = "Saves the given command until oversaved.",
+                    Usage = Cmd.BCHAIN } },
 
                 { "!r", new(LoadCMD) {
-                    Description = "Runs the saved command." } },
+                    Desc = "Runs the saved command." } },
 
                 { "!c", new(ClearCMD) {
-                    Description = "Clears the saved command." } },
+                    Desc = "Clears the saved command." } },
 
-                { "abort", new(AbortCMD) { MaxArgs = -1,
-                    Description = "Ends execution of a command chain.",
+                { "abort", new(AbortCMD) { Max = -1,
+                    Desc = "Ends execution of a command chain.",
                     Usage = "?<MsgPart1>..." } },
 
-                { "mod", new(ModCMD) { MaxArgs = -1,
-                    Description = "Performs a mod operation from the last 2 memory items (top item is last arg).",
-                    Usage = "?<CommandName> ?<Arg1>..." } },
+                { "mod", new(ModCMD) { Max = -1,
+                    Desc = "Performs a mod operation from the last 2 memory items (top item is last arg).",
+                    Usage = Cmd.MBCHAIN } },
 
-                { "mod*", new(ModArgCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Performs a mod operation on the given args.",
+                { "mod*", new(ModArgCMD) { Min = 2, Max = 2,
+                    Desc = "Performs a mod operation on the given args.",
                     Usage = "<a> <b>" } },
 
                 #endregion
 
                 #region Feedback
 
-                { "feedback", new(FeedbackCMD(false)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Feedbacks the given arguments.",
+                { "feedback", new(FeedbackCMD(false)) { Min = 1, Max = -1,
+                    Desc = "Feedbacks the given arguments.",
                     Usage = "<Output1>..." } },
 
-                { "feedbackl", new(FeedbackCMD(true)) { MinArgs = 0, MaxArgs = -1,
-                    Description = "Feedbacks the given arguments on new lines.",
+                { "feedbackl", new(FeedbackCMD(true)) { Min = 0, Max = -1,
+                    Desc = "Feedbacks the given arguments on new lines.",
                     Usage = "<Output1>..." } },
 
                 #endregion
@@ -99,85 +100,85 @@ namespace SCE
                 #region Cache
 
                 { "cacheclear", new(CacheClearCMD) {
-                    Description = "Clears the command cache." } },
+                    Desc = "Clears the command cache." } },
 
                 { "cachesize", new(CacheSizeCMD) {
-                    Description = "Outputs the number of items in the command cache." } },
+                    Desc = "Outputs the number of items in the command cache." } },
 
                 #endregion
 
                 #region Chain
 
-                { "runall", new(RunAllCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Runs every given command",
+                { "runall", new(RunAllCMD) { Min = 1, Max = -1,
+                    Desc = "Runs every given command",
                     Usage = "<Command1>..." } },
 
-                { "loop", new(LoopCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Runs the command a given amount of times.",
-                    Usage = "<Count> <Command> ?<Arg1>..." } },
+                { "loop", new(LoopCMD) { Min = 2, Max = -1,
+                    Desc = "Runs the command a given amount of times.",
+                    Usage = "<Count> " + Cmd.BCHAIN } },
 
-                { "async", new(AsyncCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Runs the given command on a new thread.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "async", new(AsyncCMD) { Min = 1, Max = -1,
+                    Desc = "Runs the given command on a new thread.",
+                    Usage = Cmd.BCHAIN } },
 
-                { "nofeed", new(NoFeedCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Runs the following command without command feedback.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "nofeed", new(NoFeedCMD) { Min = 1, Max = -1,
+                    Desc = "Runs the following command without command feedback.",
+                    Usage = Cmd.BCHAIN } },
 
-                { "noexcept", new(NoExceptCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Catches command execution errors without error feedback.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "noexcept", new(NoExceptCMD) { Min = 1, Max = -1,
+                    Desc = "Catches command execution errors without error feedback.",
+                    Usage = Cmd.BCHAIN } },
 
-                 { "noexcept?", new(NoExceptOCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Catches command execution errors without error feedback and outputs whether an error was caught.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                 { "noexcept?", new(NoExceptOCMD) { Min = 1, Max = -1,
+                    Desc = "Catches command execution errors without error feedback and outputs whether an error was caught.",
+                    Usage = Cmd.BCHAIN } },
 
-                { "catch", new(CatchCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Catches command execution errors.",
-                    Usage = "<Command> ?<Arg1>..." } },
+                { "catch", new(CatchCMD) { Min = 1, Max = -1,
+                    Desc = "Catches command execution errors.",
+                    Usage = Cmd.BCHAIN } },
 
-                { "catch?", new(CatchOCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Catches command execution errors and outputs whether an error was caught.",
-                    Usage = "<Command> ?<Arg1>..." } },
+                { "catch?", new(CatchOCMD) { Min = 1, Max = -1,
+                    Desc = "Catches command execution errors and outputs whether an error was caught.",
+                    Usage = Cmd.BCHAIN } },
 
-                { "jview", new(JViewGEN(false)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Peeks and prints the last item in memory after running the given command.",
-                    Usage = "<Command> ?<Arg1>..." } },
+                { "jview", new(JViewGEN(false)) { Min = 1, Max = -1,
+                    Desc = "Peeks and prints the last item in memory after running the given command.",
+                    Usage = Cmd.BCHAIN } },
 
-                { "jview^", new(JViewGEN(true)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Pops and prints the last item in memory after running the given command.",
-                    Usage = "<Command> ?<Arg1>..." } },
+                { "jview^", new(JViewGEN(true)) { Min = 1, Max = -1,
+                    Desc = "Pops and prints the last item in memory after running the given command.",
+                    Usage = Cmd.BCHAIN } },
 
                 #endregion
 
                 #region Convert
 
-                { "convt*", new(ConvArgCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Converts a given argument to the given type.",
+                { "convt*", new(ConvArgCMD) { Min = 2, Max = 2,
+                    Desc = "Converts a given argument to the given type.",
                     Usage = "<Target> <Type>" } },
 
-                { "convt", new(ConvCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Converts the last mem item to the given type.",
+                { "convt", new(ConvCMD) { Min = 1, Max = 1,
+                    Desc = "Converts the last mem item to the given type.",
                     Usage = "<Type>" } },
 
                 #endregion 
 
                 #region Time
 
-                { "time", new(TimeCMD) { MaxArgs = 1,
-                    Description = "Gets the current time or a constant specified by the given argument.",
+                { "time", new(TimeCMD) { Max = 1,
+                    Desc = "Gets the current time or a constant specified by the given argument.",
                     Usage = "<local>:<utc>:<today>:<unixepoch>" } },
 
-                { "sleep", new(SleepCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Sleeps the current thread for the given amount of time in milliseconds.",
+                { "sleep", new(SleepCMD) { Min = 1, Max = 1,
+                    Desc = "Sleeps the current thread for the given amount of time in milliseconds.",
                     Usage = "<(int)Time(ms)>" } },
 
-                { "waitms", new(WaitMSCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Precisely waits for a given amount of time in milliseconds.",
+                { "waitms", new(WaitMSCMD) { Min = 1, Max = 1,
+                    Desc = "Precisely waits for a given amount of time in milliseconds.",
                     Usage = "<(double)Time(ms)>" } },
 
-                { "waits", new(WaitSCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Precisely waits for a given amount of time in seconds.",
+                { "waits", new(WaitSCMD) { Min = 1, Max = 1,
+                    Desc = "Precisely waits for a given amount of time in seconds.",
                     Usage = "<(double)Time(s)>" } },
 
                 #endregion
@@ -187,7 +188,7 @@ namespace SCE
         private static string BuildPackageHelp(Package pkg)
         {
             StringBuilder sb = new();
-            sb.AppendLine($"- {pkg.Name} | Version: {pkg.Version} -\n");
+            sb.AppendLine($"- {pkg.Name} | Version: {pkg.Version} -\n{pkg.Desc}\n");
             bool first = true;
             foreach (var item in pkg.Commands)
             {
@@ -204,64 +205,66 @@ namespace SCE
         {
             StringBuilder sb = new();
 
-            if (c.MinArgs != c.MaxArgs)
-                sb.AppendLine($"{name}[{c.MinArgs}-{(c.MaxArgs >= 0 ? c.MaxArgs : "n")}]");
+            if (c.Min != c.Max)
+                sb.AppendLine($"{name}[{c.Min}-{(c.Max >= 0 ? c.Max : "n")}]");
             else
-                sb.AppendLine($"{name}[{c.MinArgs}]");
+                sb.AppendLine($"{name}[{c.Min}]");
 
-            if (c.Description != string.Empty)
-                sb.AppendLine($"- {c.Description}");
-            if (c.Usage != string.Empty)
+            if (c.Desc != "")
+                sb.AppendLine($"- {c.Desc}");
+            if (c.Usage != "")
                 sb.AppendLine($"> {name} {c.Usage}");
+            if (c.Version != "")
+                sb.AppendLine($"# Version: {c.Version}");
 
             return sb.ToString();
         }
 
-        private static IEnumerable<Package> ReadPackages(string[] args, Cmd.Callback cb)
+        private static IEnumerable<Package> ReadPackages(string[] args, CmdLauncher cl)
         {
             if (args.Length == 0)
-                return cb.Launcher.Packages();
+                return cl.Packages();
             List<Package> packages = new(args.Length);
             foreach (var name in args)
             {
-                if (!cb.Launcher.TryGetPackage(name, out var pkg))
+                if (!cl.TryGetPackage(name, out var pkg))
                     throw new CmdException("Launcher", $"Unknown package \'{name}\'.");
                 packages.Add(pkg);
             }
             return packages;
         }
 
-        private static string BuildHelp(string[] args, Cmd.Callback cb)
+        private static string BuildHelp(string[] args, CmdLauncher cl)
         {
             StringBuilder sb = new("- Commands -\n");
-            foreach (var pkg in ReadPackages(args, cb))
+            foreach (var pkg in ReadPackages(args, cl))
                 sb.Append(BuildPackageHelp(pkg));
             return sb.ToString();
         }
 
-        private static Cmd.MemItem ModCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem ModCMD(string[] args, CmdLauncher cl)
         {
-            var o1 = MemObj(cb, true);
+            var o1 = MemObj(cl, true);
             if (o1 is not int b)
                 b = Convert.ToInt32(o1);
-            var o2 = MemObj(cb, true);
+            var o2 = MemObj(cl, true);
             if (o2 is not int a)
                 a = Convert.ToInt32(o2);
             return new(Utils.Mod(a, b));
         }
 
-        private static Cmd.MemItem ModArgCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem ModArgCMD(string[] args, CmdLauncher cl)
         {
             return new(Utils.Mod(int.Parse(args[0]), int.Parse(args[1])));
         }
 
-        private static string BuildHelpCMD(string[] args, Cmd.Callback cb)
+        private static string BuildHelpCMD(string[] args, CmdLauncher cl)
         {
             StringBuilder sb = new();
             bool first = true;
             foreach (var name in args)
             {
-                if (!cb.Launcher.TryGetCommand(name, out var cmd, out var pkg))
+                if (!cl.TryGetCommand(name, out var cmd, out var pkg))
                 {
                     Console.Write($"Unknown Command \'{name}\'.");
                     continue;
@@ -277,9 +280,9 @@ namespace SCE
 
         #region MainCommands
 
-        private static Cmd.MemItem VersionCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem VersionCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.FeedbackLine($"Version: {CmdLauncher.VERSION}");
+            cl.FeedbackLine($"Version: {CmdLauncher.VERSION}");
             return new(CmdLauncher.VERSION);
         }
 
@@ -289,21 +292,21 @@ namespace SCE
             Environment.Exit(code);
         }
 
-        private static void HelpCMD(string[] args, Cmd.Callback cb)
+        private static void HelpCMD(string[] args, CmdLauncher cl)
         {
-            Console.Write(BuildHelp(args, cb));
+            Console.Write(BuildHelp(args, cl));
         }
 
-        private static void HelpExpCMD(string[] args, Cmd.Callback cb)
+        private static void HelpExpCMD(string[] args, CmdLauncher cl)
         {
-            var help = BuildHelp(Utils.TrimFirst(args), cb);
+            var help = BuildHelp(Utils.TrimFirst(args), cl);
             File.WriteAllText(args[0], help);
-            cb.Launcher.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
+            cl.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
         }
 
-        private static void HelpExpDirCMD(string[] args, Cmd.Callback cb)
+        private static void HelpExpDirCMD(string[] args, CmdLauncher cl)
         {
-            var packages = ReadPackages(Utils.TrimFirst(args), cb).ToArray();
+            var packages = ReadPackages(Utils.TrimFirst(args), cl).ToArray();
             if (packages.Length == 0)
                 throw new CmdException("Native", "No packages selected.");
             Directory.CreateDirectory(args[0]);
@@ -312,49 +315,49 @@ namespace SCE
                 var path = Path.Combine(args[0], $"{pkg.Name}.txt");
                 File.WriteAllText(path, BuildPackageHelp(pkg));
             }
-            cb.Launcher.FeedbackLine($"Successfully created directory with {packages.Length} file(s) at:\n{args[0]}");
+            cl.FeedbackLine($"Successfully created directory with {packages.Length} file(s) at:\n{args[0]}");
         }
 
-        private static void HelpCMDCMD(string[] args, Cmd.Callback cb)
+        private static void HelpCMDCMD(string[] args, CmdLauncher cl)
         {
-            Console.Write(BuildHelpCMD(args, cb));
+            Console.Write(BuildHelpCMD(args, cl));
         }
 
-        private static void HelpCMDExpCMD(string[] args, Cmd.Callback cb)
+        private static void HelpCMDExpCMD(string[] args, CmdLauncher cl)
         {
-            var help = BuildHelp(Utils.TrimFirst(args), cb);
+            var help = BuildHelp(Utils.TrimFirst(args), cl);
             File.WriteAllText(args[0], help);
-            cb.Launcher.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
+            cl.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
         }
 
-        private Cmd.MemItem PackageViewCMD(string[] args, Cmd.Callback cb)
+        private Cmd.MItem PackageViewCMD(string[] args, CmdLauncher cl)
         {
-            if (cb.Launcher.TryGetPackage(args[0], out var package))
+            if (cl.TryGetPackage(args[0], out var package))
             {
-                cb.Launcher.FeedbackLine($"Found package \'{package.Name}\' with {package.Commands.Count} command(s).");
+                cl.FeedbackLine($"Found package \'{package.Name}\' with {package.Commands.Count} command(s).");
                 return new(true);
             }
             else
             {
-                cb.Launcher.FeedbackLine($"No package with name \'{args}\' found.");
+                cl.FeedbackLine($"No package with name \'{args}\' found.");
                 return new(false);
             }
         }
 
-        private Cmd.MemItem PackageVersionCMD(string[] args, Cmd.Callback cb)
+        private Cmd.MItem PackageVersionCMD(string[] args, CmdLauncher cl)
         {
-            if (!cb.Launcher.TryGetPackage(args[0], out var pkg))
+            if (!cl.TryGetPackage(args[0], out var pkg))
                 throw new CmdException("Native", $"Unknown package \'{args[0]}\'.");
-            cb.Launcher.FeedbackLine($"Version: {pkg.Version}");
+            cl.FeedbackLine($"Version: {pkg.Version}");
             return new(pkg.Version);
         }
 
-        private void PackagesCMD(string[] args, Cmd.Callback cb)
+        private void PackagesCMD(string[] args, CmdLauncher cl)
         {
-            int longest = StrUtils.Longest(cb.Launcher.Packages(), p => p.Name.Length);
+            int longest = StrUtils.Longest(cl.Packages(), p => p.Name.Length);
             StringBuilder sb = new();
             int total = 0;
-            foreach (var pkg in cb.Launcher.Packages())
+            foreach (var pkg in cl.Packages())
             {
                 int count = pkg.Commands.Count;
                 var name = pkg.Name == "" ? "Unnamed*" : pkg.Name;
@@ -365,10 +368,10 @@ namespace SCE
             Console.Write(sb.ToString());
         }
 
-        private Cmd.MemItem CommandExistsCMD(string[] args, Cmd.Callback cb)
+        private Cmd.MItem CommandExistsCMD(string[] args, CmdLauncher cl)
         {
-            var exists = cb.Launcher.ContainsCommand(args[0]);
-            cb.Launcher.FeedbackLine(exists);
+            var exists = cl.ContainsCommand(args[0]);
+            cl.FeedbackLine(exists);
             return new(exists);
         }
 
@@ -384,20 +387,20 @@ namespace SCE
 
         private string[] _save = Array.Empty<string>();
 
-        private void SaveCMD(string[] args, Cmd.Callback cb)
+        private void SaveCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
             _save = args;
         }
 
-        private void LoadCMD(string[] args, Cmd.Callback cb)
+        private void LoadCMD(string[] args, CmdLauncher cl)
         {
             if (_save.Length == 0)
                 throw new CmdException("Native", "No command saved.");
-            cb.Launcher.ExecuteCommand(_save[0], Utils.TrimFirst(_save));
+            cl.ExecuteCommand(_save[0], Utils.TrimFirst(_save));
         }
 
-        private void ClearCMD(string[] args, Cmd.Callback cb)
+        private void ClearCMD(string[] args, CmdLauncher cl)
         {
             if (_save.Length == 0)
                 throw new CmdException("Native", "No command to clear.");
@@ -408,11 +411,11 @@ namespace SCE
 
         #region Feedback
 
-        private static Action<string[], Cmd.Callback> FeedbackCMD(bool newLine)
+        private static Action<string[], CmdLauncher> FeedbackCMD(bool newLine)
         {
-            return (args, cb) =>
+            return (args, cl) =>
             {
-                if (!cb.Launcher.CmdFeedback)
+                if (!cl.CmdFeedback)
                     return;
                 StringBuilder sb = new();
                 foreach (var arg in args)
@@ -425,21 +428,21 @@ namespace SCE
 
         #region CacheCommands
 
-        private static void CacheClearCMD(string[] args, Cmd.Callback cb)
+        private static void CacheClearCMD(string[] args, CmdLauncher cl)
         {
-            int count = cb.Launcher.ClearCache();
+            int count = cl.ClearCache();
             if (count == 0)
                 throw new CmdException("Native", "No items to clear.");
-            cb.Launcher.FeedbackLine($"Successfully cleared {count} item(s) from the command cache.");
+            cl.FeedbackLine($"Successfully cleared {count} item(s) from the command cache.");
         }
 
-        private static Cmd.MemItem CacheSizeCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem CacheSizeCMD(string[] args, CmdLauncher cl)
         {
-            int count = cb.Launcher.CacheSize();
+            int count = cl.CacheSize();
             if (count == 0)
-                cb.Launcher.FeedbackLine("Command cache is empty.");
+                cl.FeedbackLine("Command cache is empty.");
             else
-                cb.Launcher.FeedbackLine($"Command Cache contains {count} item(s).");
+                cl.FeedbackLine($"Command Cache contains {count} item(s).");
             return new(count);
         }
 
@@ -447,88 +450,88 @@ namespace SCE
 
         #region ChainCommands
 
-        private static void AbortCMD(string[] args, Cmd.Callback cb)
+        private static void AbortCMD(string[] args, CmdLauncher cl)
         {
             throw new CmdException("Native", args.Length > 0 ? Utils.Infill(args, " ") : "Abort called.");
         }
 
-        private static void RunAllCMD(string[] args, Cmd.Callback cb)
+        private static void RunAllCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.ExecuteEveryCommand(args);
+            cl.ExecuteEveryCommand(args);
         }
 
-        private static void LoopCMD(string[] args, Cmd.Callback cb)
+        private static void LoopCMD(string[] args, CmdLauncher cl)
         {
             if (!int.TryParse(args[0], out var loops))
                 throw new CmdException("Launcher", $"Invalid loops \'{args[0]}\'.");
             for (int i = 0; i < loops; ++i)
-                if (!cb.Launcher.SExecuteCommand(args[1], Utils.TrimFromStart(args, 2)))
+                if (!cl.SExecuteCommand(args[1], Utils.TrimFromStart(args, 2)))
                     throw new CmdException("Launcher", "Loop ended as command failed to execute.");
         }
 
-        private static void CatchCMD(string[] args, Cmd.Callback cb)
+        private static void CatchCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
-        private static Cmd.MemItem CatchOCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem CatchOCMD(string[] args, CmdLauncher cl)
         {
-            return new(!cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args)));
+            return new(!cl.SExecuteCommand(args[0], Utils.TrimFirst(args)));
         }
 
-        private static Action<string[], Cmd.Callback> JViewGEN(bool pop)
+        private static Action<string[], CmdLauncher> JViewGEN(bool pop)
         {
-            return (args, cb) =>
+            return (args, cl) =>
             {
-                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
-                Console.WriteLine(MemStr(cb, pop));
+                cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                Console.WriteLine(MemStr(cl, pop));
             };
         }
 
-        private static void AsyncCMD(string[] args, Cmd.Callback cb)
+        private static void AsyncCMD(string[] args, CmdLauncher cl)
         {
             Thread thread = new(() =>
             {
-                cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
+                cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
             });
             thread.Start();
         }
 
-        private static void NoFeedCMD(string[] args, Cmd.Callback cb)
+        private static void NoFeedCMD(string[] args, CmdLauncher cl)
         {
-            bool prev = cb.Launcher.CmdFeedback;
-            cb.Launcher.CmdFeedback = false;
-            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
-            cb.Launcher.CmdFeedback = prev;
+            bool prev = cl.CmdFeedback;
+            cl.CmdFeedback = false;
+            cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.CmdFeedback = prev;
         }
 
-        private static void NoExceptCMD(string[] args, Cmd.Callback cb)
+        private static void NoExceptCMD(string[] args, CmdLauncher cl)
         {
-            bool prev = cb.Launcher.ErrFeedback;
-            cb.Launcher.ErrFeedback = false;
+            bool prev = cl.ErrFeedback;
+            cl.ErrFeedback = false;
             try
             {
-                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
             }
             catch
             { }
-            cb.Launcher.ErrFeedback = prev;
+            cl.ErrFeedback = prev;
         }
 
-        private static Cmd.MemItem NoExceptOCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem NoExceptOCMD(string[] args, CmdLauncher cl)
         {
-            bool prev = cb.Launcher.ErrFeedback;
-            cb.Launcher.ErrFeedback = false;
+            bool prev = cl.ErrFeedback;
+            cl.ErrFeedback = false;
             try
             {
-                cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
-                cb.Launcher.ErrFeedback = prev;
+                cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                cl.ErrFeedback = prev;
                 return new(true);
             }
             catch
             {
 
-                cb.Launcher.ErrFeedback = prev;
+                cl.ErrFeedback = prev;
                 return new(false);
             }
         }
@@ -537,22 +540,22 @@ namespace SCE
 
         #region ConvertCommands
 
-        public static object MemObj(Cmd.Callback cb, bool pop = true)
+        public static object MemObj(CmdLauncher cl, bool pop = true)
         {
-            if (cb.Launcher.MemoryStack.Count == 0)
+            if (cl.MemoryStack.Count == 0)
                 throw new CmdException("Native", "Memory stack is empty.");
-            var obj = (pop ? cb.Launcher.MemoryStack.Pop() : cb.Launcher.MemoryStack.Peek()) ??
+            var obj = (pop ? cl.MemoryStack.Pop() : cl.MemoryStack.Peek()) ??
                 throw new CmdException("Native", "Memory item is null.");
             return obj;
         }
 
-        public static string MemStr(Cmd.Callback cb, bool pop = true)
+        public static string MemStr(CmdLauncher cl, bool pop = true)
         {
-            return MemObj(cb, pop).ToString() ??
+            return MemObj(cl, pop).ToString() ??
                 throw new CmdException("Native", "Memory string conversion is null.");
         }
 
-        private static Cmd.MemItem ConvArgCMD(string[] args)
+        private static Cmd.MItem ConvArgCMD(string[] args)
         {
             var t = StrUtils.BetterGetType(args[1]);
             var res = Convert.ChangeType(args[0], t) ??
@@ -560,10 +563,10 @@ namespace SCE
             return new(res);
         }
 
-        private static Cmd.MemItem ConvCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem ConvCMD(string[] args, CmdLauncher cl)
         {
             var t = StrUtils.BetterGetType(args[0]);
-            var res = Convert.ChangeType(MemObj(cb), t) ??
+            var res = Convert.ChangeType(MemObj(cl), t) ??
                 throw new CmdException("Native", "Conversion resulted in null.");
             return new(res);
         }
@@ -572,7 +575,7 @@ namespace SCE
 
         #region TimeCommands
 
-        private static Cmd.MemItem TimeCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem TimeCMD(string[] args, CmdLauncher cl)
         {
             var timeOpt = args.Length > 0 ? args[0].ToLower() : "local";
             DateTime time = timeOpt switch
@@ -583,7 +586,7 @@ namespace SCE
                 "unixepoch" => DateTime.UnixEpoch,
                 _ => throw new CmdException("Native", "Unknown time argument, try:\n> local\n> utc\n> today\n> unixepoch")
             };
-            cb.Launcher.FeedbackLine(time);
+            cl.FeedbackLine(time);
             return new(time);
         }
 

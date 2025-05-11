@@ -1,6 +1,7 @@
 ﻿using System.Text;
 namespace SCE
 {
+    // DO NOT USE | WILL BE REPLACED
     internal static class PatternUtils
     {
         public static void ViewGeneric<T>(Dictionary<string, T> dict, string[] args, string source, string article)

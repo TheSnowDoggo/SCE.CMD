@@ -18,6 +18,8 @@
 
         public string Version { get; init; } = "UNDEFINED";
 
+        public string Desc { get; init; } = "";
+
         public virtual void Initialize(CmdLauncher launcher)
         {
         }

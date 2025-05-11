@@ -18,77 +18,82 @@ namespace SCE
         {
             Name = "Variable";
             Version = "1.2.0";
+            Desc = "Safe storing and inserting of data in named variables.";
             Commands = new()
             {
-                { ">scope", new(EnterScopeCMD) {
-                    Description = "Enters a variable scope." } },
-
-                { "<scope", new(ExitScopeCMD) {
-                    Description = "Exits a variable scope." } },
-
-                { "<*scope", new(ExitAllScopeCMD) {
-                    Description = "Exits every variable scope." } },
-
-                { "/scope", new(TempScopeCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Safely enters a scope for the duration of the command.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
-
-                { "?scope", new(GetScopeCMD) {
-                    Description = "Outputs the current scope." } },
-
-                { ">global", new(EnterGlobalCMD) {
-                    Description = "Enters global scope." } },
-
-                { "<global", new(ExitGlobalCMD) {
-                    Description = "Exits global scope." } },
-
-                { "?global", new(GetGlobalCMD) {
-                    Description = "Outputs whether global scope is entered." } },
-
-                { "/global", new(TempGlobalCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Safely enters global scope for the duration of the command.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
-
-                { "ststore", new(StoreCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Stores the data into a variable.",
+                { "ststore", new(StoreCMD) { Min = 2, Max = 2,
+                    Desc = "Stores the data into a variable.",
                     Usage = "<VariableName> <Data>" } },
 
-                { "ststoreres", new(StoreResCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Stores the latest memory item into the variable after running the given command.",
-                    Usage = "<VariableName> <CommandName> ?<Arg1>..." } },
+                { "ststoreres", new(StoreResCMD) { Min = 2, Max = -1,
+                    Desc = "Stores the latest memory item into the variable after running the given command.",
+                    Usage = "<VariableName> " + Cmd.BCHAIN } },
 
-                { "tfm", new(TakeFMemCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Stores the latest items in memory stack and removes it.",
+                { "tfm", new(TakeFMemCMD) { Min = 1, Max = -1,
+                    Desc = "Stores the latest items in memory stack and removes it.",
                     Usage = "<VariableName1>..." } },
 
-                { "ins", new(InsertCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Inserts variables into the given command: $var_name$",
-                    Usage = "<CommandName> <Arg1>..." } },
+                { "ins", new(InsertCMD) { Min = 2, Max = -1,
+                    Desc = "Inserts variables into the given command: $var_name$",
+                    Usage = Cmd.BCHAIN } },
 
-                { "insl", new(InsertLimCMD) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Inserts a select number of variables into the given command: $var_name$",
-                    Usage = "<VariableCount> <CommandName> <Arg1>..." } },
+                { "insl", new(InsertLimCMD) { Min = 2, Max = -1,
+                    Desc = "Inserts a select number of variables into the given command: $var_name$",
+                    Usage = "<VariableCount> " + Cmd.BCHAIN } },
 
-                { "stmem", new(StoreMemCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Stores the variables into the memory stack.",
+                { "stmem", new(StoreMemCMD) { Min = 1, Max = -1,
+                    Desc = "Stores the variables into the memory stack.",
                     Usage = "<VariableName1>..." } },
 
-                { "stmem^", new(StoreMemRCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Stores the variables into the memory stack and removes them.",
+                { "stmem^", new(StoreMemRCMD) { Min = 1, Max = -1,
+                    Desc = "Stores the variables into the memory stack and removes them.",
                     Usage = "<VariableName1>..." } },
 
                 { "stclear", new(ClearCMD) {
-                    Description = "Clears every variable in the current scope." } },
+                    Desc = "Clears every variable in the current scope." } },
 
-                { "stdel", new(RemoveVariableCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Deletes the specified variable.",
+                { "stdel", new(RemoveVariableCMD) { Min = 1, Max = -1,
+                    Desc = "Deletes the specified variable.",
                     Usage = "<VariableName1>..." } },
 
-                { "stview", new(ViewVariableCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Displays all the specified variables.",
+                { "stview", new(ViewVariableCMD) { Min = 1, Max = -1,
+                    Desc = "Displays all the specified variables.",
                     Usage = "<*>:<VariableName1>..." } },
 
-                { "stcleanup", new(CleanupCMD) }
+                { "stcleanup", new(CleanupCMD) },
+
+                #region Scope
+
+                { ">scope", new(EnterScopeCMD) {
+                    Desc = "Enters a variable scope." } },
+
+                { "<scope", new(ExitScopeCMD) {
+                    Desc = "Exits a variable scope." } },
+
+                { "<*scope", new(ExitAllScopeCMD) {
+                    Desc = "Exits every variable scope." } },
+
+                { "/scope", new(TempScopeCMD) { Min = 1, Max = -1,
+                    Desc = "Safely enters a scope for the duration of the command.",
+                    Usage = Cmd.BCHAIN } },
+
+                { "?scope", new(GetScopeCMD) {
+                    Desc = "Outputs the current scope." } },
+
+                { ">global", new(EnterGlobalCMD) {
+                    Desc = "Enters global scope." } },
+
+                { "<global", new(ExitGlobalCMD) {
+                    Desc = "Exits global scope." } },
+
+                { "?global", new(GetGlobalCMD) {
+                    Desc = "Outputs whether global scope is entered." } },
+
+                { "/global", new(TempGlobalCMD) { Min = 1, Max = -1,
+                    Desc = "Safely enters global scope for the duration of the command.",
+                    Usage = Cmd.BCHAIN } },
+
+                #endregion
             };
         }
 
@@ -101,13 +106,13 @@ namespace SCE
             return _scopes.Peek();
         }
 
-        private void StoreVariable(string name, string data, Cmd.Callback cb)
+        private void StoreVariable(string name, string data, CmdLauncher cl)
         {
             var scope = GetScope();
             if (scope.TryGetValue(name, out var oldValue))
-                cb.Launcher.FeedbackLine($"{name}: {oldValue} -> {data}");
+                cl.FeedbackLine($"{name}: {oldValue} -> {data}");
             else
-                cb.Launcher.FeedbackLine($"{name} = {data}");
+                cl.FeedbackLine($"{name} = {data}");
             scope[name] = data;
         }
 
@@ -174,19 +179,19 @@ namespace SCE
             global = false;
         }
 
-        private Cmd.MemItem GetGlobalCMD(string[] args, Cmd.Callback cb)
+        private Cmd.MItem GetGlobalCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.FeedbackLine($"Global? {global}");
+            cl.FeedbackLine($"Global? {global}");
             return new(global);
         }
 
-        private void TempGlobalCMD(string[] args, Cmd.Callback cb)
+        private void TempGlobalCMD(string[] args, CmdLauncher cl)
         {
             if (global)
                 throw new CmdException("Variable", "Cannot re-enter global scope.");
             global = true;
             tempGlobal = true;
-            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
             global = false;
             tempGlobal = false;
         }
@@ -218,81 +223,81 @@ namespace SCE
             _scopes.Clear();
         }
 
-        private void TempScopeCMD(string[] args, Cmd.Callback cb)
+        private void TempScopeCMD(string[] args, CmdLauncher cl)
         {
             _scopes.Push(new());
             _tempScopes.Push(_scopes.Count);
-            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
             if (_scopes.Count == 0 || _tempScopes.Count == 0)
                 throw new CmdException("Variable", "Critical temp scope error.");
             _scopes.Pop();
             _tempScopes.Pop();
         }
 
-        private Cmd.MemItem GetScopeCMD(string[] args, Cmd.Callback cb)
+        private Cmd.MItem GetScopeCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.FeedbackLine($"Scope = {_scopes.Count}");
+            cl.FeedbackLine($"Scope = {_scopes.Count}");
             return new(_scopes.Count);
         }
 
-        private void ViewVariableCMD(string[] args, Cmd.Callback cb)
+        private void ViewVariableCMD(string[] args, CmdLauncher cl)
         {
             var scope = GetScope();
             Console.WriteLine(global ? "- Global -" : $"- Scope {_scopes.Count} -");
             PatternUtils.ViewGeneric(scope, args, Name, "variable");
         }
 
-        private void StoreCMD(string[] args, Cmd.Callback cb)
+        private void StoreCMD(string[] args, CmdLauncher cl)
         {
-            StoreVariable(args[0], args[1], cb);
+            StoreVariable(args[0], args[1], cl);
         }
 
-        private void StoreResCMD(string[] args, Cmd.Callback cb)
+        private void StoreResCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
-            if (cb.Launcher.MemoryStack.Count == 0)
+            cl.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+            if (cl.MemoryStack.Count == 0)
                 throw new CmdException("Variable", "No items in memory to store.");
-            var obj = cb.Launcher.MemoryStack.Pop() ??
+            var obj = cl.MemoryStack.Pop() ??
                 throw new CmdException("Variable", "Memory object was null.");
             var str = obj.ToString() ??
                 throw new CmdException("Variable", "Memory string conversion was null.");
-            StoreVariable(args[0], str, cb);
+            StoreVariable(args[0], str, cl);
         }
 
-        private void TakeFMemCMD(string[] args, Cmd.Callback cb)
+        private void TakeFMemCMD(string[] args, CmdLauncher cl)
         {
             GetScope();
             for (int i = 0; i < args.Length; ++i)
             {
-                if (cb.Launcher.MemoryStack.Count == 0)
+                if (cl.MemoryStack.Count == 0)
                     throw new CmdException("Variable", "Memory is empty.");
-                var store = cb.Launcher.MemoryStack.Pop();
+                var store = cl.MemoryStack.Pop();
                 if (store?.ToString() is string str)
-                    StoreVariable(args[i], str, cb);
+                    StoreVariable(args[i], str, cl);
                 else
                     throw new CmdException("Variable", "Stored value is null.");
             }
         }
 
-        private void InsertCMD(string[] args, Cmd.Callback cb)
+        private void InsertCMD(string[] args, CmdLauncher cl)
         {
             args = Replace(args);
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
-        private void InsertLimCMD(string[] args, Cmd.Callback cb)
+        private void InsertLimCMD(string[] args, CmdLauncher cl)
         {
             int lim = int.Parse(args[0]);
             args = Replace(args, lim);
-            cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+            cl.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
         }
 
-        private Cmd.MemItem StoreMemCMD(string[] args)
+        private Cmd.MItem StoreMemCMD(string[] args)
         {
             return new(GetVariable(args[0]));
         }
 
-        private Cmd.MemItem StoreMemRCMD(string[] args)
+        private Cmd.MItem StoreMemRCMD(string[] args)
         {
             var data = GetVariable(args[0], out var scope);
             if (!scope.ContainsKey(args[0]))
@@ -301,7 +306,7 @@ namespace SCE
             return new(data);
         }
 
-        private void RemoveVariableCMD(string[] args, Cmd.Callback cb)
+        private void RemoveVariableCMD(string[] args, CmdLauncher cl)
         {
             var scope = GetScope();
             foreach (var name in args)
@@ -309,22 +314,22 @@ namespace SCE
                 if (!scope.ContainsKey(name))
                     throw new CmdException("Variable", $"Unknown variable \'{name}\'.");
                 scope.Remove(name);
-                cb.Launcher.FeedbackLine($"Sucessfully removed variable \'{name}\'.");
+                cl.FeedbackLine($"Sucessfully removed variable \'{name}\'.");
             }
         }
 
-        private void ClearCMD(string[] args, Cmd.Callback cb)
+        private void ClearCMD(string[] args, CmdLauncher cl)
         {
             if (_scopes.Count == 0)
-                cb.Launcher.FeedbackLine("No variables to clear.");
+                cl.FeedbackLine("No variables to clear.");
             else
             {
-                cb.Launcher.FeedbackLine($"Sucessfully cleared {_scopes.Count} variables.");
+                cl.FeedbackLine($"Sucessfully cleared {_scopes.Count} variables.");
                 _scopes.Clear();
             }
         }
 
-        private void CleanupCMD(string[] args, Cmd.Callback cb)
+        private void CleanupCMD(string[] args, CmdLauncher cl)
         {
             bool skip = false;
             if (args.Length > 0 && !bool.TryParse(args[0], out skip))
@@ -332,7 +337,7 @@ namespace SCE
             if (!skip && !Utils.BoolPrompt("Cleaning up will reset all scopes and variables and may cause errors in command chains.\n" +
                 "Are you sure? Yes[Y] or No[N]: "))
             {
-                cb.Launcher.FeedbackLine("Cleanup canceled.");
+                cl.FeedbackLine("Cleanup canceled.");
                 return;
             }
             _scopes.Clear();
@@ -340,7 +345,7 @@ namespace SCE
             _globalScope.Clear();
             global = false;
             tempGlobal = false;
-            cb.Launcher.FeedbackLine("Cleanup successfull.");
+            cl.FeedbackLine("Cleanup successfull.");
         }
     }
 }

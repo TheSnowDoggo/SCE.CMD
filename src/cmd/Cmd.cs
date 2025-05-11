@@ -2,22 +2,28 @@
 {
     public class Cmd
     {
-        public record Callback(Package Package, CmdLauncher Launcher);
+        #region QuickUsage
 
-        public record MemItem(object? Value);
+        public const string BCHAIN = "<CommandName> ?<Arg1>...", 
+            MBCHAIN = "?" + BCHAIN;
 
-        public Cmd(Func<string[], Callback, MemItem?> func)
+        #endregion
+
+        // MemItem
+        public record MItem(object? Value);
+
+        public Cmd(Func<string[], CmdLauncher, MItem?> func)
         {
             Func = func;
         }
 
-        public Cmd(Func<string[], MemItem?> func)
+        public Cmd(Func<string[], MItem?> func)
             : this((args, _) => func(args))
         {
         }
 
-        public Cmd(Action<string[], Callback> action)
-            : this((args, cb) => { action(args, cb); return null; })
+        public Cmd(Action<string[], CmdLauncher> action)
+            : this((args, cl) => { action(args, cl); return null; })
         {
         }
 
@@ -26,25 +32,27 @@
         {
         }
 
-        public int MinArgs { get; init; }
+        public int Min { get; init; }
 
-        public int MaxArgs { get; init; }
+        public int Max { get; init; }
 
-        public string Description { get; init; } = "";
+        public string Desc { get; init; } = "";
 
         public string Usage { get; init; } = "";
 
-        public Func<string[], Callback, MemItem?> Func { get; }
+        public string Version { get; init; } = "";
+
+        public Func<string[], CmdLauncher, MItem?> Func { get; }
 
         #region Utilites
 
-        public static Cmd QCommand<T>(Action<T, Callback> action, string description = "")
+        public static Cmd QCommand<T>(Action<T, CmdLauncher> action, string description = "")
         {
-            return new(Translator((args, cb) => action.Invoke((T)args[0], cb), new[] { typeof(T) }))
+            return new(Translator((args, cl) => action.Invoke((T)args[0], cl), new[] { typeof(T) }))
             {
-                MinArgs = 1,
-                MaxArgs = 1,
-                Description = description,
+                Min = 1,
+                Max = 1,
+                Desc = description,
             };
         }
 
@@ -53,7 +61,7 @@
             return QCommand<T>((t, _) => action.Invoke(t), description);
         }
 
-        public static Action<string[], Callback> Translator(Action<object[], Callback> action, Type[] types)
+        public static Action<string[], CmdLauncher> Translator(Action<object[], CmdLauncher> action, Type[] types)
         {
             return (args, callback) =>
             {
@@ -79,7 +87,7 @@
             };
         }
 
-        public static Action<string[], Callback> Translator(Action<object[]> action, Type[] types)
+        public static Action<string[], CmdLauncher> Translator(Action<object[]> action, Type[] types)
         {
             return Translator((args, _) => action(args), types);
         }

@@ -2,6 +2,9 @@
 
 namespace SCE
 {
+    /// <summary>
+    /// Additional string manipulation utilities.
+    /// </summary>
     public static class StrUtils
     {
         private static readonly Dictionary<string, Type> _pretype = new()

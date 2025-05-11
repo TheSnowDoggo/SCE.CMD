@@ -4,11 +4,11 @@ namespace SCE
 {
     public class CmdLauncher
     {
-        public const string VERSION = "0.9.5";
+        public const string VERSION = "0.10.5";
 
         private readonly Dictionary<string, Package> _packages = new();
 
-        private readonly Dictionary<string, string> _commandCache = new();
+        private readonly Dictionary<string, string> _cmdCache = new();
 
         private bool active;
 
@@ -19,9 +19,9 @@ namespace SCE
 
         public string Name { get; init; }
 
-        public Func<string>? InputRender { get; set; }
+        public Func<string>? InputRender;
 
-        public SortedSet<Preprocessor> Preprocessors { get; set; } = new();
+        public SortedSet<Preprocessor> Preprocessors { get; } = new();
 
         public Stack<object?> MemoryStack { get; } = new();
 
@@ -37,6 +37,10 @@ namespace SCE
 
         public bool NeatErrors { get; set; } = true;
 
+        public bool Preprocessing { get; set; } = true;
+
+        public bool InputRendering { get; set; } = true;
+
         #endregion
 
         public void Exit()
@@ -49,7 +53,7 @@ namespace SCE
             active = true;
             while (active)
             {
-                if (InputRender != null)
+                if (InputRendering && InputRender != null)
                     Console.Write(InputRender.Invoke());
                 var input = Console.ReadLine() ?? "";
                 SExecuteCommand(input);
@@ -58,7 +62,7 @@ namespace SCE
 
         #region Preprocess
 
-        public string Process(string input)
+        public string PreProcess(string input)
         {
             foreach (var p in Preprocessors)
                 input = p.Process(input);
@@ -109,10 +113,11 @@ namespace SCE
 
         public bool TryGetCommand(string cmd, [NotNullWhen(true)] out Cmd? command, [NotNullWhen(true)] out Package? package)
         {
-            if (CmdCaching && _commandCache.TryGetValue(cmd, out var cachedPName) &&
-                TryGetPackage(cachedPName, out package) && package.Commands.TryGetValue(cmd, out command))
+            if (CmdCaching && _cmdCache.TryGetValue(cmd, out var cachedPName))
             {
-                return true;
+                if (TryGetPackage(cachedPName, out package) && package.Commands.TryGetValue(cmd, out command))
+                    return true;
+                _cmdCache.Remove(cmd);
             }
             foreach (var pkg in Packages())
             {
@@ -120,7 +125,7 @@ namespace SCE
                 {
                     package = pkg;
                     if (CmdCaching)
-                        _commandCache[cmd] = pkg.Name;
+                        _cmdCache[cmd] = pkg.Name;
                     return true;
                 }
             }
@@ -160,14 +165,14 @@ namespace SCE
 
         public int ClearCache()
         {
-            int count = _commandCache.Count;
-            _commandCache.Clear();
+            int count = _cmdCache.Count;
+            _cmdCache.Clear();
             return count;
         }
 
         public int CacheSize()
         {
-            return _commandCache.Count;
+            return _cmdCache.Count;
         }
 
         #endregion
@@ -198,12 +203,12 @@ namespace SCE
         {
             if (!TryGetCommand(name, out var cmd, out var package))
                 throw new CmdException("Launcher", $"Unrecognised command \'{name}\'.");
-            if (args.Length < cmd.MinArgs)
-                throw new CmdException("Launcher", $"Too few args given for command \'{name}\' (mim of {cmd.MinArgs}, got {args.Length}).");
-            if (cmd.MaxArgs >= 0 && args.Length > cmd.MaxArgs)
-                throw new CmdException("Launcher", $"Too many args given for command \'{name}\' (max of {cmd.MaxArgs}, got {args.Length}).");
+            if (args.Length < cmd.Min)
+                throw new CmdException("Launcher", $"Too few args given for command \'{name}\' (mim of {cmd.Min}, got {args.Length}).");
+            if (cmd.Max >= 0 && args.Length > cmd.Max)
+                throw new CmdException("Launcher", $"Too many args given for command \'{name}\' (max of {cmd.Max}, got {args.Length}).");
 
-            var res = cmd.Func.Invoke(args, new Cmd.Callback(package, this));
+            var res = cmd.Func.Invoke(args, this);
             if (res != null && !MemLock)
                 MemoryStack.Push(res.Value);
         }
@@ -239,7 +244,8 @@ namespace SCE
         {
             try
             {
-                line = Process(line);
+                if (Preprocessing)
+                    line = PreProcess(line);
                 if (string.IsNullOrWhiteSpace(line))
                     return false;
                 ExecuteCommand(line);
@@ -258,10 +264,10 @@ namespace SCE
             return false;
         }
 
-        public void ExecuteEveryCommand(IEnumerable<string> lines)
+        public void ExecuteEveryCommand(IEnumerable<string> lines, bool endOnFail = true)
         {
             foreach (var line in lines)
-                if (line != "" && !SExecuteCommand(line))
+                if (!string.IsNullOrWhiteSpace(line) && !SExecuteCommand(line) && endOnFail)
                     throw new CmdException("Launcher", "Ending command chain.");
         }
 

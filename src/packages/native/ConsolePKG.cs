@@ -8,60 +8,61 @@ namespace SCE
         {
             Name = "Console";
             Version = "0.1.0";
+            Desc = "Console IO management.";
             Commands = new()
             {
-                { "printl", new(PrintlCMD) { MaxArgs = -1, 
-                    Description = "Prints the given message with a newline.",
+                { "printl", new(PrintlCMD) { Max = -1, 
+                    Desc = "Prints the given message with a newline.",
                     Usage = "?<Message1>..." } },
 
-                { "print", new(PrintCMD) { MinArgs = 1, MaxArgs = -1, 
-                    Description = "Prints the given message.",
+                { "print", new(PrintCMD) { Min = 1, Max = -1, 
+                    Desc = "Prints the given message.",
                     Usage = "<Message>" } },
 
-                { "escins", new(EscapeInsertCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Inserts control characters into the given command.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "escins", new(EscapeInsertCMD) { Min = 1, Max = -1,
+                    Desc = "Inserts control characters into the given command.",
+                    Usage = Cmd.BCHAIN } },
 
-                { "readl", new(a => new Cmd.MemItem(Console.ReadLine())) {
-                    Description = "Reads a line from the console." } },
+                { "readl", new(a => new Cmd.MItem(Console.ReadLine())) {
+                    Desc = "Reads a line from the console." } },
 
-                { "readkey", new(ReadKeyCMD) { MinArgs = 1,
-                    Description = "Console.ReadKey().",
-                    Usage = "?<Intercept:True/False->False>" } },
+                { "readkey", new(ReadKeyCMD) { Min = 1,
+                    Desc = "Console.ReadKey().",
+                    Usage = "?<True/False->False>" } },
 
-                { "read", new(a => new Cmd.MemItem(Console.Read())) {
-                    Description = "Reads the next character from the input stream." } },
+                { "read", new(a => new Cmd.MItem(Console.Read())) {
+                    Desc = "Reads the next character from the input stream." } },
 
-                { "fg", new(SetColorCMD(true)) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Sets the Foreground color of the Console.",
+                { "fg", new(SetColorCMD(true)) { Min = 1, Max = 1,
+                    Desc = "Sets the Foreground color of the Console.",
                     Usage = "<ConsoleColor>" } },
 
-                { "bg", new(SetColorCMD(false)) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Sets the Background color of the Console.",
+                { "bg", new(SetColorCMD(false)) { Min = 1, Max = 1,
+                    Desc = "Sets the Background color of the Console.",
                     Usage = "<ConsoleColor>" } },
 
                 { "resetcolor", new(args => Console.ResetColor()) { 
-                    Description = "Resets the foreground and background colors." } },
+                    Desc = "Resets the foreground and background colors." } },
 
                 { "clear", new(args => Console.Clear()) {
-                    Description = "Clears the Console." } },
+                    Desc = "Clears the Console." } },
 
-                { "setcurpos", new(SetCurPosCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Sets the cursor position.",
+                { "setcurpos", new(SetCurPosCMD) { Min = 2, Max = 2,
+                    Desc = "Sets the cursor position.",
                     Usage = "<Left> <Top>" } },
 
                 { "getcurpos", new(GetCurPosCMD) {
-                    Description = "Gets the cursor position." } },
+                    Desc = "Gets the cursor position." } },
 
                 { "curvis", Cmd.QCommand<bool>(c => Console.CursorVisible = c,
                     "Sets the visible state of the Cursor.") },
 
                 { "title", new(TitleCMD) {
-                    Description = "Sets the title of the Console.",
+                    Desc = "Sets the title of the Console.",
                     Usage = "<Title>" } },
 
-                { "beep", new(BeepCMD) { MinArgs = 0, MaxArgs = 2,
-                    Description = "Makes a beep sound.",
+                { "beep", new(BeepCMD) { Min = 0, Max = 2,
+                    Desc = "Makes a beep sound.",
                     Usage = "?<Frequency(Hz)->2000Hz> ?<Duration(ms)->1000ms>" } },
             };
         }
@@ -92,10 +93,10 @@ namespace SCE
             Console.Write(sb.ToString());
         }
 
-        private static void TitleCMD(string[] args, Cmd.Callback cb)
+        private static void TitleCMD(string[] args, CmdLauncher cl)
         {
             Console.Title = args[0];
-            cb.Launcher.FeedbackLine($"Title set to \'{args[0]}\'.");
+            cl.FeedbackLine($"Title set to \'{args[0]}\'.");
         }
 
         private static void SetCurPosCMD(string[] args)
@@ -103,18 +104,18 @@ namespace SCE
             Console.SetCursorPosition(int.Parse(args[0]), int.Parse(args[1]));
         }
 
-        private static Cmd.MemItem GetCurPosCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem GetCurPosCMD(string[] args, CmdLauncher cl)
         {
             var pos = Console.GetCursorPosition();
-            cb.Launcher.FeedbackLine(pos);
+            cl.FeedbackLine(pos);
             return new($"{pos.Left} {pos.Top}");
         }
 
-        private static void EscapeInsertCMD(string[] args, Cmd.Callback cb)
+        private static void EscapeInsertCMD(string[] args, CmdLauncher cl)
         {
             for (int i = 1; i < args.Length; ++i)
                 args[i] = Utils.InsertEscapeCharacters(args[i], @"*/");
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
 
         private void BeepCMD(string[] args)
@@ -128,7 +129,7 @@ namespace SCE
             Console.Beep(frequency, duration);
         }
 
-        private static Cmd.MemItem ReadKeyCMD(string[] args)
+        private static Cmd.MItem ReadKeyCMD(string[] args)
         {
             bool intercept = false;
             if (args.Length > 0 && !bool.TryParse(args[0], out intercept))
@@ -136,21 +137,21 @@ namespace SCE
             return new(Console.ReadKey(intercept));
         }
 
-        private static Action<string[], Cmd.Callback> SetColorCMD(bool foreground)
+        private static Action<string[], CmdLauncher> SetColorCMD(bool foreground)
         {
-            return (args, cb) =>
+            return (args, cl) =>
             {
                 if (!Enum.TryParse(args[0], true, out ConsoleColor result))
                     throw new CmdException("SetColor", $"Invalid color '{args[0]}'.");
                 if (foreground)
                 {
                     Console.ForegroundColor = result;
-                    cb.Launcher.FeedbackLine($"Foreground set to {result}.");
+                    cl.FeedbackLine($"Foreground set to {result}.");
                 }
                 else
                 {
                     Console.BackgroundColor = result;
-                    cb.Launcher.FeedbackLine($"Background set to {result}.");
+                    cl.FeedbackLine($"Background set to {result}.");
                 }
             };
         }

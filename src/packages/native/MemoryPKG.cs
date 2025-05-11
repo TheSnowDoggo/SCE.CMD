@@ -8,100 +8,101 @@ namespace SCE
         {
             Name = "Memory";
             Version = "0.2.0";
+            Name = "Core launcher memory management.";
             Commands = new()
             {
-                { "nout", new(NoMemCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Locks memory for the subsequent command.",
-                    Usage = "<CommandName> ?<Arg1>..." } },
+                { "nout", new(NoMemCMD) { Min = 1, Max = -1,
+                    Desc = "Locks memory for the subsequent command.",
+                    Usage = Cmd.BCHAIN } },
 
                 { "memclear", new(MemClearCMD) {
-                    Description = "Clears all items in laucher memory." } },
+                    Desc = "Clears all items in laucher memory." } },
 
-                { "memadd", new(MemAddCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Adds every given item to memory.",
+                { "memadd", new(MemAddCMD) { Min = 1, Max = -1,
+                    Desc = "Adds every given item to memory.",
                     Usage = "<Item1>..." } },
 
-                { "memrem", new(MemRemCMD) { MaxArgs = 1,
-                    Description = "Removes the specified number of items from memory",
+                { "memrem", new(MemRemCMD) { Max = 1,
+                    Desc = "Removes the specified number of items from memory",
                     Usage = "?<ItemCount->All>" } },
 
                 { "memview", new(MemViewCMD) {
-                    Description = "Displays all items in memory" } },
+                    Desc = "Displays all items in memory" } },
 
                 { "memsize", new(MemSizeCMD) {
-                    Description = "Outputs the number of items in the memory stack." } },
+                    Desc = "Outputs the number of items in the memory stack." } },
 
-                { "memrun", new(MemRunCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Adds items to memory before running the command with no arguments.",
+                { "memrun", new(MemRunCMD) { Min = 1, Max = -1,
+                    Desc = "Adds items to memory before running the command with no arguments.",
                     Usage = "<CommandName> ?<Item1>..." } },
 
-                { "memins", new(MemInsCMD) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Inserts items from memory into the command ('&'=peek '&^'=pop).",
-                    Usage = "<Command> ?<Arg1>..." } },
+                { "memins", new(MemInsCMD) { Min = 1, Max = -1,
+                    Desc = "Inserts items from memory into the command ('&'=peek '&^'=pop).",
+                    Usage = Cmd.BCHAIN } },
             };
         }
 
-        private static void NoMemCMD(string[] args, Cmd.Callback cb)
+        private static void NoMemCMD(string[] args, CmdLauncher cl)
         {
-            bool old = cb.Launcher.MemLock;
-            cb.Launcher.MemLock = true;
-            cb.Launcher.SExecuteCommand(args[0], Utils.TrimFirst(args));
-            cb.Launcher.MemLock = old;
+            bool old = cl.MemLock;
+            cl.MemLock = true;
+            cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.MemLock = old;
         }
 
-        private void MemAddCMD(string[] args, Cmd.Callback cb)
+        private void MemAddCMD(string[] args, CmdLauncher cl)
         {
             foreach (var arg in args)
-                cb.Launcher.MemoryStack.Push(arg);
+                cl.MemoryStack.Push(arg);
         }
 
-        private void MemRemCMD(string[] args, Cmd.Callback cb)
+        private void MemRemCMD(string[] args, CmdLauncher cl)
         {
             int count = 1;
             if (args.Length > 0 && !int.TryParse(args[0], out count))
                 throw new CmdException("Launcher", $"Failed to convert \'{args[0]}\' to int.");
             for (int i = 0; i < count; ++i)
             {
-                if (cb.Launcher.MemoryStack.Count == 0)
+                if (cl.MemoryStack.Count == 0)
                     throw new CmdException("Launcher", $"Ran out of items to remove. Cleared {i}/{count}.");
-                cb.Launcher.MemoryStack.Pop();
+                cl.MemoryStack.Pop();
             }
-            cb.Launcher.FeedbackLine($"Sucessfully cleared {count} items from memory (now {cb.Launcher.MemoryStack.Count}).");
+            cl.FeedbackLine($"Sucessfully cleared {count} items from memory (now {cl.MemoryStack.Count}).");
         }
 
-        private void MemViewCMD(string[] args, Cmd.Callback cb)
+        private void MemViewCMD(string[] args, CmdLauncher cl)
         {
-            if (cb.Launcher.MemoryStack.Count == 0)
+            if (cl.MemoryStack.Count == 0)
                 throw new CmdException("Memory", "No items to view.");
             StringBuilder sb = new();
-            foreach (var item in cb.Launcher.MemoryStack)
+            foreach (var item in cl.MemoryStack)
                 sb.AppendLine($"> \'{item}\'");
             Console.Write(sb.ToString());
         }
 
-        private void MemClearCMD(string[] args, Cmd.Callback cb)
+        private void MemClearCMD(string[] args, CmdLauncher cl)
         {
-            if (cb.Launcher.MemoryStack.Count == 0)
+            if (cl.MemoryStack.Count == 0)
                 throw new CmdException("Memory", "No items to clear.");
-            cb.Launcher.FeedbackLine($"Successfully cleared {cb.Launcher.MemoryStack.Count} items from memory.");
-            cb.Launcher.MemoryStack.Clear();
+            cl.FeedbackLine($"Successfully cleared {cl.MemoryStack.Count} items from memory.");
+            cl.MemoryStack.Clear();
         }
 
-        private Cmd.MemItem MemSizeCMD(string[] args, Cmd.Callback cb)
+        private Cmd.MItem MemSizeCMD(string[] args, CmdLauncher cl)
         {
-            int size = cb.Launcher.MemoryStack.Count;
-            cb.Launcher.FeedbackLine(size);
+            int size = cl.MemoryStack.Count;
+            cl.FeedbackLine(size);
             return new(size);
         }
 
-        private void MemRunCMD(string[] args, Cmd.Callback cb)
+        private void MemRunCMD(string[] args, CmdLauncher cl)
         {
             for (int i = 1; i < args.Length; ++i)
-                cb.Launcher.MemoryStack.Push(args[i]);
-            cb.Launcher.ExecuteCommand(args[0], Array.Empty<string>());
+                cl.MemoryStack.Push(args[i]);
+            cl.ExecuteCommand(args[0], Array.Empty<string>());
         }
 
-        private void MemInsCMD(string[] args, Cmd.Callback cb)
+        private void MemInsCMD(string[] args, CmdLauncher cl)
         {
             for (int i = 0; i < args.Length; ++i)
             {
@@ -113,11 +114,11 @@ namespace SCE
                         sb.Append(str[j]);
                     else
                     {
-                        if (!cb.Launcher.MemoryStack.TryPeek(out var res))
+                        if (!cl.MemoryStack.TryPeek(out var res))
                             throw new CmdException("Launcher", $"Memory is empty.");
                         if (j != str.Length - 1 && str[j + 1] == '^')
                         {
-                            cb.Launcher.MemoryStack.Pop();
+                            cl.MemoryStack.Pop();
                             ++j;
                         }
                         sb.Append(res);
@@ -125,7 +126,7 @@ namespace SCE
                 }
                 args[i] = sb.ToString();
             }
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
         }
     }
 }

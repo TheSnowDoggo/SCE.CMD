@@ -3,121 +3,127 @@ namespace SCE
 {
     internal class StatePKG : Package
     {
+        private const string IFA_USG = "<True/False>:<Num;!=0> " + Cmd.BCHAIN,
+            CMP_USG = "<Left> <Right> ?<BothType>:<LeftType,RightType>";
+
         public StatePKG()
         {
             Name = "State";
             Version = "0.2.0";
+            Desc = "Conditional and State manipulation utilities.";
             Commands = new()
             {
-                { "if*", new(IfArgGEN(false)) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Runs the command if the argument condition is true.",
-                    Usage = "<True/False:!=0->True;False> <Command> ?<Arg1>..."} },
+                { "if*", new(IfArgGEN(false)) { Min = 2, Max = -1,
+                    Desc = "Runs the command if the argument condition is true.",
+                    Usage = IFA_USG } },
 
-                { "!if*", new(IfArgGEN(true)) { MinArgs = 2, MaxArgs = -1,
-                    Description = "Runs the command if the argument condition is false.",
-                    Usage = "<True/False:!=0->True;False> <Command> ?<Arg1>..."} },
+                { "!if*", new(IfArgGEN(true)) { Min = 2, Max = -1,
+                    Desc = "Runs the command if the argument condition is false.",
+                    Usage = IFA_USG } },
 
-                { "elif*", new(ElseIfArgCMD) { MinArgs = 3, MaxArgs = 3,
-                    Description = "Runs left cmd if argument condition true; right cmd.",
-                    Usage = "<True/False:!=0->True;False> <Command1> <Command2>"} },
+                { "elif*", new(ElseIfArgCMD) { Min = 3, Max = 3,
+                    Desc = "Runs left cmd if argument condition true; right cmd.",
+                    Usage = IFA_USG } },
 
-                { "if^", new(IfGEN(true, false)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Pops the last memory item, runs command if true.",
-                    Usage = "<Command> ?<Arg1>..."} },
+                { "if^", new(IfGEN(true, false)) { Min = 1, Max = -1,
+                    Desc = "Pops the last memory item, runs command if true.",
+                    Usage = Cmd.BCHAIN} },
 
-                { "!if^", new(IfGEN(true, true)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Pops the last memory item, runs command if false.",
-                    Usage = "<Command> ?<Arg1>..."} },
+                { "!if^", new(IfGEN(true, true)) { Min = 1, Max = -1,
+                    Desc = "Pops the last memory item, runs command if false.",
+                    Usage = Cmd.BCHAIN} },
 
-                 { "if", new(IfGEN(false, false)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Peeks the last memory item, runs command if true.",
-                    Usage = "<Command> ?<Arg1>..."} },
+                 { "if", new(IfGEN(false, false)) { Min = 1, Max = -1,
+                    Desc = "Peeks the last memory item, runs command if true.",
+                    Usage = Cmd.BCHAIN} },
 
-                { "!if", new(IfGEN(false, true)) { MinArgs = 1, MaxArgs = -1,
-                    Description = "Peeks the last memory item, runs command if false.",
-                    Usage = "<Command> ?<Arg1>..."} },
+                { "!if", new(IfGEN(false, true)) { Min = 1, Max = -1,
+                    Desc = "Peeks the last memory item, runs command if false.",
+                    Usage = Cmd.BCHAIN} },
 
-                { "elif", new(ElseIfGEN(false))  { MinArgs = 2, MaxArgs = 2,
-                    Description = "Peek | Runs left cmd if last mem item true; right cmd.",
+                { "elif", new(ElseIfGEN(false))  { Min = 2, Max = 2,
+                    Desc = "Peek | Runs left cmd if last mem item true; right cmd.",
                     Usage = "<Command1> <Command2>"} },
 
-                { "elif^", new(ElseIfGEN(true))  { MinArgs = 2, MaxArgs = 2,
-                    Description = "Pop | Runs left cmd if last mem item true; right cmd.",
+                { "elif^", new(ElseIfGEN(true))  { Min = 2, Max = 2,
+                    Desc = "Pop | Runs left cmd if last mem item true; right cmd.",
                     Usage = "<Command1> <Command2>"} },
 
-                { "eql", new(EqualsCMD) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether the given arguments are equal.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "eql", new(EqualsCMD) { Min = 2, Max = 3,
+                    Desc = "Outputs whether the given arguments are equal.",
+                    Usage = CMP_USG } },
 
-                { "!eql", new(EqualsNotCMD) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether the given arguments are not equal.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "!eql", new(EqualsNotCMD) { Min = 2, Max = 3,
+                    Desc = "Outputs whether the given arguments are not equal.",
+                    Usage = CMP_USG } },
 
-                { "not", new(NotGEN(false)) { MaxArgs = -1,
-                    Description = "Peek | Performs OR operatoin on the last item in memory after running the given command.",
-                    Usage = "?<CommandName> ?<Arg1>..." } },
+                { "not", new(NotGEN(false)) { Max = -1,
+                    Desc = "Peek | Performs OR operatoin on the last item in memory after running the given command.",
+                    Usage = Cmd.MBCHAIN } },
 
-                { "not^", new(NotGEN(true)) { MaxArgs = -1,
-                    Description = "Pop | Performs OR operatoin on the last item in memory after running the given command.",
-                    Usage = "?<CommandName> ?<Arg1>..." } },
+                { "not^", new(NotGEN(true)) { Max = -1,
+                    Desc = "Pop | Performs OR operatoin on the last item in memory after running the given command.",
+                    Usage = Cmd.MBCHAIN } },
 
-                { "and^", new(AndCMD) { MaxArgs = -1,
-                    Description = "Performs AND operation on the last 2 items in memory after running the given command.",
-                    Usage = "?<CommandName> ?<Arg1>..." } },
+                { "and^", new(AndCMD) { Max = -1,
+                    Desc = "Performs AND operation on the last 2 items in memory after running the given command.",
+                    Usage = Cmd.MBCHAIN } },
 
-                { "or^", new(OrCMD) { MaxArgs = -1,
-                    Description = "Performs OR operation on the last 2 items in memory after running the given command.",
-                    Usage = "?<CommandName> ?<Arg1>..." } },
+                { "or^", new(OrCMD) { Max = -1,
+                    Desc = "Performs OR operation on the last 2 items in memory after running the given command.",
+                    Usage = Cmd.MBCHAIN } },
 
-                { "not*", new(NotArgCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Nots the given boolean.",
+                { "not*", new(NotArgCMD) { Min = 1, Max = 1,
+                    Desc = "Nots the given boolean.",
                     Usage = "<Boolean>" } },
 
-                { "and*", new(AndArgCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Ands the given booleans.",
+                { "and*", new(AndArgCMD) { Min = 2, Max = 2,
+                    Desc = "Ands the given booleans.",
                     Usage = "<Boolean1> <Boolean2>" } },
 
-                { "or*", new(OrArgCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Ors the given booleans.",
+                { "or*", new(OrArgCMD) { Min = 2, Max = 2,
+                    Desc = "Ors the given booleans.",
                     Usage = "<Boolean1> <Boolean2>" } },
 
-                { "cmp=", new(CmpGEN(x => x == 0)) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether left = right.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "cmp=", new(CmpGEN(x => x == 0)) { Min = 2, Max = 3,
+                    Desc = "Outputs whether left = right.",
+                    Usage = CMP_USG } },
 
-                { "cmp!=", new(CmpGEN(x => x != 0)) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether left != right.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "cmp!=", new(CmpGEN(x => x != 0)) { Min = 2, Max = 3,
+                    Desc = "Outputs whether left != right.",
+                    Usage = CMP_USG } },
 
-                { "cmp<", new(CmpGEN(x => x < 0)) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether left < right.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "cmp<", new(CmpGEN(x => x < 0)) { Min = 2, Max = 3,
+                    Desc = "Outputs whether left < right.",
+                    Usage = CMP_USG } },
 
-                { "cmp>", new(CmpGEN(x => x > 0)) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether left > right.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "cmp>", new(CmpGEN(x => x > 0)) { Min = 2, Max = 3,
+                    Desc = "Outputs whether left > right.",
+                    Usage = CMP_USG } },
 
-                { "cmp<=", new(CmpGEN(x => x <= 0)) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether left <= right.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "cmp<=", new(CmpGEN(x => x <= 0)) { Min = 2, Max = 3,
+                    Desc = "Outputs whether left <= right.",
+                    Usage = CMP_USG } },
 
-                { "cmp>=", new(CmpGEN(x => x >= 0)) { MinArgs = 2, MaxArgs = 3,
-                    Description = "Outputs whether left >= right.",
-                    Usage = "<Left> <Right> ?<Type:LeftType,RightType>" } },
+                { "cmp>=", new(CmpGEN(x => x >= 0)) { Min = 2, Max = 3,
+                    Desc = "Outputs whether left >= right.",
+                    Usage = CMP_USG } },
 
-                { "istype*", new(IsTypeArgCMD) { MinArgs = 2, MaxArgs = 2,
-                    Description = "Determines if the given argument is a type.",
+                { "istype*", new(IsTypeArgCMD) { Min = 2, Max = 2,
+                    Desc = "Determines if the given argument is a type.",
                     Usage = "<Check> <Type>" } },
 
-                { "istype", new(IsTypeCMD) { MinArgs = 1, MaxArgs = 1,
-                    Description = "Determines if the last mem item is a type.",
+                { "istype", new(IsTypeCMD) { Min = 1, Max = 1,
+                    Desc = "Determines if the last mem item is a type.",
                     Usage = "<Type>" } },
             };
-            AddStateGEN(cb => cb.Launcher.CmdFeedback, (cb, c) => cb.Launcher.CmdFeedback = c, "feed", "command feedback");
-            AddStateGEN(cb => cb.Launcher.ErrFeedback, (cb, c) => cb.Launcher.ErrFeedback = c, "efeed", "error feedback");
-            AddStateGEN(cb => cb.Launcher.NeatErrors, (cb, c) => cb.Launcher.NeatErrors = c, "neaterr", "neat errors");
-            AddStateGEN(cb => cb.Launcher.MemLock, (cb, c) => cb.Launcher.MemLock = c, "memlock", "memory lock");
-            AddStateGEN(cb => cb.Launcher.CmdCaching, (cb, c) => cb.Launcher.CmdCaching = c, "cache", "command caching");
+            AddStateGEN(cl => cl.CmdFeedback, (cl, c) => cl.CmdFeedback = c, "feed", "command feedback");
+            AddStateGEN(cl => cl.ErrFeedback, (cl, c) => cl.ErrFeedback = c, "efeed", "error feedback");
+            AddStateGEN(cl => cl.NeatErrors, (cl, c) => cl.NeatErrors = c, "neaterr", "neat errors");
+            AddStateGEN(cl => cl.MemLock, (cl, c) => cl.MemLock = c, "memlock", "memory lock");
+            AddStateGEN(cl => cl.CmdCaching, (cl, c) => cl.CmdCaching = c, "cache", "command caching");
+            AddStateGEN(cl => cl.Preprocessing, (cl, c) => cl.Preprocessing = c, "prp", "preprocessing");
+            AddStateGEN(cl => cl.InputRendering, (cl, c) => cl.InputRendering = c, "irdr", "input rendering");
         }
 
         #region ConditionCommands
@@ -131,9 +137,9 @@ namespace SCE
             throw new CmdException("Launcher", $"Invalid conditional \'{input}\'.");
         }
 
-        private static bool MemBool(Cmd.Callback cb, bool pop = true)
+        private static bool MemBool(CmdLauncher cl, bool pop = true)
         {
-            var obj = NativePKG.MemObj(cb, pop);
+            var obj = NativePKG.MemObj(cl, pop);
             if (obj is bool c)
                 return c;
             var str = obj.ToString() ??
@@ -141,34 +147,34 @@ namespace SCE
             return !Condition(str);
         }
 
-        private static Action<string[], Cmd.Callback> IfArgGEN(bool invert)
+        private static Action<string[], CmdLauncher> IfArgGEN(bool invert)
         {
-            return (args, cb) =>
+            return (args, cl) =>
             {
                 if (invert ? !Condition(args[0]) : Condition(args[0]))
-                    cb.Launcher.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
+                    cl.ExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
             };
         }
 
-        private static void ElseIfArgCMD(string[] args, Cmd.Callback cb)
+        private static void ElseIfArgCMD(string[] args, CmdLauncher cl)
         {
-            cb.Launcher.ExecuteCommand(Condition(args[0]) ? args[1] : args[2]);
+            cl.ExecuteCommand(Condition(args[0]) ? args[1] : args[2]);
         }
 
-        private static Action<string[], Cmd.Callback> IfGEN(bool pop, bool invert)
+        private static Action<string[], CmdLauncher> IfGEN(bool pop, bool invert)
         {
-            return (args, cb) =>
+            return (args, cl) =>
             {
-                if (invert ? !MemBool(cb, pop) : MemBool(cb, pop))
-                    cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+                if (invert ? !MemBool(cl, pop) : MemBool(cl, pop))
+                    cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
             };
         }
 
-        private static Action<string[], Cmd.Callback> ElseIfGEN(bool pop)
+        private static Action<string[], CmdLauncher> ElseIfGEN(bool pop)
         {
-            return (args, cb) =>
+            return (args, cl) =>
             {
-                cb.Launcher.ExecuteCommand(MemBool(cb, pop) ? args[0] : args[1]);
+                cl.ExecuteCommand(MemBool(cl, pop) ? args[0] : args[1]);
             };
         }
 
@@ -212,19 +218,19 @@ namespace SCE
             return c1.CompareTo(o2);
         }
 
-        private static Cmd.MemItem EqualsCMD(string[] args)
+        private static Cmd.MItem EqualsCMD(string[] args)
         {
             return new(Equals(args));
         }
 
-        private static Cmd.MemItem EqualsNotCMD(string[] args)
+        private static Cmd.MItem EqualsNotCMD(string[] args)
         {
             return new(!Equals(args));
         }
 
-        private static bool MemGenCon(Cmd.Callback cb, bool pop)
+        private static bool MemGenCon(CmdLauncher cl, bool pop)
         {
-            var obj = NativePKG.MemObj(cb, pop);
+            var obj = NativePKG.MemObj(cl, pop);
             if (obj is bool c)
                 return c;
             var str = obj.ToString() ??
@@ -232,56 +238,56 @@ namespace SCE
             return Condition(str);
         }
 
-        private static bool MaybeRun(string[] args, Cmd.Callback cb)
+        private static bool MaybeRun(string[] args, CmdLauncher cl)
         {
             if (args.Length == 0)
                 return false;
-            cb.Launcher.ExecuteCommand(args[0], Utils.TrimFirst(args));
+            cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
             return true;
         }
 
-        private static Func<string[], Cmd.Callback, Cmd.MemItem> NotGEN(bool pop)
+        private static Func<string[], CmdLauncher, Cmd.MItem> NotGEN(bool pop)
         {
-            return (args, cb) =>
+            return (args, cl) =>
             {
-                MaybeRun(args, cb);
-                return new(!MemGenCon(cb, pop));
+                MaybeRun(args, cl);
+                return new(!MemGenCon(cl, pop));
             };
         }
 
-        private static Cmd.MemItem AndCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem AndCMD(string[] args, CmdLauncher cl)
         {
-            MaybeRun(args, cb);
-            return new(MemGenCon(cb, true) && MemGenCon(cb, true));
+            MaybeRun(args, cl);
+            return new(MemGenCon(cl, true) && MemGenCon(cl, true));
         }
 
-        private static Cmd.MemItem OrCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem OrCMD(string[] args, CmdLauncher cl)
         {
-            MaybeRun(args, cb);
-            return new(MemGenCon(cb, true) || MemGenCon(cb, true));
+            MaybeRun(args, cl);
+            return new(MemGenCon(cl, true) || MemGenCon(cl, true));
         }
 
-        private static Cmd.MemItem NotArgCMD(string[] args)
+        private static Cmd.MItem NotArgCMD(string[] args)
         {
             return new(!Condition(args[0]));
         }
 
-        private static Cmd.MemItem AndArgCMD(string[] args)
+        private static Cmd.MItem AndArgCMD(string[] args)
         {
             return new(Condition(args[0]) && Condition(args[1]));
         }
 
-        private static Cmd.MemItem OrArgCMD(string[] args)
+        private static Cmd.MItem OrArgCMD(string[] args)
         {
             return new(Condition(args[0]) || Condition(args[1]));
         }
 
-        private static Func<string[], Cmd.MemItem> CmpGEN(Predicate<int> predicate)
+        private static Func<string[], Cmd.MItem> CmpGEN(Predicate<int> predicate)
         {
             return args => new(predicate.Invoke(Compare(args)));
         }
 
-        private static Cmd.MemItem IsTypeArgCMD(string[] args)
+        private static Cmd.MItem IsTypeArgCMD(string[] args)
         {
             var t = StrUtils.BetterGetType(args[1]);
             try
@@ -295,53 +301,53 @@ namespace SCE
             }
         }
 
-        private static Cmd.MemItem IsTypeCMD(string[] args, Cmd.Callback cb)
+        private static Cmd.MItem IsTypeCMD(string[] args, CmdLauncher cl)
         {
             var t = StrUtils.BetterGetType(args[0]);
-            return new(NativePKG.MemObj(cb, false).GetType() == t);
+            return new(NativePKG.MemObj(cl, false).GetType() == t);
         }
 
         #endregion
 
         #region StateCommands
 
-        private static Cmd GetStateGEN(Func<Cmd.Callback, bool> get, string name)
+        private static Cmd GetStateGEN(Func<CmdLauncher, bool> get, string name)
         {
-            return new((_, cb) => new(get.Invoke(cb))) { Description = $"Adds the {name} state into memory." };
+            return new((_, cl) => new(get.Invoke(cl))) { Desc = $"Adds the {name} state into memory." };
         }
 
-        private static Cmd SetStateArgGEN(Func<Cmd.Callback, bool> get, Action<Cmd.Callback, bool> set, string name)
+        private static Cmd SetStateArgGEN(Func<CmdLauncher, bool> get, Action<CmdLauncher, bool> set, string name)
         {
-            return new((args, cb) =>
+            return new((args, cl) =>
             {
-                var c = args.Length > 0 ? Condition(args[0]) : !get.Invoke(cb);
-                set.Invoke(cb, c);
+                var c = args.Length > 0 ? Condition(args[0]) : !get.Invoke(cl);
+                set.Invoke(cl, c);
             })
             {
-                MinArgs = 1,
-                MaxArgs = 1,
-                Description = $"Sets the {name} state to the given argument.",
+                Min = 1,
+                Max = 1,
+                Desc = $"Sets the {name} state to the given argument.",
                 Usage = $"?<True/False->Toggle>:<Num!=0>",
             };
         }
 
-        private static Cmd SetStateGEN(Action<Cmd.Callback, bool> set, string name, bool pop)
+        private static Cmd SetStateGEN(Action<CmdLauncher, bool> set, string name, bool pop)
         {
-            return new((args, cb) =>
+            return new((args, cl) =>
             {
-                MaybeRun(args, cb);
-                var c = MemBool(cb, pop);
-                set.Invoke(cb, c);
+                MaybeRun(args, cl);
+                var c = MemBool(cl, pop);
+                set.Invoke(cl, c);
             })
             {
-                MaxArgs = -1,
-                Description = $"{(pop ? "Pops" : "Peeks")} the last item in memory and set the {name} state.",
-                Usage = $"?<CommandName> ?<Arg1>...",
+                Max = -1,
+                Desc = $"{(pop ? "Pops" : "Peeks")} the last item in memory and set the {name} state.",
+                Usage = Cmd.MBCHAIN,
             };
         }
 
-        private static IEnumerable<(string Name, Cmd Com)> StateAllGEN(Func<Cmd.Callback, bool> get,
-            Action<Cmd.Callback, bool> set,
+        private static IEnumerable<(string Name, Cmd Com)> StateAllGEN(Func<CmdLauncher, bool> get,
+            Action<CmdLauncher, bool> set,
             string name,
             string longName = "")
         {
@@ -351,8 +357,8 @@ namespace SCE
             yield return ($"_{name}^", SetStateGEN(set, longName, true));
         }
 
-        private void AddStateGEN(Func<Cmd.Callback, bool> get,
-            Action<Cmd.Callback, bool> set,
+        private void AddStateGEN(Func<CmdLauncher, bool> get,
+            Action<CmdLauncher, bool> set,
             string name,
             string longName = "")
         {
