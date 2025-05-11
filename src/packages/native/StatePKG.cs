@@ -9,7 +9,7 @@ namespace SCE
         public StatePKG()
         {
             Name = "State";
-            Version = new(0, 2, 0);
+            Version = new(0, 3, 0);
             Desc = "Conditional and State manipulation utilities.";
             Commands = new()
             {
