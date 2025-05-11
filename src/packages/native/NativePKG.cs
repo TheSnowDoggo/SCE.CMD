@@ -1,5 +1,6 @@
 ﻿using CSUtils;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 namespace SCE
 {
@@ -8,7 +9,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = "2.7.0";
+            Version = new(2, 7, 0);
             Desc = "Core inbuilt commands.";
             Commands = new()
             {
@@ -22,6 +23,13 @@ namespace SCE
 
                 { "quitlauncher", new((args, cl) => cl.Exit()) {
                     Desc = "Exits the launcher." } },
+
+                { "restart", new(RestartCMD) { Max = 1,
+                    Desc = "Restarts the program.",
+                    Usage = "?<Clear:True/False->True>" } },
+
+                { "restartnew", new(RestartNewCMD) {
+                    Desc = "Restarts the program in a new window." } },
 
                 { "help", new(HelpCMD) { Max = -1,
                     Desc = "Displays help info for every command in the given packages.",
@@ -57,7 +65,11 @@ namespace SCE
                     Desc = "Determines whether the given command exists.",
                     Usage = "<CommandName>" } },
 
-                { "proc", new(ProcCMD) { Min = 1, Max = -1,
+                { "procs", new(ProcGEN(true)) { Min = 1, Max = -1,
+                    Desc = "Starts the specified process using shell execute.",
+                    Usage = "<FileName> ?<Arg1>..."} },
+
+                { "proc", new(ProcGEN(false)) { Min = 1, Max = -1,
                     Desc = "Starts the specified process.",
                     Usage = "<FileName> ?<Arg1>..."} },
 
@@ -242,6 +254,8 @@ namespace SCE
             return sb.ToString();
         }
 
+        #region MainCommands
+
         private static Cmd.MItem ModCMD(string[] args, CmdLauncher cl)
         {
             var o1 = MemObj(cl, true);
@@ -278,18 +292,40 @@ namespace SCE
             return sb.ToString();
         }
 
-        #region MainCommands
 
         private static Cmd.MItem VersionCMD(string[] args, CmdLauncher cl)
         {
-            cl.FeedbackLine($"Version: {CmdLauncher.VERSION}");
-            return new(CmdLauncher.VERSION);
+            cl.FeedbackLine($"Version: {cl.Version}");
+            return new(cl.Version);
         }
 
         private static void QuitCMD(string[] args)
         {
             int code = args.Length > 0 ? int.Parse(args[0]) : 0;
             Environment.Exit(code);
+        }
+
+        private static void RestartCMD(string[] args)
+        {
+            var clear = true;
+            if (args.Length > 0 && !bool.TryParse(args[0], out clear))
+                throw new CmdException("Native", $"Invalid bool \'{args[0]}\'.");
+            if (clear)
+                Console.Clear();
+            Process.Start(Environment.ProcessPath ?? 
+                throw new CmdException("Native", "Could not resolve executable path."));
+            Environment.Exit(0);
+        }
+
+        private static void RestartNewCMD(string[] args)
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = Environment.ProcessPath ??
+                        throw new CmdException("Native", "Could not resolve executable path."),
+                UseShellExecute = true,
+            });
+            Environment.Exit(0);
         }
 
         private static void HelpCMD(string[] args, CmdLauncher cl)
@@ -375,14 +411,17 @@ namespace SCE
             return new(exists);
         }
 
-        private static void ProcCMD(string[] args)
+        private static Action<string[]> ProcGEN(bool shell)
         {
-            Process.Start(new ProcessStartInfo()
+            return args =>
             {
-                FileName = args[0],
-                Arguments = Utils.Build(Utils.TrimFirst(args)),
-                UseShellExecute = true
-            });
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = args[0],
+                    Arguments = Utils.Build(Utils.TrimFirst(args)),
+                    UseShellExecute = shell
+                });
+            };
         }
 
         private string[] _save = Array.Empty<string>();

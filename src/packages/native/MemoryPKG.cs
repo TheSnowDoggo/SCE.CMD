@@ -7,8 +7,8 @@ namespace SCE
         public MemoryPKG()
         {
             Name = "Memory";
-            Version = "0.2.0";
-            Name = "Core launcher memory management.";
+            Version = new(0, 2, 0);
+            Desc = "Core launcher memory management.";
             Commands = new()
             {
                 { "nout", new(NoMemCMD) { Min = 1, Max = -1,

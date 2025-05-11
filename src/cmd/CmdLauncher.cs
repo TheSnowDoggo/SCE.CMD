@@ -4,20 +4,13 @@ namespace SCE
 {
     public class CmdLauncher
     {
-        public const string VERSION = "0.10.5";
-
         private readonly Dictionary<string, Package> _packages = new();
 
         private readonly Dictionary<string, string> _cmdCache = new();
 
         private bool active;
 
-        public CmdLauncher(string name = "Unnamed Launcher")
-        {
-            Name = name;
-        }
-
-        public string Name { get; init; }
+        public Version Version { get; init; } = Version.Zero;
 
         public Func<string>? InputRender;
 
@@ -48,7 +41,7 @@ namespace SCE
             active = false;
         }
 
-        public void Run()
+        public void Run(bool msg = true)
         {
             active = true;
             while (active)
@@ -79,21 +72,31 @@ namespace SCE
                 yield return pkg;
         }
 
-        public bool LoadPackage(Package pkg)
+        public void LoadPackage(Package pkg)
         {
             var name = pkg.Name.ToLower();
             if (_packages.ContainsKey(name))
-                return false;
+                throw new CmdException("PKGLoader", $"Package with name {name} already exists.");
+            if (!pkg.IsCompatible(Version))
+                throw new CmdException("PKGLoader", $"{name} v{pkg.Version} " +
+                    $"is incompatible with launcher v{Version}");
             _packages[name] = pkg;
             pkg.Initialize(this);
-            return true;
         }
 
         public void SLoadPackages(IEnumerable<Package> packages)
         {
             foreach (var pkg in packages)
-                if (!LoadPackage(pkg))
-                    FeedbackLine($"<!> Failed to load package {pkg.Name} <!>");
+            {
+                try
+                {
+                    LoadPackage(pkg);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
         }
 
         public bool RemovePackage(string name)

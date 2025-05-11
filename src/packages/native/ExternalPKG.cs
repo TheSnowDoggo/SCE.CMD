@@ -8,7 +8,7 @@ namespace SCE
         public ExternalPKG()
         {
             Name = "External";
-            Version = "0.1.0";
+            Version = new(0, 1, 0);
             Desc = "File and Directory managment. Also provides script and package loading commands.";
             Commands = new()
             {

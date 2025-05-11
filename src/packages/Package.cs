@@ -16,9 +16,14 @@
 
         public string Name { get; init; } = "UNNAMED";
 
-        public string Version { get; init; } = "UNDEFINED";
+        public Version Version { get; init; } = Version.Zero;
 
         public string Desc { get; init; } = "";
+
+        public virtual bool IsCompatible(Version version)
+        {
+            return true;
+        }
 
         public virtual void Initialize(CmdLauncher launcher)
         {

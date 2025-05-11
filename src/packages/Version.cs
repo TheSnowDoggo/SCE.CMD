@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-
 namespace SCE
 {
-    public record Version(int Major = 0, int Minor = 0, int Patch = 0)
+    public record Version(int Major, int Minor, int Patch)
     {
+        public static Version Zero { get => new(0, 0, 0); }
+
         public static Version Parse(string str)
         {
             var split = str.Split('.');
@@ -25,5 +26,23 @@ namespace SCE
                 return false;
             }
         }
+
+        public override string ToString()
+        {
+            return $"{Major}.{Minor}.{Patch}";
+        }
+
+        #region Operators
+
+        public static bool operator >(Version lhs, Version rhs) =>
+            lhs.Major > rhs.Major && lhs.Minor > rhs.Minor && lhs.Patch > rhs.Patch;
+
+        public static bool operator <(Version lhs, Version rhs) => rhs > lhs;
+
+        public static bool operator >=(Version lhs, Version rhs) => !(lhs < rhs);
+
+        public static bool operator <=(Version lhs, Version rhs) => !(lhs > rhs);
+
+        #endregion
     }
 }

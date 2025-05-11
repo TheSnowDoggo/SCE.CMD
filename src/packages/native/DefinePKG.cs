@@ -23,8 +23,8 @@ namespace SCE
         public DefinePKG()
         {
             Name = "Define";
-            Version = "0.2.1";
-            Name = "Macro preprocessor package.";
+            Version = new(0, 2, 1);
+            Desc = "Macro preprocessor package.";
             Commands = new()
             {
                 { "#define", new(DefineCMD) { Min = 2, Max = 2,

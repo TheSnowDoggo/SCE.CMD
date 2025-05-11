@@ -7,7 +7,7 @@ namespace SCE
         public ConsolePKG()
         {
             Name = "Console";
-            Version = "0.1.0";
+            Version = new(0, 1, 0);
             Desc = "Console IO management.";
             Commands = new()
             {

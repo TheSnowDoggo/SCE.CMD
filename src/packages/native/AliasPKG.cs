@@ -7,7 +7,7 @@
         public AliasPKG()
         {
             Name = "Alias";
-            Version = "0.0.0";
+            Version = new(0, 0, 0);
             Desc = "Allows for the creation of alias commands for using prefered names.";
             Commands = new()
             {

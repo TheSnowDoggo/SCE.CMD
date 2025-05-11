@@ -17,7 +17,7 @@ namespace SCE
         public VariablePKG()
         {
             Name = "Variable";
-            Version = "1.2.0";
+            Version = new(1, 2, 0);
             Desc = "Safe storing and inserting of data in named variables.";
             Commands = new()
             {
