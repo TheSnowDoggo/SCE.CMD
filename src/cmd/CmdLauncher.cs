@@ -10,13 +10,24 @@ namespace SCE
 
         private bool active;
 
+        public CmdLauncher()
+        {
+            _superStack.Push(new());
+        }
+
         public PVersion Version { get; init; } = PVersion.Zero;
 
         public Func<string>? InputRender;
 
         public SortedSet<Preprocessor> Preprocessors { get; } = new();
 
-        public Stack<object?> MemoryStack { get; } = new();
+        private readonly Stack<int> _locks = new();
+
+        private readonly Stack<Stack<object?>> _superStack = new();
+
+        public Stack<object?> MemoryStack { get => _superStack.Peek(); }
+
+        public int SStackCount { get => _superStack.Count; }
 
         #region Options
 
@@ -41,7 +52,7 @@ namespace SCE
             active = false;
         }
 
-        public void Run(bool msg = true)
+        public void Run()
         {
             active = true;
             while (active)
@@ -52,6 +63,58 @@ namespace SCE
                 SExecuteCommand(input);
             }
         }
+
+        #region Memory
+
+        public bool IsLocked()
+        {
+            return _locks.Count > 0 && _locks.Peek() == _superStack.Count;
+        }
+
+        public void Lock()
+        {
+            if (_superStack.Count <= 1)
+                throw new CmdException("Launcher", "Cannot lock bottom stack.");
+            if (_locks.Count > 0 && _locks.Peek() == _superStack.Count)
+                throw new CmdException("Launcher", "Current stack is already locked");
+            _locks.Push(_superStack.Count);
+        }
+
+        public void Unlock()
+        {
+            if (_locks.Count == 0)
+                throw new CmdException("Launcher", "No stacks to unlock.");
+            if (_locks.Peek() != _superStack.Count)
+                throw new CmdException("Launcher", "Current stack is not locked.");
+            _locks.Pop();
+        }
+
+        public void AddStack(bool tryLock = false)
+        {
+            _superStack.Push(new());
+            if (tryLock)
+                Lock();
+        }
+
+        public void RemoveStack(bool tryUnlock = false)
+        {
+            if (_superStack.Count <= 1)
+                throw new CmdException("Launcher", "Removing bottom stack is disallowed.");
+            if (tryUnlock && IsLocked())
+                Unlock();
+            if (_locks.Count > 0 && _locks.Peek() == _superStack.Count)
+                throw new CmdException("Launcher", "Current stack is locked.");
+            _superStack.Pop();
+        }
+
+        public void ClearStacks()
+        {
+            _locks.Clear();
+            _superStack.Clear();
+            AddStack();
+        }
+
+        #endregion
 
         #region Preprocess
 

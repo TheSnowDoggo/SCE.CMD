@@ -226,12 +226,17 @@ namespace SCE
         private void TempScopeCMD(string[] args, CmdLauncher cl)
         {
             _scopes.Push(new());
-            _tempScopes.Push(_scopes.Count);
+            int ts = _scopes.Count;
+            _tempScopes.Push(ts);
             cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
             if (_scopes.Count == 0 || _tempScopes.Count == 0)
                 throw new CmdException("Variable", "Critical temp scope error.");
-            _scopes.Pop();
-            _tempScopes.Pop();
+            while (_scopes.Count >= ts)
+            {
+                if (_scopes.Count == _tempScopes.Peek())
+                    _tempScopes.Pop();
+                _scopes.Pop();
+            }
         }
 
         private Cmd.MItem GetScopeCMD(string[] args, CmdLauncher cl)

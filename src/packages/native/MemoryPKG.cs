@@ -33,12 +33,26 @@ namespace SCE
                     Desc = "Outputs the number of items in the memory stack." } },
 
                 { "memrun", new(MemRunCMD) { Min = 1, Max = -1,
-                    Desc = "Adds items to memory before running the command with no arguments.",
+                    Desc = "Adds items to a new memory stack before running the command with no arguments.",
                     Usage = "<CommandName> ?<Item1>..." } },
 
                 { "memins", new(MemInsCMD) { Min = 1, Max = -1,
                     Desc = "Inserts items from memory into the command ('&'=peek '&^'=pop).",
                     Usage = Cmd.BCHAIN } },
+
+                { ">stack", new((_, cl) => cl.AddStack()) {
+                    Desc = "Adds a new memory stack." } },
+
+                { "<stack", new((_, cl) => cl.RemoveStack()) {
+                    Desc = "Remove the current memory stack." } },
+
+                { "/stack", new(RunStackCMD) { Min = 1, Max = 1,
+                    Desc = "Runs the command in a new locked stack.",
+                    Usage = Cmd.BCHAIN } },
+
+                { "?stack", new(GetStackCMD) {
+                    Desc = "Remove the current memory stack.",
+                    Usage = Cmd.MBCHAIN } },
             };
         }
 
@@ -50,13 +64,13 @@ namespace SCE
             cl.MemLock = old;
         }
 
-        private void MemAddCMD(string[] args, CmdLauncher cl)
+        private static void MemAddCMD(string[] args, CmdLauncher cl)
         {
             foreach (var arg in args)
                 cl.MemoryStack.Push(arg);
         }
 
-        private void MemRemCMD(string[] args, CmdLauncher cl)
+        private static void MemRemCMD(string[] args, CmdLauncher cl)
         {
             int count = 1;
             if (args.Length > 0 && !int.TryParse(args[0], out count))
@@ -70,7 +84,7 @@ namespace SCE
             cl.FeedbackLine($"Sucessfully cleared {count} items from memory (now {cl.MemoryStack.Count}).");
         }
 
-        private void MemViewCMD(string[] args, CmdLauncher cl)
+        private static void MemViewCMD(string[] args, CmdLauncher cl)
         {
             if (cl.MemoryStack.Count == 0)
                 throw new CmdException("Memory", "No items to view.");
@@ -80,7 +94,7 @@ namespace SCE
             Console.Write(sb.ToString());
         }
 
-        private void MemClearCMD(string[] args, CmdLauncher cl)
+        private static void MemClearCMD(string[] args, CmdLauncher cl)
         {
             if (cl.MemoryStack.Count == 0)
                 throw new CmdException("Memory", "No items to clear.");
@@ -88,21 +102,36 @@ namespace SCE
             cl.MemoryStack.Clear();
         }
 
-        private Cmd.MItem MemSizeCMD(string[] args, CmdLauncher cl)
+        private static Cmd.MItem MemSizeCMD(string[] args, CmdLauncher cl)
         {
             int size = cl.MemoryStack.Count;
             cl.FeedbackLine(size);
             return new(size);
         }
 
-        private void MemRunCMD(string[] args, CmdLauncher cl)
+        private static void StackWrap(CmdLauncher cl, Action action)
         {
-            for (int i = 1; i < args.Length; ++i)
-                cl.MemoryStack.Push(args[i]);
-            cl.ExecuteCommand(args[0], Array.Empty<string>());
+            int dest = cl.SStackCount;
+            cl.AddStack(true);
+            action.Invoke();
+            int dif = cl.SStackCount - dest;
+            if (dif <= 0)
+                throw new CmdException("Memory", "Stack is missing.");
+            for (int i = 0; i < dif; ++i)
+                cl.RemoveStack(true);
         }
 
-        private void MemInsCMD(string[] args, CmdLauncher cl)
+        private static void MemRunCMD(string[] args, CmdLauncher cl)
+        {
+            StackWrap(cl, () =>
+            {
+                for (int i = 1; i < args.Length; ++i)
+                    cl.MemoryStack.Push(args[i]);
+                cl.SExecuteCommand(args[0], Array.Empty<string>());
+            });
+        }
+
+        private static void MemInsCMD(string[] args, CmdLauncher cl)
         {
             for (int i = 0; i < args.Length; ++i)
             {
@@ -127,6 +156,18 @@ namespace SCE
                 args[i] = sb.ToString();
             }
             cl.ExecuteCommand(args[0], Utils.TrimFirst(args));
+        }
+
+        private static void RunStackCMD(string[] args, CmdLauncher cl)
+        {
+            StackWrap(cl, () => cl.SExecuteCommand(args[0], Utils.TrimFirst(args)));
+        }
+
+        private static Cmd.MItem GetStackCMD(string[] args, CmdLauncher cl)
+        {
+            if (args.Length > 0)
+                cl.SExecuteCommand(args[0], Utils.TrimFirst(args));
+            return new(cl.SStackCount);
         }
     }
 }
