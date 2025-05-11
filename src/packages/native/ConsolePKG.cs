@@ -7,7 +7,7 @@ namespace SCE
         public ConsolePKG()
         {
             Name = "Console";
-            Version = new(0, 1, 0);
+            Version = new(0, 2, 0);
             Desc = "Console IO management.";
             Commands = new()
             {
@@ -33,13 +33,17 @@ namespace SCE
                 { "read", new(a => new Cmd.MItem(Console.Read())) {
                     Desc = "Reads the next character from the input stream." } },
 
-                { "fg", new(SetColorCMD(true)) { Min = 1, Max = 1,
+                { "fg", new(SetColorGEN(true)) { Min = 1, Max = 1,
                     Desc = "Sets the Foreground color of the Console.",
                     Usage = "<ConsoleColor>" } },
 
-                { "bg", new(SetColorCMD(false)) { Min = 1, Max = 1,
+                { "bg", new(SetColorGEN(false)) { Min = 1, Max = 1,
                     Desc = "Sets the Background color of the Console.",
                     Usage = "<ConsoleColor>" } },
+
+                { "boolprompt", new(BoolPromptCMD) { Max = -1,
+                    Desc = "Reads a yes or no response from user and outputs result.",
+                    Usage = "?<Msg1>..." } },
 
                 { "resetcolor", new(args => Console.ResetColor()) { 
                     Desc = "Resets the foreground and background colors." } },
@@ -71,26 +75,12 @@ namespace SCE
 
         private static void PrintlCMD(string[] args)
         {
-            StringBuilder sb = new();
-            for (int i = 0; i < args.Length; ++i)
-            {
-                if (i != 0)
-                    sb.Append(' ');
-                sb.Append(args[i]);
-            }
-            Console.WriteLine(sb.ToString());
+            Console.WriteLine(Utils.Infill(args, " "));
         }
 
         private static void PrintCMD(string[] args)
         {
-            StringBuilder sb = new();
-            for (int i = 0; i < args.Length; ++i)
-            {
-                if (i != 0)
-                    sb.Append(' ');
-                sb.Append(args[i]);
-            }
-            Console.Write(sb.ToString());
+            Console.Write(Utils.Infill(args, " "));
         }
 
         private static void TitleCMD(string[] args, CmdLauncher cl)
@@ -137,7 +127,7 @@ namespace SCE
             return new(Console.ReadKey(intercept));
         }
 
-        private static Action<string[], CmdLauncher> SetColorCMD(bool foreground)
+        private static Action<string[], CmdLauncher> SetColorGEN(bool foreground)
         {
             return (args, cl) =>
             {
@@ -154,6 +144,13 @@ namespace SCE
                     cl.FeedbackLine($"Background set to {result}.");
                 }
             };
+        }
+
+        private static Cmd.MItem BoolPromptCMD(string[] args)
+        {
+            if (args.Length > 0)
+                PrintCMD(args);
+            return new(Utils.BoolPrompt());
         }
 
         #endregion
