@@ -8,7 +8,7 @@ namespace SCE
         public MemoryPKG()
         {
             Name = "Memory";
-            Version = new(0, 2, 0);
+            Version = new(0, 3, 0);
             Desc = "Core launcher memory management.";
             Commands = new()
             {
@@ -34,8 +34,8 @@ namespace SCE
                     Desc = "Outputs the number of items in the memory stack." } },
 
                 { "memrun", new(MemRunCMD) { Min = 1, Max = -1,
-                    Desc = "Adds items to a new memory stack before running the command with no arguments.",
-                    Usage = "<CommandName> ?<Item1>..." } },
+                    Desc = "Adds items to a new memory stack before running the command.",
+                    Usage = "<FullCommand> ?<Item1>..." } },
 
                 { "poprun", new(PopRunCMD) { Min = 2, Max = -1,
                     Desc = "Pops the given number of items from memory before running the command on a new stack.",
