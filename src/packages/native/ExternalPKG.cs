@@ -1,6 +1,4 @@
 ﻿using CSUtils;
-using System.Xml.Linq;
-
 namespace SCE
 {
     internal class ExternalPKG : Package

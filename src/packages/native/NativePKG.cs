@@ -23,11 +23,11 @@ namespace SCE
                 { "quitlauncher", new((args, cl) => cl.Exit()) {
                     Desc = "Exits the launcher." } },
 
-                { "restart", new(RestartCMD) { Max = 1,
-                    Desc = "Restarts the program.",
+                { "reload", new(ReloadCMD) { Max = 1,
+                    Desc = "Reloads the program.",
                     Usage = "?<Clear:True/False->True>" } },
 
-                { "restartnew", new(RestartNewCMD) {
+                { "restart", new(RestartCMD) {
                     Desc = "Restarts the program in a new window." } },
 
                 { "help", new(HelpCMD) { Max = -1,
@@ -308,7 +308,7 @@ namespace SCE
             Environment.Exit(code);
         }
 
-        private static void RestartCMD(string[] args)
+        private static void ReloadCMD(string[] args)
         {
             var clear = true;
             if (args.Length > 0 && !bool.TryParse(args[0], out clear))
@@ -320,7 +320,7 @@ namespace SCE
             Environment.Exit(0);
         }
 
-        private static void RestartNewCMD(string[] args)
+        private static void RestartCMD(string[] args)
         {
             Process.Start(new ProcessStartInfo()
             {
