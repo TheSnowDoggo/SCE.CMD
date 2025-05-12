@@ -51,7 +51,7 @@ namespace SCE
                 { "<stack", new((_, cl) => cl.RemoveStack()) {
                     Desc = "Remove the current memory stack." } },
 
-                { "/stack", new(RunStackCMD) { Min = 1, Max = 1,
+                { "/stack", new(RunStackCMD) { Min = 1, Max = -1,
                     Desc = "Runs the command in a new locked stack.",
                     Usage = Cmd.BCHAIN } },
 
