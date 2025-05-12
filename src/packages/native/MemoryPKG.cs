@@ -1,4 +1,5 @@
 ﻿using CSUtils;
+using System;
 using System.Text;
 namespace SCE
 {
@@ -35,6 +36,10 @@ namespace SCE
                 { "memrun", new(MemRunCMD) { Min = 1, Max = -1,
                     Desc = "Adds items to a new memory stack before running the command with no arguments.",
                     Usage = "<CommandName> ?<Item1>..." } },
+
+                { "poprun", new(PopRunCMD) { Min = 2, Max = -1,
+                    Desc = "Pops the given number of items from memory before running the command on a new stack.",
+                    Usage = "<Count> " + Cmd.BCHAIN } },
 
                 { "memins", new(MemInsCMD) { Min = 1, Max = -1,
                     Desc = "Inserts items from memory into the command ('&'=peek '&^'=pop).",
@@ -127,7 +132,21 @@ namespace SCE
             {
                 for (int i = 1; i < args.Length; ++i)
                     cl.MemoryStack.Push(args[i]);
-                cl.SExecuteCommand(args[0], Array.Empty<string>());
+                cl.SExecuteCommand(args[0]);
+            });
+        }
+
+        private static void PopRunCMD(string[] args, CmdLauncher cl)
+        {
+            int count = int.Parse(args[0]);
+            var arr = new object[count];
+            for (int i = 0; i < count; ++i)
+                arr[i] = cl.MemoryStack.Pop();
+            StackWrap(cl, () =>
+            {
+                for (int i = 0; i < count; ++i)
+                    cl.MemoryStack.Push(arr[i]);
+                cl.SExecuteCommand(args[1], Utils.TrimFromStart(args, 2));
             });
         }
 

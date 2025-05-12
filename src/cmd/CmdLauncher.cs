@@ -23,9 +23,9 @@ namespace SCE
 
         private readonly Stack<int> _locks = new();
 
-        private readonly Stack<Stack<object?>> _superStack = new();
+        private readonly Stack<Stack<object>> _superStack = new();
 
-        public Stack<object?> MemoryStack { get => _superStack.Peek(); }
+        public Stack<object> MemoryStack { get => _superStack.Peek(); }
 
         public int SStackCount { get => _superStack.Count; }
 
@@ -59,8 +59,9 @@ namespace SCE
             {
                 if (InputRendering && InputRender != null)
                     Console.Write(InputRender.Invoke());
-                var input = Console.ReadLine() ?? "";
-                SExecuteCommand(input);
+                var input = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(input))
+                    SExecuteCommand(PreProcess(input));
             }
         }
 
@@ -283,7 +284,7 @@ namespace SCE
                 throw new CmdException("Launcher", $"Too many args given for command \'{name}\' (max of {cmd.Max}, got {args.Length}).");
 
             var res = cmd.Func.Invoke(args, this);
-            if (res != null && !MemLock)
+            if (res != null && !MemLock && res.Value != null)
                 MemoryStack.Push(res.Value);
         }
 
@@ -314,12 +315,10 @@ namespace SCE
             return false;
         }
 
-        private bool SExecuteCommand(string line)
+        public bool SExecuteCommand(string line)
         {
             try
             {
-                if (Preprocessing)
-                    line = PreProcess(line);
                 if (string.IsNullOrWhiteSpace(line))
                     return false;
                 ExecuteCommand(line);
@@ -341,7 +340,7 @@ namespace SCE
         public void ExecuteEveryCommand(IEnumerable<string> lines, bool endOnFail = true)
         {
             foreach (var line in lines)
-                if (!string.IsNullOrWhiteSpace(line) && !SExecuteCommand(line) && endOnFail)
+                if (!string.IsNullOrWhiteSpace(line) && !SExecuteCommand(PreProcess(line)) && endOnFail)
                     throw new CmdException("Launcher", "Ending command chain.");
         }
 
