@@ -20,7 +20,7 @@ namespace SCE
         {
             try
             {
-                CmdLauncher cl = new() { Version = new(0, 11, 5) };
+                CmdLauncher cl = new() { Version = new(0, 11, 6) };
 
                 cl.SLoadPackages(_native);
 
