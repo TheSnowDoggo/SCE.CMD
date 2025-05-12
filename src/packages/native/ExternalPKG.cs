@@ -336,10 +336,14 @@ namespace SCE
 
         private void LoadAbsolute(string name, string path, CmdLauncher cl)
         {
-            if (Commands.ContainsKey(name))
-                throw new CmdException("External", $"Script \'{name}\' already exists.");
             if (!File.Exists(path))
                 throw new CmdException("External", $"File not found {path}.");
+            if (Commands.ContainsKey(name))
+            {
+                StrUtils.PrettyErr("External", $"Script \'{name}\' already exists.");
+                if (!Utils.BoolPrompt("Would you still like to load it? Yes[Y] or No[N]: "))
+                    return;
+            }
 
             var lines = File.ReadAllLines(path);
             Commands.Add(name, new(_ => cl.ExecuteEveryCommand(lines)));
