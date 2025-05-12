@@ -202,7 +202,7 @@ namespace SCE
                 {
                     package = pkg;
                     if (CmdCaching)
-                        _cmdCache[cmd] = pkg.Name;
+                        _cmdCache[cmd] = pkg.Name.ToLower();
                     return true;
                 }
             }
