@@ -1,6 +1,5 @@
 ﻿using CSUtils;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 namespace SCE
 {
@@ -9,7 +8,7 @@ namespace SCE
         public NativePKG()
         {
             Name = "Native";
-            Version = new(2, 7, 0);
+            Version = new(2, 8, 0);
             Desc = "Core inbuilt commands.";
             Commands = new()
             {
@@ -49,6 +48,10 @@ namespace SCE
 
                 { "helpcmdexp", new(HelpCMDExpCMD) { Min = 1, Max = -1,
                     Desc = "Exports help info for the given commands to a file." } },
+
+                 { "precache", new(PrecacheCMD) { Max = -1,
+                    Desc = "Precaches the given packages or all if no arguments are given.",
+                    Usage = "?<Package1>..." } },
 
                 { "pkgview", new(PackageViewCMD) { Min = 1, Max = 1,
                     Desc = "Outputs whether a package with the specified name exists.",
@@ -366,6 +369,17 @@ namespace SCE
             cl.FeedbackLine($"Successfully exported commands to:\n{args[0]}");
         }
 
+        private static void PrecacheCMD(string[] args, CmdLauncher cl)
+        {
+            int count = 0;
+            foreach (var pkg in ReadPackages(args, cl))
+            {
+                cl.Precache(pkg);
+                ++count;
+            }
+            cl.FeedbackLine($"Successfully precached {count} package(s) | Cache size: {cl.CacheSize}");
+        }
+
         private Cmd.MItem PackageViewCMD(string[] args, CmdLauncher cl)
         {
             if (cl.TryGetPackage(args[0], out var package))
@@ -477,7 +491,7 @@ namespace SCE
 
         private static Cmd.MItem CacheSizeCMD(string[] args, CmdLauncher cl)
         {
-            int count = cl.CacheSize();
+            int count = cl.CacheSize;
             if (count == 0)
                 cl.FeedbackLine("Command cache is empty.");
             else

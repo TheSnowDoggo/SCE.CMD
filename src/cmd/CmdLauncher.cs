@@ -29,6 +29,8 @@ namespace SCE
 
         public int SStackCount { get => _superStack.Count; }
 
+        public int CacheSize { get => _cmdCache.Count; }
+
         #region Options
 
         public bool CmdFeedback { get; set; } = true;
@@ -238,16 +240,24 @@ namespace SCE
 
         #region Cache
 
+        public void Precache(Package pkg)
+        {
+            var name = pkg.Name.ToLower();
+            foreach (var cmd in pkg.Commands)
+                _cmdCache[cmd.Key] = name;
+        }
+
+        public void PrecacheAll()
+        {
+            foreach (var pkg in Packages())
+                Precache(pkg);
+        }
+
         public int ClearCache()
         {
             int count = _cmdCache.Count;
             _cmdCache.Clear();
             return count;
-        }
-
-        public int CacheSize()
-        {
-            return _cmdCache.Count;
         }
 
         #endregion

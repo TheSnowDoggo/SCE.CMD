@@ -9,7 +9,7 @@ namespace SCE
         public StatePKG()
         {
             Name = "State";
-            Version = new(0, 3, 1);
+            Version = new(0, 4, 1);
             Desc = "Conditional and State manipulation utilities.";
             Commands = new()
             {
@@ -375,7 +375,7 @@ namespace SCE
             string longName = "")
         {
             yield return ($"is{name}", GetStateGEN(get, longName));
-            yield return ($"_{name}<", SetStateArgGEN(get, set, longName));
+            yield return ($"_{name}*", SetStateArgGEN(get, set, longName));
             yield return ($"_{name}", SetStateGEN(set, longName, false));
             yield return ($"_{name}^", SetStateGEN(set, longName, true));
         }
