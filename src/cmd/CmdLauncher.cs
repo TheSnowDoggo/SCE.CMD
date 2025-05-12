@@ -327,24 +327,9 @@ namespace SCE
 
         public bool SExecuteCommand(string line)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                    return false;
-                ExecuteCommand(line);
-                return true;
-            }
-            catch (CmdException e)
-            {
-                if (ErrFeedback)
-                    Console.WriteLine(e);
-            }
-            catch (Exception e)
-            {
-                if (ErrFeedback)
-                    Console.WriteLine(NeatErrors ? e.Message : e);
-            }
-            return false;
+            var name = StrUtils.BuildWhile(line, (c) => c != ' ');
+            var args = Utils.TrimFirst(StrUtils.TrimArgs(line));
+            return SExecuteCommand(name, args);
         }
 
         public void ExecuteEveryCommand(IEnumerable<string> lines, bool endOnFail = true)
