@@ -98,6 +98,9 @@ namespace SCE
                     Desc = "Performs a mod operation on the given args.",
                     Usage = "<a> <b>" } },
 
+                { "ignore", new(_ => { }) { Max = -1,
+                    Desc = "Does literally nothing." } },
+
                 #endregion
 
                 #region Feedback
