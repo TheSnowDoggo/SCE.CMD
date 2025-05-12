@@ -10,7 +10,7 @@ namespace SCE
         public ExternalPKG()
         {
             Name = "External";
-            Version = new(0, 1, 0);
+            Version = new(0, 2, 0);
             Desc = "File and Directory managment. Also provides script and package loading commands.";
             Commands = new()
             {
@@ -386,7 +386,7 @@ namespace SCE
                 throw new CmdException("External", $"Unknown directory \'{relDir}\'.");
 
             foreach (var filePath in Directory.EnumerateFiles(relDir))
-                LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cl, bake, ignoreOverwrite, );
+                LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cl, bake, ignoreOverwrite);
         }
 
         private void RunDirCMD(string[] args, CmdLauncher cl)
