@@ -1,4 +1,6 @@
 ﻿using CSUtils;
+using System.Xml.Linq;
+
 namespace SCE
 {
     internal class ExternalPKG : Package
@@ -28,17 +30,17 @@ namespace SCE
                     Desc = "Runs the script from the specified relative path.",
                     Usage = "<FilePath>" } },
 
-                { "scrload", new(LoadCMD) { Min = 2, Max = 2,
+                { "scrload", new(LoadCMD) { Min = 2, Max = 4,
                     Desc = "Loads the script from the specified relative path.",
-                    Usage = "<ScriptName> <FilePath>" } },
+                    Usage = "<ScriptName> <FilePath> ?<IgnoreOverwrite->False> ?<Bake:True/False->True>" } },
 
-                { "scrrundir", new(RunDirCMD) { Max = 1,
+                { "scrrundir", new(RunDirCMD) { Max = 1, 
                     Desc = "Runs all the scripts in the given directory.",
                     Usage = "?<DirPath>" } },
 
-                { "scrloaddir", new(LoadDirCMD) { Max = 1,
+                { "scrloaddir", new(LoadDirCMD) { Max = 3,
                     Desc = "Loads all the scripts in the given directory.",
-                    Usage = "?<DirPath>" } },
+                    Usage = "?<DirPath> ?<IgnoreOverwrite->False> ?<Bake:True/False->True>" } },
 
                 { "scrdel", new(DeleteCMD) { Min = 1, Max = 1,
                     Desc = "Deletes the specified script.",
@@ -315,10 +317,14 @@ namespace SCE
 
         private void RenameCMD(string[] args, CmdLauncher cl)
         {
-            if (Commands.ContainsKey(args[1]))
-                throw new CmdException("External", $"Script \'{args[1]}\' already exists.");
             if (!Commands.TryGetValue(args[0], out var command))
                 throw new CmdException("External", $"Script not found \'{args[0]}\'.");
+            if (Commands.ContainsKey(args[1]))
+            {
+                StrUtils.PrettyErr("External", $"Script \'{args[1]}\' already exists.");
+                if (!Utils.BoolPrompt("Would you like to overwrite it? Yes[Y] or No[N]: "))
+                    return;
+            }
 
             Commands.Remove(args[0]);
             Commands[args[1]] = command;
@@ -334,25 +340,53 @@ namespace SCE
             cl.FeedbackLine($"Sucessfully removed script \'{args[0]}\'.");
         }
 
-        private void LoadAbsolute(string name, string path, CmdLauncher cl)
+        private void LoadAbsolute(string name, string path, CmdLauncher cl, bool ignoreOverwrite = false, bool bake = true)
         {
             if (!File.Exists(path))
                 throw new CmdException("External", $"File not found {path}.");
-            if (Commands.ContainsKey(name))
+            if (!ignoreOverwrite && Commands.ContainsKey(name))
             {
                 StrUtils.PrettyErr("External", $"Script \'{name}\' already exists.");
-                if (!Utils.BoolPrompt("Would you still like to load it? Yes[Y] or No[N]: "))
+                if (!Utils.BoolPrompt("Would you like to overwrite it? Yes[Y] or No[N]: "))
                     return;
             }
 
-            var lines = File.ReadAllLines(path);
-            Commands.Add(name, new(_ => cl.ExecuteEveryCommand(lines)));
+            if (!bake)
+                Commands[name] = new(_ => cl.ExecuteEveryCommand(File.ReadAllLines(path)));
+            else
+            {
+                var lines = File.ReadAllLines(path);
+                Commands[name] = new(_ => cl.ExecuteEveryCommand(lines));
+            }
             cl.FeedbackLine($"Script \'{name}\' added sucessfully!");
         }
 
         private void LoadCMD(string[] args, CmdLauncher cl)
         {
-            LoadAbsolute(args[0], Path.Combine(directory, args[1]), cl);
+            bool ignoreOverwrite = false;
+            if (args.Length >= 3 && !bool.TryParse(args[2], out ignoreOverwrite))
+                throw new CmdException("External", $"Invalid bool \'{args[2]}\'.");
+            bool bake = true;
+            if (args.Length >= 4 && !bool.TryParse(args[2], out bake))
+                throw new CmdException("External", $"Invalid bool \'{args[3]}\'.");
+            LoadAbsolute(args[0], Path.Combine(directory, args[1]), cl, ignoreOverwrite, bake);
+        }
+
+        private void LoadDirCMD(string[] args, CmdLauncher cl)
+        {
+            bool ignoreOverwrite = false;
+            if (args.Length >= 2 && !bool.TryParse(args[2], out ignoreOverwrite))
+                throw new CmdException("External", $"Invalid bool \'{args[1]}\'.");
+            bool bake = true;
+            if (args.Length >= 3 && !bool.TryParse(args[2], out bake))
+                throw new CmdException("External", $"Invalid bool \'{args[2]}\'.");
+
+            string relDir = Path.Combine(directory, args[0]);
+            if (!Directory.Exists(relDir))
+                throw new CmdException("External", $"Unknown directory \'{relDir}\'.");
+
+            foreach (var filePath in Directory.EnumerateFiles(relDir))
+                LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cl, ignoreOverwrite, bake);
         }
 
         private void RunDirCMD(string[] args, CmdLauncher cl)
@@ -363,16 +397,6 @@ namespace SCE
 
             foreach (var filePath in Directory.EnumerateFiles(relDir))
                 cl.ExecuteEveryCommand(File.ReadAllLines(filePath));
-        }
-
-        private void LoadDirCMD(string[] args, CmdLauncher cl)
-        {
-            string relDir = Path.Combine(directory, args[0]);
-            if (!Directory.Exists(relDir))
-                throw new CmdException("External", $"Unknown directory \'{relDir}\'.");
-
-            foreach (var filePath in Directory.EnumerateFiles(relDir))
-                LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cl);
         }
 
         private void CompileDirCMD(string[] args, CmdLauncher cl)
