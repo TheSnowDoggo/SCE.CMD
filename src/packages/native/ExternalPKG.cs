@@ -32,7 +32,7 @@ namespace SCE
 
                 { "scrload", new(LoadCMD) { Min = 2, Max = 4,
                     Desc = "Loads the script from the specified relative path.",
-                    Usage = "<ScriptName> <FilePath> ?<IgnoreOverwrite->False> ?<Bake:True/False->True>" } },
+                    Usage = "<ScriptName> <FilePath> ?<Bake:True/False->True> ?<IgnoreOverwrite->False>" } },
 
                 { "scrrundir", new(RunDirCMD) { Max = 1, 
                     Desc = "Runs all the scripts in the given directory.",
@@ -40,7 +40,7 @@ namespace SCE
 
                 { "scrloaddir", new(LoadDirCMD) { Max = 3,
                     Desc = "Loads all the scripts in the given directory.",
-                    Usage = "?<DirPath> ?<IgnoreOverwrite->False> ?<Bake:True/False->True>" } },
+                    Usage = "?<DirPath> ?<Bake:True/False->True> ?<IgnoreOverwrite->False>" } },
 
                 { "scrdel", new(DeleteCMD) { Min = 1, Max = 1,
                     Desc = "Deletes the specified script.",
@@ -340,7 +340,7 @@ namespace SCE
             cl.FeedbackLine($"Sucessfully removed script \'{args[0]}\'.");
         }
 
-        private void LoadAbsolute(string name, string path, CmdLauncher cl, bool ignoreOverwrite = false, bool bake = true)
+        private void LoadAbsolute(string name, string path, CmdLauncher cl, bool bake = true, bool ignoreOverwrite = false)
         {
             if (!File.Exists(path))
                 throw new CmdException("External", $"File not found {path}.");
@@ -363,30 +363,30 @@ namespace SCE
 
         private void LoadCMD(string[] args, CmdLauncher cl)
         {
-            bool ignoreOverwrite = false;
-            if (args.Length >= 3 && !bool.TryParse(args[2], out ignoreOverwrite))
-                throw new CmdException("External", $"Invalid bool \'{args[2]}\'.");
             bool bake = true;
-            if (args.Length >= 4 && !bool.TryParse(args[2], out bake))
+            if (args.Length >= 3 && !bool.TryParse(args[2], out bake))
+                throw new CmdException("External", $"Invalid bool \'{args[2]}\'.");
+            bool ignoreOverwrite = false;
+            if (args.Length >= 4 && !bool.TryParse(args[3], out ignoreOverwrite))
                 throw new CmdException("External", $"Invalid bool \'{args[3]}\'.");
             LoadAbsolute(args[0], Path.Combine(directory, args[1]), cl, ignoreOverwrite, bake);
         }
 
         private void LoadDirCMD(string[] args, CmdLauncher cl)
         {
-            bool ignoreOverwrite = false;
-            if (args.Length >= 2 && !bool.TryParse(args[2], out ignoreOverwrite))
-                throw new CmdException("External", $"Invalid bool \'{args[1]}\'.");
             bool bake = true;
-            if (args.Length >= 3 && !bool.TryParse(args[2], out bake))
-                throw new CmdException("External", $"Invalid bool \'{args[2]}\'.");
+            if (args.Length >= 2 && !bool.TryParse(args[1], out bake))
+                throw new CmdException("External", $"Invalid bool \'{args[1]}\'.");
+            bool ignoreOverwrite = false;
+            if (args.Length >= 3 && !bool.TryParse(args[2], out ignoreOverwrite))
+                throw new CmdException("External", $"Invalid bool \'{args[2]}\'.");         
 
             string relDir = Path.Combine(directory, args[0]);
             if (!Directory.Exists(relDir))
                 throw new CmdException("External", $"Unknown directory \'{relDir}\'.");
 
             foreach (var filePath in Directory.EnumerateFiles(relDir))
-                LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cl, ignoreOverwrite, bake);
+                LoadAbsolute(Path.GetFileNameWithoutExtension(filePath), filePath, cl, bake, ignoreOverwrite, );
         }
 
         private void RunDirCMD(string[] args, CmdLauncher cl)
