@@ -2,12 +2,7 @@
 {
     public class Cmd
     {
-        #region QuickUsage
-
-        public const string BCHAIN = "<CommandName> ?<Arg1>...", 
-            MBCHAIN = "?" + BCHAIN;
-
-        #endregion
+        public const string BCHAIN = "<CommandName> ?<Arg1>...", MBCHAIN = "?" + BCHAIN;
 
         // MemItem
         public record MItem(object? Value);

@@ -60,10 +60,14 @@ namespace SCE
             while (active)
             {
                 if (InputRendering && InputRender != null)
+                {
                     Console.Write(InputRender.Invoke());
+                }
                 var input = Console.ReadLine();
                 if (!string.IsNullOrWhiteSpace(input))
-                    SExecuteCommand(PreProcess(input));
+                {
+                     SExecuteCommand(PreProcess(input));
+                }
             }
         }
 
@@ -202,7 +206,9 @@ namespace SCE
                 {
                     package = pkg;
                     if (CmdCaching)
+                    {
                         _cmdCache[cmd] = pkg.Name.ToLower();
+                    }
                     return true;
                 }
             }
@@ -295,7 +301,9 @@ namespace SCE
 
             var res = cmd.Func.Invoke(args, this);
             if (res != null && !MemLock && res.Value != null)
+            {
                 MemoryStack.Push(res.Value);
+            }
         }
 
         public void ExecuteCommand(string line)
@@ -315,12 +323,16 @@ namespace SCE
             catch (CmdException e)
             {
                 if (ErrFeedback)
+                {
                     Console.WriteLine(e);
+                }
             }
             catch (Exception e)
             {
                 if (ErrFeedback)
+                {
                     Console.WriteLine(NeatErrors ? e.Message : e);
+                }
             }
             return false;
         }

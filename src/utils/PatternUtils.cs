@@ -12,7 +12,9 @@ namespace SCE
             if (args.Length > 0 && args[0] == "*")
             {
                 foreach (var item in dict)
+                {
                     sb.AppendLine($"{item.Key} > {item.Value}");
+                }
             }
             else
             {

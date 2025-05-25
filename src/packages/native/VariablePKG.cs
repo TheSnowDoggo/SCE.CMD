@@ -234,7 +234,9 @@ namespace SCE
             while (_scopes.Count >= ts)
             {
                 if (_scopes.Count == _tempScopes.Peek())
+                {
                     _tempScopes.Pop();
+                }
                 _scopes.Pop();
             }
         }
@@ -277,10 +279,9 @@ namespace SCE
                 if (cl.MemoryStack.Count == 0)
                     throw new CmdException("Variable", "Memory is empty.");
                 var store = cl.MemoryStack.Pop();
-                if (store?.ToString() is string str)
-                    StoreVariable(args[i], str, cl);
-                else
+                if (store?.ToString() is not string str)
                     throw new CmdException("Variable", "Stored value is null.");
+                StoreVariable(args[i], str, cl);
             }
         }
 

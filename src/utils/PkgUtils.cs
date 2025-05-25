@@ -23,7 +23,9 @@ namespace SCE
                     continue;
                 }
                 foreach (var pkg in DiscoverPackages(Assembly.LoadFrom(file)))
+                {
                     yield return pkg;
+                }
             }
         }
 
