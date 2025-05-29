@@ -1,5 +1,4 @@
 ﻿using System.Text;
-
 namespace SCE
 {
     /// <summary>

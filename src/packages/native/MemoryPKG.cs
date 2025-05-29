@@ -1,9 +1,8 @@
 ﻿using CSUtils;
-using System;
 using System.Text;
 namespace SCE
 {
-    internal class MemoryPKG : Package
+    public class MemoryPKG : Package
     {
         public MemoryPKG()
         {

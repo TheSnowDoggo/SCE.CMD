@@ -1,7 +1,7 @@
 ﻿using CSUtils;
 namespace SCE
 {
-    internal class CombinePKG : Package
+    public class CombinePKG : Package
     {
         private readonly HashSet<string> _combines = new();
 

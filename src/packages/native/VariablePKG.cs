@@ -2,7 +2,7 @@
 using System.Text;
 namespace SCE
 {
-    internal class VariablePKG : Package
+    public class VariablePKG : Package
     {
         private readonly Stack<Dictionary<string, string>> _scopes = new();
 

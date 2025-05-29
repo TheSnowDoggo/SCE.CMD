@@ -2,7 +2,7 @@
 using System.Text;
 namespace SCE
 {
-    internal class DefinePKG : Package
+    public class DefinePKG : Package
     {
         private static readonly DefinePRP _nativedefines = new(-1)
         {

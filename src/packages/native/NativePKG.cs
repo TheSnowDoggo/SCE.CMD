@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text;
 namespace SCE
 {
-    internal class NativePKG : Package
+    public class NativePKG : Package
     {
         public NativePKG()
         {

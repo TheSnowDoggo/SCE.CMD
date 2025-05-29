@@ -1,6 +1,6 @@
 ﻿namespace SCE
 {
-    internal class AliasPKG : Package
+    public class AliasPKG : Package
     {
         private readonly Dictionary<string, string> _aliases = new();
 

@@ -1,10 +1,11 @@
 ﻿using CSUtils;
 namespace SCE
 {
-    internal class StatePKG : Package
+    public class StatePKG : Package
     {
-        private const string IFA_USG = "<True/False>:<Num;!=0> " + Cmd.BCHAIN,
-            CMP_USG = "<Left> <Right> ?<BothType>:<LeftType,RightType>";
+        private const string IFA_USG = "<True/False>:<Num;!=0> " + Cmd.BCHAIN;
+
+        private const string CMP_USG = "<Left> <Right> ?<BothType>:<LeftType,RightType>";
 
         public StatePKG()
         {

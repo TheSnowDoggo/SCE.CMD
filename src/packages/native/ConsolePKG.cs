@@ -1,8 +1,7 @@
-﻿using System.Text;
-using CSUtils;
+﻿using CSUtils;
 namespace SCE
 {
-    internal class ConsolePKG : Package
+    public class ConsolePKG : Package
     {
         public ConsolePKG()
         {

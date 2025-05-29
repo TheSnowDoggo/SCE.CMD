@@ -1,7 +1,7 @@
 ﻿using CSUtils;
 namespace SCE
 {
-    internal class ExternalPKG : Package
+    public class ExternalPKG : Package
     {
         private string directory = "";
 

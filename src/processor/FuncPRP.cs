@@ -1,6 +1,6 @@
 ﻿namespace SCE
 {
-    internal class FuncPRP : Preprocessor
+    public class FuncPRP : Preprocessor
     {
         public FuncPRP(Func<string, string> func, int priority)
             : base(priority)
