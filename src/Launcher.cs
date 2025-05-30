@@ -1,40 +1,17 @@
 ﻿using CSUtils;
-using System.Reflection;
 
 namespace SCE
 {
-    internal static class Launch
+    internal static class Launcher
     {
-        private static readonly Package[] _native = new Package[]
-        {
-            new NativePKG(),
-            new MemoryPKG(),
-            new ConsolePKG(),
-            new ExternalPKG(),
-            new AliasPKG(),
-            new VariablePKG(),
-            new CombinePKG(),
-            new DefinePKG(),
-            new StatePKG(),
-        };
-
-        private static PVersion ResolveVersion()
-        {
-            var asmb = Assembly.GetEntryAssembly() ??
-                throw new NullReferenceException("Assembly is null.");
-            var v = asmb.GetName().Version ??
-                throw new NullReferenceException("Version is null.");
-            return new(v.Major, v.Minor, v.Build);
-        }
-
-        internal static void Main()
+        private static void Main()
         {
             try
             {
                 PVersion ver;
                 try
                 {
-                    ver = ResolveVersion();
+                    ver = CmdLauncher.ResolveVersion();
                 }
                 catch (Exception e)
                 {
@@ -43,8 +20,8 @@ namespace SCE
                 }
 
                 CmdLauncher cl = new() { Version = ver };
-                
-                cl.SLoadPackages(_native);
+
+                cl.SLoadPackages(CmdLauncher.NativePackages);
 
                 var scrPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autoscripts");
                 if (Directory.Exists(scrPath))

@@ -1,12 +1,31 @@
 ﻿using CSUtils;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+
 namespace SCE
 {
     public class CmdLauncher
     {
+        public static readonly Package[] NativePackages = new Package[]
+        {
+            new NativePKG(),
+            new MemoryPKG(),
+            new ConsolePKG(),
+            new ExternalPKG(),
+            new AliasPKG(),
+            new VariablePKG(),
+            new CombinePKG(),
+            new DefinePKG(),
+            new StatePKG(),
+        };
+
         private readonly Dictionary<string, Package> _packages = new();
 
         private readonly Dictionary<string, string> _cmdCache = new();
+
+        private readonly Stack<int> _locks = new();
+
+        private readonly Stack<Stack<object>> _superStack = new();
 
         private bool active;
 
@@ -17,19 +36,15 @@ namespace SCE
 
         public PVersion Version { get; init; } = PVersion.Zero;
 
-        public Func<string>? InputRender;
-
         public SortedSet<Preprocessor> Preprocessors { get; } = new();
-
-        private readonly Stack<int> _locks = new();
-
-        private readonly Stack<Stack<object>> _superStack = new();
 
         public Stack<object> MemoryStack { get => _superStack.Peek(); }
 
         public int SStackCount { get => _superStack.Count; }
 
         public int CacheSize { get => _cmdCache.Count; }
+
+        public Func<string>? InputRender;
 
         #region Options
 
@@ -49,6 +64,15 @@ namespace SCE
 
         #endregion
 
+        public static PVersion ResolveVersion()
+        {
+            var asmb = Assembly.GetEntryAssembly() ??
+                throw new NullReferenceException("Assembly is null.");
+            var v = asmb.GetName().Version ??
+                throw new NullReferenceException("Version is null.");
+            return new(v.Major, v.Minor, v.Build);
+        }
+
         public void Exit()
         {
             active = false;
@@ -66,7 +90,7 @@ namespace SCE
                 var input = Console.ReadLine();
                 if (!string.IsNullOrWhiteSpace(input))
                 {
-                     SExecuteCommand(PreProcess(input));
+                    SExecuteCommand(PreProcess(input));
                 }
             }
         }
